@@ -8,6 +8,10 @@ Uses MIMIC-IV dataset. Compares multiple methods for generating biomarker formul
 All scripts run from the project root: `python src/<script_name>.py`
 Data must be in `data/ra_modeling_data.csv` (not tracked in git).
 
+## Git commit standards
+- **Always include the issue number** in the commit message, e.g. `fix(#3): add AUC-PR metric` or `feat(#2): implement Youden threshold`
+- Use the format: `<type>(#<issue>): <description>`
+
 ## Coding standards
 - **One file per method** in `src/`, named `method<N>_<name>.py`
 - **Shared code goes in `src/utils.py`** — never duplicate data loading or metric computation
