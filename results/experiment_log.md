@@ -38,12 +38,23 @@ _Date: 2026-04-04_
 | MCH | 27.0 | below | 0.463 | 0.008 | 0.087 | 0.015 | Low MCH in iron-deficiency/chronic disease anemia |
 
 ### 1B: Data-driven threshold (Youden's index)
-| feature | threshold | direction | AUC | precision | recall |
-|---------|-----------|-----------|-----|-----------|--------|
-| | | | | | |
+| feature | threshold | direction | AUC | precision | recall | F1 |
+|---------|-----------|-----------|-----|-----------|--------|----|
+| RDW | 13.4 | above | 0.6169 | 0.014 | 0.843 | 0.027 |
+| RBC | 2.75 | below | 0.5861 | 0.011 | 0.067 | 0.019 |
+| HCT | 27.1 | below | 0.5786 | 0.010 | 0.107 | 0.018 |
+| HGB | 8.4 | below | 0.5690 | 0.009 | 0.070 | 0.015 |
+| PLT | 260.0 | above | 0.5723 | 0.014 | 0.390 | 0.027 |
+| MCH | 32.3 | above | 0.5373 | 0.012 | 0.170 | 0.023 |
+| MCHC | 32.9 | above | 0.5328 | 0.011 | 0.627 | 0.022 |
+| MCV | 93.0 | above | 0.5176 | 0.011 | 0.370 | 0.021 |
+| WBC | 20.0 | below | 0.5213 | 0.010 | 0.963 | 0.020 |
 
 ### Notes
-_What did you learn? Did data-driven beat literature? By how much?_
+- **Best feature**: RDW (AUC=0.617) — identical AUC for both 1A and 1B, since AUC is threshold-independent
+- Data-driven threshold (13.4) is lower than literature (14.5), boosting recall from 0.487 → 0.843 at the cost of slightly lower precision
+- For most features, Youden-optimized thresholds differ significantly from literature values, reflecting dataset-specific distributions
+- No single-feature threshold beats the all-features logistic regression baseline (AUC=0.658)
 
 ---
 
@@ -106,7 +117,7 @@ _Fill this in as you complete each method_
 |--------|----------|---------------------|-----------------|
 | Logistic regression (all features) | 0.658 | All 9 CBC | — (this IS the baseline) |
 | Literature threshold (1A) | 0.617 | RDW >14.5 | No (vs 0.658) |
-| Data-driven threshold | | | |
+| Data-driven threshold (1B) | 0.617 | RDW >13.4 | No (vs 0.658) |
 | Random formulas | | | |
 | Genetic programming | | | |
 | LLM formulas | | | |

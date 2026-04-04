@@ -95,3 +95,78 @@ print(f"\nSaved {RESULTS_DIR}/literature_results.csv")
 
 best_lit = lit_df.loc[lit_df["auc"].idxmax()]
 print(f"\nBest literature AUC: {best_lit['feature']} — AUC={best_lit['auc']:.4f}")
+
+# ── Part 1B: Data-driven thresholds (Youden's index) ─────────────────────────
+print("\n=== Part 1B: Data-driven thresholds (Youden's index) ===")
+
+features = list(literature_thresholds.keys())
+dd_results = []
+
+for feat in features:
+    # Use train set to find the optimal threshold
+    tr = train_df[[feat, "is_case"]].dropna()
+    te = test_df[[feat, "is_case"]].dropna()
+
+    if tr["is_case"].sum() < 5 or te["is_case"].sum() < 5:
+        print(f"  {feat:6s}: skipped (too few positives)")
+        continue
+
+    y_train = tr["is_case"].values
+    x_train = tr[feat].values
+    y_test  = te["is_case"].values
+    x_test  = te[feat].values
+
+    # Compute ROC on train to find optimal threshold
+    fpr, tpr, thresholds = roc_curve(y_train, x_train)
+
+    # Youden's index: J = sensitivity + specificity - 1 = TPR + (1 - FPR) - 1 = TPR - FPR
+    youden_j = tpr - fpr
+    best_idx = np.argmax(youden_j)
+    optimal_threshold = thresholds[best_idx]
+
+    # Determine direction from the ROC: if higher feature value → higher TPR,
+    # the ROC is computed as-is; we predict RA if feature >= threshold.
+    # Check which direction the AUC favours on the train set.
+    auc_train_above = roc_auc_score(y_train, x_train)
+    if auc_train_above >= 0.5:
+        direction = "above"
+        preds = (x_test >= optimal_threshold).astype(int)
+        score  = x_test
+    else:
+        direction = "below"
+        preds = (x_test <= optimal_threshold).astype(int)
+        score  = -x_test
+
+    auc = roc_auc_score(y_test, score)
+
+    tp = int(((preds == 1) & (y_test == 1)).sum())
+    fp = int(((preds == 1) & (y_test == 0)).sum())
+    fn = int(((preds == 0) & (y_test == 1)).sum())
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1        = (2 * precision * recall / (precision + recall)
+                 if (precision + recall) > 0 else 0.0)
+
+    dd_results.append({
+        "feature":           feat,
+        "optimal_threshold": round(float(optimal_threshold), 4),
+        "direction":         direction,
+        "auc":               round(auc, 4),
+        "precision":         round(precision, 4),
+        "recall":            round(recall, 4),
+        "f1":                round(f1, 4),
+        "n_train":           len(tr),
+        "n_test":            len(te),
+    })
+
+    print(f"  {feat:6s} ({direction:5s} {optimal_threshold:>8.4f}): "
+          f"AUC={auc:.4f}  P={precision:.4f}  R={recall:.4f}  F1={f1:.4f}")
+
+# ── Save data-driven results ──────────────────────────────────────────────────
+dd_df = pd.DataFrame(dd_results)
+dd_df.to_csv(f"{RESULTS_DIR}/datadriven_results.csv", index=False)
+print(f"\nSaved {RESULTS_DIR}/datadriven_results.csv")
+
+best_dd = dd_df.loc[dd_df["auc"].idxmax()]
+print(f"\nBest data-driven AUC: {best_dd['feature']} — AUC={best_dd['auc']:.4f}  "
+      f"threshold={best_dd['optimal_threshold']} ({best_dd['direction']})")
