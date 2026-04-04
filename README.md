@@ -15,19 +15,19 @@ This project systematically compares methods for deriving single-formula biomark
 pip install -r requirements.txt
 
 # 2. Place data file (see Data section below)
-#    data/ra_modeling_data.csv
+#    data/modeling_data.csv
 
 # 3. Run from project root
-python src/checkpoint5_sanity.py     # verify pipeline is leak-free
-python src/method1_threshold.py      # single-feature threshold optimization
-python src/add_pr_metrics.py         # add AUC-PR and imbalance-aware metrics
+python src/sanity_check.py       # verify pipeline is leak-free
+python src/method_threshold.py   # single-feature threshold optimization
+python src/eval_pr_metrics.py    # add AUC-PR and imbalance-aware metrics
 ```
 
 ## Data
 
 Source: **MIMIC-IV** (PhysioNet), queried via BigQuery.
 
-- File: `data/ra_modeling_data.csv` (gitignored — provide your own export)
+- File: `data/modeling_data.csv` (gitignored — provide your own export)
 - Columns: `subject_id, is_case, split, hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc`
 - Cases: ICD-9 code 714.x (Rheumatoid Arthritis)
 - Lookback window: 90 days + first 24h of index admission
@@ -62,15 +62,15 @@ biomarker-pipeline/
 ├── CLAUDE.md              # coding standards for Claude Code
 ├── README.md              # this file
 ├── requirements.txt
-├── data/                  # gitignored — place ra_modeling_data.csv here
+├── data/                  # gitignored — place modeling_data.csv here
 ├── results/
 │   ├── experiment_log.md  # tracked experiment tracking doc
 │   └── method1_threshold/ # generated outputs per method
 └── src/
     ├── utils.py           # shared data loading, metrics, path constants
-    ├── checkpoint5_sanity.py
-    ├── method1_threshold.py
-    └── add_pr_metrics.py
+    ├── sanity_check.py
+    ├── method_threshold.py
+    └── eval_pr_metrics.py
 ```
 
 ## Author

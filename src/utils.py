@@ -9,10 +9,15 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+# ── Disease config (change this when switching diseases) ───────────────────────
+DISEASE      = "ra"
+DISEASE_FULL = "Rheumatoid Arthritis"
+ICD9_PATTERN = "714%"
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DATA_DIR    = Path("data")
 RESULTS_DIR = Path("results")
-DATA_PATH   = DATA_DIR / "ra_modeling_data.csv"
+DATA_PATH   = DATA_DIR / "modeling_data.csv"
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 META_COLS    = {"subject_id", "is_case", "split"}

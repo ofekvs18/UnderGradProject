@@ -16,7 +16,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
-    ensure_dir, RESULTS_DIR,
+    ensure_dir, RESULTS_DIR, DISEASE_FULL,
 )
 
 M1_DIR = RESULTS_DIR / "method1_threshold"

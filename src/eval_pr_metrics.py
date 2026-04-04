@@ -2,7 +2,7 @@
 Issue #3 — Add imbalanced-data metrics to all evaluations.
 
 Adds AUC-PR, precision@recall (0.25, 0.50, 0.75), F1, and F-beta(2) to:
-  - Checkpoint 5 logistic regression results  -> results/sanity_check_results_v2.csv
+  - Sanity check logistic regression results  -> results/sanity_check_results_v2.csv
   - Method 1 threshold results                -> results/method1_threshold/comparison_table_v2.csv
   - PR curves for all features                -> results/method1_threshold/pr_curves.png
   - Plain text comparison summary             -> results/evaluation_summary.txt
@@ -21,7 +21,7 @@ from sklearn.metrics import (
 
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
-    ensure_dir, RESULTS_DIR,
+    ensure_dir, RESULTS_DIR, DISEASE_FULL,
 )
 
 M1_DIR = RESULTS_DIR / "method1_threshold"

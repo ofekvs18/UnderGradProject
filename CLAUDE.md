@@ -6,7 +6,7 @@ Uses MIMIC-IV dataset. Compares multiple methods for generating biomarker formul
 
 ## How to run
 All scripts run from the project root: `python src/<script_name>.py`
-Data must be in `data/ra_modeling_data.csv` (not tracked in git).
+Data must be in `data/modeling_data.csv` (not tracked in git).
 
 ## Git commit standards
 - **Always include the issue number** in the commit message, e.g. `fix(#3): add AUC-PR metric` or `feat(#2): implement Youden threshold`
@@ -23,7 +23,7 @@ Data must be in `data/ra_modeling_data.csv` (not tracked in git).
 - **Use `src/utils.py` constants** for paths, baseline AUC, feature lists
 
 ## Data
-- `data/ra_modeling_data.csv` — exported from BigQuery, gitignored
+- `data/modeling_data.csv` — exported from BigQuery, gitignored
 - Columns: subject_id, is_case, split, hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc
 - Split is immutable: train (80%) / test (20%), patient-level, deterministic
 - ~1% positive rate (RA cases) — always use imbalanced-aware metrics
@@ -45,8 +45,8 @@ biomarker-pipeline/
 │   └── experiment_log.md  # tracked — manual experiment tracking
 └── src/
     ├── utils.py           # shared utilities (data loading, metrics, paths)
-    ├── checkpoint5_sanity.py
-    ├── method1_threshold.py
-    ├── add_pr_metrics.py
+    ├── sanity_check.py
+    ├── method_threshold.py
+    ├── eval_pr_metrics.py
     └── (future method scripts)
 ```

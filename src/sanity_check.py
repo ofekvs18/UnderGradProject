@@ -1,5 +1,5 @@
 """
-Checkpoint 5 — Sanity check logistic regression (single-feature and all-features).
+Sanity check — logistic regression (single-feature and all-features).
 
 Purpose: verify the data pipeline is free of leakage.
 Expected AUC range if clean: ~0.55–0.75 for single features.
@@ -137,7 +137,7 @@ for r in plot_models:
 ax.plot([0, 1], [0, 1], "k--", linewidth=0.8)
 ax.set_xlabel("False Positive Rate")
 ax.set_ylabel("True Positive Rate")
-ax.set_title("ROC Curves — Checkpoint 5 Sanity Check")
+ax.set_title("ROC Curves — Sanity Check")
 ax.legend(loc="lower right", fontsize=9)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
@@ -147,7 +147,7 @@ print(f"Saved {RESULTS_DIR}/roc_curves.png")
 
 # ── Plain text summary ────────────────────────────────────────────────────────
 summary_lines = [
-    "Checkpoint 5 — Sanity Check Summary",
+    "Sanity Check Summary",
     "=" * 40,
     "",
     "Single-feature results:",
