@@ -6,25 +6,22 @@ Expected AUC range if clean: ~0.55–0.75 for single features.
 AUC > 0.95 on a single feature strongly suggests label or temporal leakage.
 """
 
-import sys
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve
+from sklearn.metrics import roc_auc_score, precision_recall_curve
 
-DATA_PATH = "data/ra_modeling_data.csv"
-RESULTS_DIR = "results"
+from utils import load_data, get_splits, compute_binary_metrics, find_youden_threshold, ensure_dir, RESULTS_DIR
+
+ensure_dir(RESULTS_DIR)
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 print("Loading data...")
-df = pd.read_csv(DATA_PATH)
-
-# Derive feature list dynamically — everything except the three metadata columns
-META_COLS = {"subject_id", "is_case", "split"}
-features = [c for c in df.columns if c not in META_COLS]
+df, features = load_data()
+train_df, test_df = get_splits(df)
 
 print(f"Columns: {list(df.columns)}")
 print(f"Features: {features}\n")
@@ -33,14 +30,14 @@ print(f"Features: {features}\n")
 print("=== Dataset summary ===")
 for split_name in ["train", "test"]:
     sub = df[df["split"] == split_name]
-    n_cases = sub["is_case"].sum()
+    n_cases    = sub["is_case"].sum()
     n_controls = len(sub) - n_cases
     print(f"  {split_name}: {len(sub):,} rows  |  cases={n_cases:,}  controls={n_controls:,}")
 
 print("\nMissing value counts per feature:")
 for feat in features:
     n_miss = df[feat].isna().sum()
-    pct = 100 * n_miss / len(df)
+    pct    = 100 * n_miss / len(df)
     print(f"  {feat:8s}: {n_miss:,} missing ({pct:.1f}%)")
 print()
 
@@ -56,55 +53,39 @@ def fit_evaluate(X_train, y_train, X_test, y_test, label):
     clf.fit(X_train, y_train)
     proba = clf.predict_proba(X_test)[:, 1]
 
+    from sklearn.metrics import roc_auc_score
     auc = roc_auc_score(y_test, proba)
-    fpr, tpr, thresholds = roc_curve(y_test, proba)
 
-    # Youden's index: maximise sensitivity + specificity - 1
-    youden = tpr - fpr
-    best_idx = int(np.argmax(youden))
-    threshold = thresholds[best_idx]
+    threshold, fpr, tpr = find_youden_threshold(y_test, proba)
     preds = (proba >= threshold).astype(int)
-
-    tp = int(((preds == 1) & (y_test == 1)).sum())
-    fp = int(((preds == 1) & (y_test == 0)).sum())
-    fn = int(((preds == 0) & (y_test == 1)).sum())
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    m = compute_binary_metrics(y_test, preds)
 
     return {
-        "model": label,
-        "n_train": len(X_train),
-        "n_test": len(X_test),
-        "auc": round(auc, 4),
-        "threshold": round(float(threshold), 4),
-        "precision": round(precision, 4),
-        "recall": round(recall, 4),
-        "fpr_arr": fpr,
-        "tpr_arr": tpr,
+        "model":     label,
+        "n_train":   len(X_train),
+        "n_test":    len(X_test),
+        "auc":       round(auc, 4),
+        "threshold": round(threshold, 4),
+        "precision": round(m["precision"], 4),
+        "recall":    round(m["recall"], 4),
+        "fpr_arr":   fpr,
+        "tpr_arr":   tpr,
     }
 
 # ── Single-feature models ─────────────────────────────────────────────────────
 print("=== Single-feature logistic regression ===")
 results = []
 
-train_df = df[df["split"] == "train"]
-test_df  = df[df["split"] == "test"]
-
 for feat in features:
-    # Drop nulls for this feature only — do not impute
     tr = train_df[[feat, "is_case"]].dropna()
     te = test_df[[feat, "is_case"]].dropna()
 
-    X_tr = tr[[feat]].values
-    y_tr = tr["is_case"].values
-    X_te = te[[feat]].values
-    y_te = te["is_case"].values
-
-    if y_tr.sum() < 5 or y_te.sum() < 5:
+    if tr["is_case"].sum() < 5 or te["is_case"].sum() < 5:
         print(f"  {feat:8s}: skipped (too few positive examples after dropping nulls)")
         continue
 
-    res = fit_evaluate(X_tr, y_tr, X_te, y_te, label=feat)
+    res = fit_evaluate(tr[[feat]].values, tr["is_case"].values,
+                       te[[feat]].values, te["is_case"].values, label=feat)
     results.append(res)
     print(f"  {feat:8s}: AUC={res['auc']:.4f}  precision={res['precision']:.4f}  recall={res['recall']:.4f}  (n_test={res['n_test']:,})")
 
@@ -113,20 +94,16 @@ print("\n=== All-features logistic regression ===")
 tr_all = train_df[features + ["is_case"]].dropna()
 te_all = test_df[features + ["is_case"]].dropna()
 
-X_tr_all = tr_all[features].values
-y_tr_all = tr_all["is_case"].values
-X_te_all = te_all[features].values
-y_te_all = te_all["is_case"].values
-
-res_all = fit_evaluate(X_tr_all, y_tr_all, X_te_all, y_te_all, label="all_features")
+res_all = fit_evaluate(tr_all[features].values, tr_all["is_case"].values,
+                       te_all[features].values, te_all["is_case"].values, label="all_features")
 results.append(res_all)
 print(f"  all_features: AUC={res_all['auc']:.4f}  precision={res_all['precision']:.4f}  recall={res_all['recall']:.4f}  (n_test={res_all['n_test']:,})")
 
 # ── Verdict ───────────────────────────────────────────────────────────────────
-single_aucs = [r["auc"] for r in results if r["model"] != "all_features"]
-best_single_auc = max(single_aucs) if single_aucs else 0.0
+single_aucs      = [r["auc"] for r in results if r["model"] != "all_features"]
+best_single_auc  = max(single_aucs) if single_aucs else 0.0
 best_single_feat = next(r["model"] for r in results if r["auc"] == best_single_auc and r["model"] != "all_features")
-all_feat_auc = res_all["auc"]
+all_feat_auc     = res_all["auc"]
 
 if best_single_auc > 0.95:
     verdict = "FAIL — likely data leakage (single-feature AUC > 0.95)"
@@ -144,19 +121,15 @@ print(f"Verdict                 : {verdict}")
 print(f"{'='*55}\n")
 
 # ── Save CSV results ──────────────────────────────────────────────────────────
-csv_rows = [
-    {k: v for k, v in r.items() if k not in ("fpr_arr", "tpr_arr")}
-    for r in results
-]
+csv_rows   = [{k: v for k, v in r.items() if k not in ("fpr_arr", "tpr_arr")} for r in results]
 results_df = pd.DataFrame(csv_rows)
-results_df.to_csv(f"{RESULTS_DIR}/sanity_check_results.csv", index=False)
+results_df.to_csv(RESULTS_DIR / "sanity_check_results.csv", index=False)
 print(f"Saved {RESULTS_DIR}/sanity_check_results.csv")
 
 # ── ROC curves plot ───────────────────────────────────────────────────────────
-# Top 3 single-feature models by AUC + all-features
 single_results = [r for r in results if r["model"] != "all_features"]
-top3 = sorted(single_results, key=lambda r: r["auc"], reverse=True)[:3]
-plot_models = top3 + [res_all]
+top3           = sorted(single_results, key=lambda r: r["auc"], reverse=True)[:3]
+plot_models    = top3 + [res_all]
 
 fig, ax = plt.subplots(figsize=(7, 6))
 for r in plot_models:
@@ -168,7 +141,7 @@ ax.set_title("ROC Curves — Checkpoint 5 Sanity Check")
 ax.legend(loc="lower right", fontsize=9)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(f"{RESULTS_DIR}/roc_curves.png", dpi=150)
+plt.savefig(RESULTS_DIR / "roc_curves.png", dpi=150)
 plt.close()
 print(f"Saved {RESULTS_DIR}/roc_curves.png")
 
@@ -194,6 +167,6 @@ summary_lines += [
     f"VERDICT: {verdict}",
 ]
 
-with open(f"{RESULTS_DIR}/sanity_summary.txt", "w") as f:
+with open(RESULTS_DIR / "sanity_summary.txt", "w") as f:
     f.write("\n".join(summary_lines) + "\n")
 print(f"Saved {RESULTS_DIR}/sanity_summary.txt")
