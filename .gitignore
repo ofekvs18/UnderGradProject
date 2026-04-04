@@ -1,0 +1,23 @@
+# Data (large files, not tracked)
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Results (generated outputs)
+results/*.png
+results/*.csv
+results/*.txt
+results/method1_threshold/
+results/method2_*/
+results/method3_*/
+results/method4_*/
+
+# OS
+.DS_Store
+Thumbs.db
