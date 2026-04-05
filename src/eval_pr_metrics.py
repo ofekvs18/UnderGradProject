@@ -21,7 +21,7 @@ from sklearn.metrics import (
 
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
-    ensure_dir, RESULTS_DIR, DISEASE_FULL,
+    precision_at_recall_levels, ensure_dir, RESULTS_DIR, DISEASE_FULL,
 )
 
 M1_DIR = RESULTS_DIR / "method1_threshold"
@@ -32,33 +32,6 @@ print("Loading data...")
 df, features = load_data()
 train_df, test_df = get_splits(df)
 print(f"Train: {len(train_df):,}  |  Test: {len(test_df):,}\n")
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-def precision_at_recall_levels(y_train_scores, y_train, y_test_scores, y_test,
-                                levels=(0.25, 0.50, 0.75)):
-    """
-    For each target recall level, find the score threshold on TRAIN that achieves
-    recall >= level, then apply it to TEST and return (precision, recall) pairs.
-    Uses the PR curve on train to pick the threshold.
-    """
-    prec_tr, rec_tr, thresh_tr = precision_recall_curve(y_train, y_train_scores)
-    # precision_recall_curve returns arrays in descending recall order;
-    # thresh_tr has one fewer element than prec_tr/rec_tr.
-    rec_search = rec_tr[:-1]
-    thresholds = thresh_tr
-
-    results = {}
-    for level in levels:
-        # Pick highest threshold (most conservative) where train recall >= level
-        mask = rec_search >= level
-        if not mask.any():
-            results[level] = (0.0, 0.0)
-            continue
-        best_thresh = thresholds[mask].max()
-        preds = (y_test_scores >= best_thresh).astype(int)
-        m     = compute_binary_metrics(y_test, preds)
-        results[level] = (round(m["precision"], 4), round(m["recall"], 4))
-    return results
 
 
 # ── Part A: Checkpoint 5 — logistic regression with new metrics ───────────────
