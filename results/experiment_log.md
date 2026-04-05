@@ -73,18 +73,34 @@ _Sorted by AUC-PR. AUC is threshold-independent; precision/recall/F scores are a
 
 ## Method 2: Random Formula Generation
 
-_Date: ____
+_Date: 2026-04-05_
 
-| formula | features_used | AUC-ROC | AUC-PR | P@R50 | F1 | F2 | precision | recall |
-|---------|---------------|---------|--------|-------|----|----|-----------|--------|
-| | | | | | | | | |
+_10,000 unique random formulas; 2–4 features; ops: +, -, *, /, sqrt, log, square. Sorted by AUC-PR._
 
-### Best formula
+| formula | features_used | AUC-ROC | AUC-PR | P@R25 | P@R50 | P@R75 | F1 | F2 | precision | recall |
+|---------|---------------|---------|--------|-------|-------|-------|----|----|-----------|--------|
+| sqrt(hct) / rbc | hct, rbc | 0.5796 | 0.0174 | 0.0129 | 0.0130 | 0.0121 | 0.026 | 0.061 | 0.013 | 0.703 |
+| mch * sqrt(hct) / hgb | mch, hct, hgb | 0.5792 | 0.0174 | 0.0133 | 0.0129 | 0.0120 | 0.026 | 0.061 | 0.013 | 0.713 |
+| rbc / sqrt(hct) | rbc, hct | 0.5796 | 0.0174 | 0.0129 | 0.0130 | 0.0121 | 0.026 | 0.061 | 0.013 | 0.703 |
+| (mchc - log(wbc)) / sqrt(rbc) * log(plt) | mchc, wbc, rbc, plt | 0.6256 | 0.0171 | 0.0209 | 0.0165 | 0.0128 | 0.028 | 0.065 | 0.014 | 0.713 |
+
+### Best formula (by AUC-PR)
 ```
-(formula here)
+sqrt(abs(hct)) / (abs(rbc) + 1e-6)
+```
+
+### Best formula (by AUC-ROC)
+```
+((mchc - log(abs(wbc)+1)) / (sqrt(abs(rbc)) + 1e-6)) * log(abs(plt)+1)
 ```
 
 ### Notes
+- 10,000 valid formulas evaluated; 0 invalid/skipped (all CBC values non-negative)
+- Only 7 / 10,000 formulas beat baseline AUC-PR (0.0170) — the top few are marginally above
+- Top formulas consistently involve HCT/RBC ratios — capturing mean corpuscular-like indices
+- Best AUC-PR (0.0174) marginally beats baseline but AUC-ROC (0.580) is well below it
+- Formula #7 achieves highest AUC-ROC (0.6256) among random formulas, close to baseline (0.658)
+- Median AUC-PR across all formulas: 0.0125 — most random combos underperform baseline
 
 ---
 
@@ -131,6 +147,6 @@ _Fill this in as you complete each method_
 | Logistic regression (all features) | 0.658 | 0.017 | All 9 CBC | — (this IS the baseline) |
 | Literature threshold (1A) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
 | Data-driven threshold (1B) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
-| Random formulas | | | | |
+| Random formulas (10k) | 0.6256 | 0.0174 | sqrt(hct)/rbc (PR) / mchc-log(wbc)/sqrt(rbc)*log(plt) (ROC) | Marginally (PR only, +0.0004) |
 | Genetic programming | | | | |
 | LLM formulas | | | | |

@@ -17,7 +17,7 @@ ICD9_PATTERN = "714%"
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DATA_DIR    = Path("data")
 RESULTS_DIR = Path("results")
-DATA_PATH   = DATA_DIR / "modeling_data.csv"
+DATA_PATH   = DATA_DIR / "ra_modeling_data.csv"
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 META_COLS    = {"subject_id", "is_case", "split"}
@@ -69,6 +69,30 @@ def find_youden_threshold(y_true, scores):
     # Youden's J = sensitivity + specificity - 1 = TPR - FPR
     best_idx = int(np.argmax(tpr - fpr))
     return float(thresholds[best_idx]), fpr, tpr
+
+
+# ── PR metrics ────────────────────────────────────────────────────────────────
+def precision_at_recall_levels(y_train_scores, y_train, y_test_scores, y_test,
+                                levels=(0.25, 0.50, 0.75)):
+    """
+    For each target recall level, find the score threshold on TRAIN that achieves
+    recall >= level, then apply it to TEST and return {level: (precision, recall)}.
+    """
+    from sklearn.metrics import precision_recall_curve
+    prec_tr, rec_tr, thresh_tr = precision_recall_curve(y_train, y_train_scores)
+    rec_search = rec_tr[:-1]
+    thresholds = thresh_tr
+    results = {}
+    for level in levels:
+        mask = rec_search >= level
+        if not mask.any():
+            results[level] = (0.0, 0.0)
+            continue
+        best_thresh = thresholds[mask].max()
+        preds = (y_test_scores >= best_thresh).astype(int)
+        m = compute_binary_metrics(y_test, preds)
+        results[level] = (round(m["precision"], 4), round(m["recall"], 4))
+    return results
 
 
 # ── Output helpers ────────────────────────────────────────────────────────────
