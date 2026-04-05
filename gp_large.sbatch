@@ -26,7 +26,7 @@ source activate biomarkers-discovery-env
 
 ### Run GP with LARGE config ###
 cd ~/UnderGradProject
-python -u src/method3_gp_large.py
+python -u src/method3_gp.py
 
 echo "=========================================="
 echo "End time: $(date)"
