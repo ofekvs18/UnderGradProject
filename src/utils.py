@@ -5,6 +5,7 @@ Import from here instead of duplicating data loading, metric computation,
 or path constants across method scripts.
 """
 
+import warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -93,6 +94,84 @@ def precision_at_recall_levels(y_train_scores, y_train, y_test_scores, y_test,
         m = compute_binary_metrics(y_test, preds)
         results[level] = (round(m["precision"], 4), round(m["recall"], 4))
     return results
+
+
+# ── Formula evaluation ────────────────────────────────────────────────────────
+def eval_formula_scores(formula, df, features, bad_frac=0.10):
+    """
+    Safely evaluate a formula string against a DataFrame.
+    Returns a numpy array of scores, or None if > bad_frac rows produce NaN/inf.
+    """
+    local = {f: df[f].values.astype(float) for f in features}
+    local["sqrt"] = np.sqrt
+    local["log"]  = np.log1p
+    local["abs"]  = np.abs
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            scores = eval(formula, {"__builtins__": {}}, local)  # noqa: S307
+        except Exception:
+            return None
+    scores = np.asarray(scores, dtype=float)
+    bad = ~np.isfinite(scores)
+    if bad.mean() > bad_frac:
+        return None
+    if bad.any():
+        scores[bad] = np.nanmedian(scores[~bad]) if (~bad).any() else 0.0
+    return scores
+
+
+def evaluate_formula_full(formula, train_df, test_df, features):
+    """
+    Evaluate one formula end-to-end. Returns a metrics dict or None if invalid.
+    Threshold is chosen via Youden's index on TRAIN, applied to TEST.
+    Handles inverse predictivity by flipping scores when AUC-ROC < 0.5.
+    """
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    tr_clean = train_df[features + ["is_case"]].dropna()
+    te_clean = test_df[features + ["is_case"]].dropna()
+
+    score_tr = eval_formula_scores(formula, tr_clean, features)
+    score_te = eval_formula_scores(formula, te_clean, features)
+    if score_tr is None or score_te is None:
+        return None
+
+    y_tr = tr_clean["is_case"].values
+    y_te = te_clean["is_case"].values
+
+    if y_tr.sum() < 5 or y_te.sum() < 5:
+        return None
+
+    try:
+        auc_roc = float(roc_auc_score(y_te, score_te))
+        auc_pr  = float(average_precision_score(y_te, score_te))
+    except Exception:
+        return None
+
+    if auc_roc < 0.5:
+        score_tr = -score_tr
+        score_te = -score_te
+        auc_roc  = 1.0 - auc_roc
+        auc_pr   = float(average_precision_score(y_te, score_te))
+
+    threshold, _, _ = find_youden_threshold(y_tr, score_tr)
+    preds = (score_te >= threshold).astype(int)
+    m = compute_binary_metrics(y_te, preds)
+    par = precision_at_recall_levels(score_tr, y_tr, score_te, y_te)
+
+    return {
+        "formula":                formula,
+        "auc_roc":                round(auc_roc, 4),
+        "auc_pr":                 round(auc_pr, 4),
+        "precision":              round(m["precision"], 4),
+        "recall":                 round(m["recall"], 4),
+        "f1":                     round(m["f1"], 4),
+        "f2":                     round(m["f2"], 4),
+        "precision_at_recall_25": par[0.25][0],
+        "precision_at_recall_50": par[0.50][0],
+        "precision_at_recall_75": par[0.75][0],
+    }
 
 
 # ── Output helpers ────────────────────────────────────────────────────────────

@@ -16,14 +16,13 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import (
-    roc_auc_score, average_precision_score, precision_recall_curve,
-)
+from sklearn.metrics import roc_auc_score, precision_recall_curve
 
 sys.path.insert(0, "src")
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
     precision_at_recall_levels, ensure_dir, RESULTS_DIR,
+    eval_formula_scores, evaluate_formula_full,
 )
 
 OUT_DIR = RESULTS_DIR / "method2_random"
@@ -94,87 +93,7 @@ def generate_formulas(n=N_FORMULAS, seed=SEED):
 
 
 # ── Part C: Formula evaluation ────────────────────────────────────────────────
-
-def _eval_formula_on_df(formula, df):
-    """
-    Safely evaluate a formula string against a DataFrame.
-    Returns a numpy array of scores, or None if too many bad values.
-    """
-    local = {f: df[f].values.astype(float) for f in features}
-    local["sqrt"] = np.sqrt
-    local["log"]  = np.log1p
-    local["abs"]  = np.abs
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        try:
-            scores = eval(formula, {"__builtins__": {}}, local)  # noqa: S307
-        except Exception:
-            return None
-    scores = np.asarray(scores, dtype=float)
-    bad = ~np.isfinite(scores)
-    if bad.mean() > BAD_FRAC:
-        return None
-    # Replace residual NaN/inf with median so AUC can be computed
-    if bad.any():
-        scores[bad] = np.nanmedian(scores[~bad]) if (~bad).any() else 0.0
-    return scores
-
-
-def evaluate_formula(formula, train_df, test_df):
-    """
-    Evaluate one formula. Returns a metrics dict or None if invalid.
-    Threshold is chosen via Youden's index on TRAIN, applied to TEST.
-    """
-    # Drop rows with NaN in any feature used (safe: eval handles it, but
-    # we still need y labels aligned)
-    tr_clean = train_df[features + ["is_case"]].dropna()
-    te_clean = test_df[features + ["is_case"]].dropna()
-
-    score_tr = _eval_formula_on_df(formula, tr_clean)
-    score_te = _eval_formula_on_df(formula, te_clean)
-    if score_tr is None or score_te is None:
-        return None
-
-    y_tr = tr_clean["is_case"].values
-    y_te = te_clean["is_case"].values
-
-    if y_tr.sum() < 5 or y_te.sum() < 5:
-        return None
-
-    # AUC metrics (threshold-independent)
-    try:
-        auc_roc = float(roc_auc_score(y_te, score_te))
-        auc_pr  = float(average_precision_score(y_te, score_te))
-    except Exception:
-        return None
-
-    # If AUC-ROC < 0.5, flip scores (formula is inversely predictive)
-    if auc_roc < 0.5:
-        score_tr = -score_tr
-        score_te = -score_te
-        auc_roc  = 1.0 - auc_roc
-        auc_pr   = float(average_precision_score(y_te, score_te))
-
-    # Youden threshold on train → test
-    threshold, _, _ = find_youden_threshold(y_tr, score_tr)
-    preds = (score_te >= threshold).astype(int)
-    m = compute_binary_metrics(y_te, preds)
-
-    # Precision@recall levels
-    par = precision_at_recall_levels(score_tr, y_tr, score_te, y_te)
-
-    return {
-        "formula":               formula,
-        "auc_roc":               round(auc_roc, 4),
-        "auc_pr":                round(auc_pr, 4),
-        "precision":             round(m["precision"], 4),
-        "recall":                round(m["recall"], 4),
-        "f1":                    round(m["f1"], 4),
-        "f2":                    round(m["f2"], 4),
-        "precision_at_recall_25": par[0.25][0],
-        "precision_at_recall_50": par[0.50][0],
-        "precision_at_recall_75": par[0.75][0],
-    }
+# eval_formula_scores and evaluate_formula_full are imported from utils
 
 
 # ── Part D: Run experiment ────────────────────────────────────────────────────
@@ -187,7 +106,7 @@ skipped = 0
 for i, formula in enumerate(formulas):
     if (i + 1) % 1000 == 0:
         print(f"  {i+1:,}/{len(formulas):,}  valid={len(results):,}  skipped={skipped}")
-    row = evaluate_formula(formula, train_df, test_df)
+    row = evaluate_formula_full(formula, train_df, test_df, features)
     if row is None:
         skipped += 1
     else:
