@@ -48,60 +48,83 @@ def run_dry(configs: list[dict]) -> None:
 
 # ── Model loading ──────────────────────────────────────────────────────────────
 def load_model():
-    """Load Med-Gemma 4B IT in bfloat16 with automatic device placement."""
+    """Load Med-Gemma 4B IT with automatic device placement.
+
+    Uses bfloat16 when supported (RTX 3090/4090), falls back to float16
+    on older GPUs (V100, 2080, etc.) — same logic as medgemma_smoke_test.py.
+    """
     try:
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoModelForImageTextToText, AutoProcessor
     except ImportError as e:
         print(f"[ERROR] Missing dependency: {e}")
         print("Install with: pip install transformers torch accelerate")
         sys.exit(1)
 
-    print(f"[{_ts()}] Loading tokenizer from {MODEL_ID} ...")
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+    # Match smoke test: prefer bfloat16, fall back to float16
+    if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+        dtype = torch.bfloat16
+        print(f"[{_ts()}] Using bfloat16 (native GPU support)")
+    elif torch.cuda.is_available():
+        dtype = torch.float16
+        print(f"[{_ts()}] Using float16 (bfloat16 not supported on this GPU)")
+    else:
+        dtype = torch.float32
+        print(f"[{_ts()}] WARNING: no GPU detected, using float32 (CPU only — very slow)")
 
-    print(f"[{_ts()}] Loading model (bfloat16, device_map=auto) ...")
-    model = AutoModelForCausalLM.from_pretrained(
+    print(f"[{_ts()}] Loading processor from {MODEL_ID} ...")
+    processor = AutoProcessor.from_pretrained(MODEL_ID)
+
+    print(f"[{_ts()}] Loading model ({dtype}, device_map=auto) ...")
+    model = AutoModelForImageTextToText.from_pretrained(
         MODEL_ID,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=dtype,
         device_map="auto",
     )
     model.eval()
 
     device_info = {k: str(v) for k, v in model.hf_device_map.items()} if hasattr(model, "hf_device_map") else "N/A"
     print(f"[{_ts()}] Model loaded. Device map: {device_info}")
-    return model, tokenizer
+    if torch.cuda.is_available():
+        print(f"[{_ts()}] GPU memory used: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
+    return model, processor
 
 
 # ── Single inference call ──────────────────────────────────────────────────────
-def generate_one(model, tokenizer, prompt: str, temperature: float) -> tuple[str, float]:
+def generate_one(model, processor, prompt: str, temperature: float) -> tuple[str, float]:
     """
     Run one inference call. Returns (raw_text, elapsed_seconds).
-    Uses chat template formatting expected by instruction-tuned models.
+    Matches the pattern from medgemma_smoke_test.py exactly:
+      - processor.apply_chat_template with tokenize=True, return_dict=True
+      - model.generate(**inputs)
+      - processor.decode to extract new tokens
     """
     import torch
 
-    messages = [{"role": "user", "content": prompt}]
-    inputs = tokenizer.apply_chat_template(
+    # Use list-of-dicts content format (same as smoke test)
+    messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
+    inputs = processor.apply_chat_template(
         messages,
-        return_tensors="pt",
         add_generation_prompt=True,
+        tokenize=True,
+        return_dict=True,
+        return_tensors="pt",
     ).to(model.device)
+
+    input_len = inputs["input_ids"].shape[1]
 
     t0 = time.perf_counter()
     with torch.inference_mode():
         output_ids = model.generate(
-            inputs,
+            **inputs,
             max_new_tokens=MAX_NEW_TOKENS,
             do_sample=DO_SAMPLE,
             temperature=temperature,
-            pad_token_id=tokenizer.eos_token_id,
         )
     elapsed = time.perf_counter() - t0
 
-    # Decode only the newly generated tokens
-    new_ids = output_ids[0][inputs.shape[-1]:]
-    raw_text = tokenizer.decode(new_ids, skip_special_tokens=True)
+    # Decode only the newly generated tokens (same slice as smoke test)
+    raw_text = processor.decode(output_ids[0][input_len:], skip_special_tokens=True)
     return raw_text, elapsed
 
 
@@ -119,7 +142,7 @@ def run_inference(configs: list[dict], repeats: int) -> None:
     results = list(existing)
     # Session prefix ensures run_ids are unique across multiple invocations
     session_id = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-    model, tokenizer = load_model()
+    model, processor = load_model()
 
     total = len(configs) * repeats
     done  = 0
@@ -131,7 +154,7 @@ def run_inference(configs: list[dict], repeats: int) -> None:
 
             try:
                 raw_text, elapsed = generate_one(
-                    model, tokenizer, cfg["prompt"], cfg["temperature"]
+                    model, processor, cfg["prompt"], cfg["temperature"]
                 )
                 status = "ok"
                 error  = None
