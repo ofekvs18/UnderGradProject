@@ -148,54 +148,100 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
     }
 
 
-# ── Part D: Run GP ────────────────────────────────────────────────────────────
-print("=== Running Genetic Programming (SMALL config) ===")
-print(f"  population_size={SMALL_CONFIG['population_size']}  "
-      f"generations={SMALL_CONFIG['generations']}\n")
+# ── Part D: GP runner ─────────────────────────────────────────────────────────
+PHASE1_AUC_PR_THRESHOLD = 0.016   # minimum AUC-PR to proceed to Phase 2
 
-gp = SymbolicTransformer(
-    **SMALL_CONFIG,
-    hall_of_fame=50,
-    n_components=50,
-    feature_names=features,
-    function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"],
-    metric=combined_auc_fitness,
-    parsimony_coefficient=0.005,
-    random_state=SEED,
-    n_jobs=1,
-    verbose=1,
-)
-gp.fit(X_train, y_train)
-print("\nGP fitting complete.\n")
+# Config adjustment attempts (tried in order if Phase 1 fails)
+CONFIG_ATTEMPTS = [
+    # Attempt 0 — baseline (parsimony penalises complexity; used first)
+    dict(parsimony_coefficient=0.005,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
+    # Attempt 1 — near-zero parsimony: let GP explore complex programs freely
+    dict(parsimony_coefficient=0.0001,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
+    # Attempt 2 — no parsimony penalty, drop div to reduce trivial collapses
+    dict(parsimony_coefficient=0.0,
+         function_set=["add", "sub", "mul", "sqrt", "log", "abs"]),
+    # Attempt 3 — no parsimony, add neg/inv for richer search space
+    dict(parsimony_coefficient=0.0,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv"]),
+]
 
 
-# ── Part E: Extract and evaluate hall-of-fame programs ───────────────────────
-print("=== Evaluating hall-of-fame programs ===")
-programs = gp._best_programs   # hall-of-fame from the final generation
+def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_label):
+    """Fit SymbolicTransformer and return list of (program, metrics_dict)."""
+    print(f"\n=== {attempt_label} ===")
+    print(f"  pop={size_config['population_size']}  gen={size_config['generations']}"
+          f"  parsimony={parsimony_coefficient}"
+          f"  functions={function_set}\n")
 
-evaluated = []   # list of (program, metrics_dict) — keeps programs aligned with rows
-skipped = 0
+    gp = SymbolicTransformer(
+        **size_config,
+        hall_of_fame=50,
+        n_components=50,
+        feature_names=features,
+        function_set=function_set,
+        metric=combined_auc_fitness,
+        parsimony_coefficient=parsimony_coefficient,
+        random_state=SEED,
+        n_jobs=1,
+        verbose=1,
+    )
+    gp.fit(X_train, y_train)
+    print("\nFitting complete.")
 
-for prog in programs:
-    if prog is None:
-        skipped += 1
+    programs = gp._best_programs
+    evaluated = []
+    skipped = 0
+    for prog in programs:
+        if prog is None:
+            skipped += 1
+            continue
+        row = evaluate_program(prog, X_train, y_train, X_test, y_test)
+        if row is None:
+            skipped += 1
+        else:
+            evaluated.append((prog, row))
+
+    evaluated.sort(key=lambda x: x[1]["auc_pr"], reverse=True)
+    best_auc_pr = evaluated[0][1]["auc_pr"] if evaluated else 0.0
+    print(f"Evaluated {len(evaluated)} valid programs ({skipped} skipped) — "
+          f"best AUC-PR={best_auc_pr:.4f}")
+    return evaluated
+
+
+# ── Part E: Run with retry logic ──────────────────────────────────────────────
+evaluated = []
+used_attempt = None
+
+for attempt_num, cfg in enumerate(CONFIG_ATTEMPTS):
+    label = (f"Phase 1 — SMALL config (attempt {attempt_num})"
+             if attempt_num > 0
+             else "Phase 1 — SMALL config (baseline attempt)")
+    evaluated = run_gp_attempt(SMALL_CONFIG, **cfg, attempt_label=label)
+    used_attempt = attempt_num
+
+    if not evaluated:
+        print(f"  ->No valid programs. Trying next config.\n")
         continue
-    row = evaluate_program(prog, X_train, y_train, X_test, y_test)
-    if row is None:
-        skipped += 1
-    else:
-        evaluated.append((prog, row))
 
-print(f"Evaluated {len(evaluated)} valid programs, {skipped} skipped\n")
+    best_auc_pr = evaluated[0][1]["auc_pr"]
+    if best_auc_pr >= PHASE1_AUC_PR_THRESHOLD:
+        print(f"\n  ->AUC-PR={best_auc_pr:.4f} >= {PHASE1_AUC_PR_THRESHOLD} threshold. "
+              f"Phase 1 PASSED.\n")
+        break
+    elif attempt_num < len(CONFIG_ATTEMPTS) - 1:
+        print(f"\n  ->AUC-PR={best_auc_pr:.4f} < {PHASE1_AUC_PR_THRESHOLD} threshold. "
+              f"Trying config adjustment {attempt_num + 1}.\n")
+    else:
+        print(f"\n  ->AUC-PR={best_auc_pr:.4f} after {attempt_num + 1} attempts. "
+              f"Discontinuing scale-up.\n")
 
 if not evaluated:
-    print("No valid programs found. Exiting.")
+    print("No valid programs found after all attempts. Exiting.")
     sys.exit(1)
 
-# Sort by AUC-PR descending
-evaluated.sort(key=lambda x: x[1]["auc_pr"], reverse=True)
 best_prog, best_row = evaluated[0]
-
 results_df = pd.DataFrame([row for _, row in evaluated])
 
 all_path = OUT_DIR / "all_programs.csv"
@@ -221,7 +267,7 @@ for rank, (_, row) in enumerate(evaluated[:10], 1):
 # ── Part F: Validation checks ─────────────────────────────────────────────────
 print(f"\n=== Validation ===")
 auc_roc_ok = 0.52 < best_row["auc_roc"] < 0.95
-print(f"Best AUC-ROC: {best_row['auc_roc']:.4f}  (must be 0.52–0.95): "
+print(f"Best AUC-ROC: {best_row['auc_roc']:.4f}  (must be 0.52-0.95): "
       f"{'PASS' if auc_roc_ok else 'FAIL'}")
 if not auc_roc_ok:
     if best_row["auc_roc"] <= 0.52:

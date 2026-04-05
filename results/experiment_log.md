@@ -106,18 +106,51 @@ sqrt(abs(hct)) / (abs(rbc) + 1e-6)
 
 ## Method 3: Genetic Programming
 
-_Date: ____
+_Date: 2026-04-05_
+_Config: parsimony=0.0, function_set=[add,sub,mul,sqrt,log,abs], pop=100, gen=20 (attempt 2 of 3)_
 
-| generation | best_formula | AUC-ROC | AUC-PR | P@R50 | F1 | F2 | precision | recall |
-|------------|-------------|---------|--------|-------|----|----|-----------|--------|
-| | | | | | | | | |
+### Config adjustment log
+| attempt | parsimony | function_set | best AUC-PR | outcome |
+|---------|-----------|--------------|-------------|---------|
+| 0 (baseline) | 0.005 | add,sub,mul,div,sqrt,log,abs | 0.0132 | FAIL — converged to `rdw` by gen 3 |
+| 1 | 0.0001 | add,sub,mul,div,sqrt,log,abs | 0.0152 | FAIL — stagnated gen 6 |
+| 2 | 0.0 | add,sub,mul,sqrt,log,abs | 0.0163 | PASS — still improving at gen 19 |
+
+### Top programs (attempt 2, sorted by AUC-PR)
+| rank | AUC-ROC | AUC-PR | P@R25 | P@R50 | P@R75 | F1 | F2 | formula (truncated) |
+|------|---------|--------|-------|-------|-------|----|----|---------------------|
+| 1 | 0.6590 | 0.0163 | 0.0185 | 0.0180 | 0.0145 | 0.032 | 0.075 | sqrt(mul(rdw, add(abs(...plt...mchc...mch...), mul(mch, ...)))) |
+| 2 | 0.6593 | 0.0163 | 0.0187 | 0.0181 | 0.0144 | 0.033 | 0.076 | (variant of #1) |
 
 ### Best formula
 ```
-(formula here)
+sqrt(mul(rdw, add(
+  abs(add(abs(plt), abs(add(add(abs(add(abs(plt), mchc)), add(mchc, add(mchc,
+    sqrt(mul(rdw, add(... [82-node nested tree] ...)))))), mchc)))),
+  mul(mch, add(mchc, sqrt(mchc))))))
 ```
+Key features: **rdw, plt, mchc, mch, rbc**
+
+### Convergence (attempt 2)
+| gen | avg_length | best_fitness |
+|-----|------------|--------------|
+| 0 | 9.4 | 0.6421 |
+| 5 | 27.1 | 0.6631 |
+| 10 | 48.0 | 0.6676 |
+| 15 | 38.8 | 0.6684 |
+| 19 | 61.0 | 0.6686 |
 
 ### Notes
+- Attempt 0 (parsimony=0.005): severe premature convergence — entire population collapsed to `rdw` (single feature, length=1) by generation 3; parsimony cost outweighed gains from multi-feature combinations
+- Attempt 1 (parsimony=0.0001): better diversity (avg length 10-13) but stagnated with AUC-PR=0.0152; crossover found no combinations that clearly outperformed `rdw + slight adjustments`
+- Attempt 2 (parsimony=0.0, no div): programs grew freely (9 -> 82 nodes); fitness still improving at gen 19 — suggesting more generations could help, but diminishing returns
+- **AUC-ROC=0.659 marginally exceeds the LR baseline (0.658)** — first method to do so on this metric
+- Best AUC-PR=0.0163 is below LR baseline (0.017) and below Method 2 random (0.0174)
+- All top 10 programs are structural variants of the same formula (rdw * plt combination); hall of fame lacks diversity
+- Program bloat observed: length increased 9x (9 -> 82 nodes) for ~0.004 AUC-PR gain over single feature `rdw` — limited signal from feature combinations
+- **Feature selection**: rdw dominates (appears in all elite programs); plt, mchc, mch secondary; hct/rbc absent (contrast with Method 2 where hct/rbc ratios were best)
+- **GP vs random search**: random formulas (hct/rbc ratio) achieved higher AUC-PR (0.0174 vs 0.0163) than GP; random benefited from feature diversity while GP converged to rdw-centric solutions
+- Phase 2 (scale-up) is technically warranted (AUC-PR >= 0.016, fitness improving at gen 19) but incremental gains are small; see Summary for conclusion
 
 ---
 
@@ -148,5 +181,5 @@ _Fill this in as you complete each method_
 | Literature threshold (1A) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
 | Data-driven threshold (1B) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
 | Random formulas (10k) | 0.6256 | 0.0174 | sqrt(hct)/rbc (PR) / mchc-log(wbc)/sqrt(rbc)*log(plt) (ROC) | Marginally (PR only, +0.0004) |
-| Genetic programming | | | | |
+| GP — attempt 2 (parsimony=0.0, no div, pop=100, gen=20) | 0.6590 | 0.0163 | rdw+plt+mchc+mch (nested) | No (below LR AUC-PR=0.017 and M2 AUC-PR=0.0174); AUC-ROC marginally above LR |
 | LLM formulas | | | | |
