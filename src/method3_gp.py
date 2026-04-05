@@ -215,10 +215,10 @@ evaluated = []
 used_attempt = None
 
 for attempt_num, cfg in enumerate(CONFIG_ATTEMPTS):
-    label = (f"Phase 1 — SMALL config (attempt {attempt_num})"
+    label = (f"Phase 1 — LARGE config (attempt {attempt_num})"
              if attempt_num > 0
-             else "Phase 1 — SMALL config (baseline attempt)")
-    evaluated = run_gp_attempt(SMALL_CONFIG, **cfg, attempt_label=label)
+             else "Phase 1 — LARGE config (baseline attempt)")
+    evaluated = run_gp_attempt(LARGE_CONFIG, **cfg, attempt_label=label)
     used_attempt = attempt_num
 
     if not evaluated:

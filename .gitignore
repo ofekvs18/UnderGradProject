@@ -10,13 +10,7 @@ venv/
 *.egg-info/
 
 # Results (generated outputs)
-results/*.png
-results/*.csv
-results/*.txt
-results/method1_threshold/
-results/method2_*/
-results/method3_*/
-results/method4_*/
+results/*
 
 # Don't ignore experiment log (it's our tracking doc)
 !results/experiment_log.md
