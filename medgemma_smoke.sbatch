@@ -5,7 +5,7 @@
 #SBATCH --output mg_smoke-%J.out
 #SBATCH --mail-user=ofekvi@post.bgu.ac.il
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --gpus=1
+#SBATCH --gpus=rtx_3090:1
 #SBATCH --mem=24G
 
 echo "SLURM_JOBID=$SLURM_JOBID"
