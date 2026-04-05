@@ -46,8 +46,10 @@ SUMMARY_FILE   = OUT_DIR / "method4_summary.txt"
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 FEATURE_VARS      = {"hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc"}
-BASELINE_AUC_ROC  = 0.658
-BASELINE_AUC_PR   = 0.017
+BASELINE_LR_AUC_ROC  = 0.658    # all-features logistic regression
+BASELINE_LR_AUC_PR   = 0.017
+BASELINE_GP_AUC_ROC  = 0.6715   # best genetic programming formula (method 3)
+BASELINE_GP_AUC_PR   = 0.0179
 VALIDATION_ROWS   = 100          # rows used for fast pre-validation
 FUNCTIONAL_CORR   = 0.999        # correlation threshold for functional dedup
 
@@ -330,18 +332,22 @@ def main() -> None:
 
     print(f"Extracted {n_raw_total} candidate formula(s) from {len(ok_outputs)} LLM responses")
 
-    # Save all parsed formulas
+    # Distinct formula strings (cross-response exact dedup for accurate reporting)
+    distinct_formulas = list(dict.fromkeys(r["formula"] for r in parsed_records))
+    print(f"Distinct formula strings  : {len(distinct_formulas)}")
+
+    # Save all parsed formulas (with source metadata, may include duplicates)
     with open(PARSED_FILE, "w", encoding="utf-8") as f:
         json.dump(parsed_records, f, indent=2)
     print(f"Saved {PARSED_FILE}")
 
-    # ── Stage 2: Validate ──────────────────────────────────────────────────────
+    # ── Stage 2: Validate (on distinct strings only) ───────────────────────────
     print("\n=== Stage 2: Validation ===")
     valid_formulas: list[str] = []
     invalid_count = 0
 
-    for rec in parsed_records:
-        result = validate_formula(rec["formula"], sample_df, features)
+    for formula in distinct_formulas:
+        result = validate_formula(formula, sample_df, features)
         if result is not None:
             valid_formulas.append(result)
         else:
@@ -395,8 +401,10 @@ def main() -> None:
 
     # ── Reports ────────────────────────────────────────────────────────────────
     best = results_df.iloc[0]
-    beats_roc = best["auc_roc"] > BASELINE_AUC_ROC
-    beats_pr  = best["auc_pr"]  > BASELINE_AUC_PR
+    beats_lr_roc = best["auc_roc"] > BASELINE_LR_AUC_ROC
+    beats_lr_pr  = best["auc_pr"]  > BASELINE_LR_AUC_PR
+    beats_gp_roc = best["auc_roc"] > BASELINE_GP_AUC_ROC
+    beats_gp_pr  = best["auc_pr"]  > BASELINE_GP_AUC_PR
 
     top_table = _print_top(results_df, n=10)
 
@@ -412,16 +420,17 @@ def main() -> None:
         f"  Unique after deduplication  : {len(unique_formulas)}",
         f"  Survived full evaluation    : {len(results_df)}",
         "",
-        "BASELINE",
+        "BASELINES",
         "-" * 40,
-        f"  All-features LR  AUC-ROC={BASELINE_AUC_ROC:.4f}  AUC-PR={BASELINE_AUC_PR:.4f}",
+        f"  All-features LR  AUC-ROC={BASELINE_LR_AUC_ROC:.4f}  AUC-PR={BASELINE_LR_AUC_PR:.4f}",
+        f"  Best GP formula  AUC-ROC={BASELINE_GP_AUC_ROC:.4f}  AUC-PR={BASELINE_GP_AUC_PR:.4f}",
         "",
         "BEST FORMULA",
         "-" * 40,
         f"  {best['formula']}",
         f"  AUC-ROC={best['auc_roc']:.4f}  AUC-PR={best['auc_pr']:.4f}",
-        f"  Beats baseline AUC-ROC: {'YES' if beats_roc else 'NO'}",
-        f"  Beats baseline AUC-PR : {'YES' if beats_pr  else 'NO'}",
+        f"  Beats LR   AUC-ROC: {'YES' if beats_lr_roc else 'NO'}  AUC-PR: {'YES' if beats_lr_pr else 'NO'}",
+        f"  Beats GP   AUC-ROC: {'YES' if beats_gp_roc else 'NO'}  AUC-PR: {'YES' if beats_gp_pr else 'NO'}",
         "",
         "AUC-PR DISTRIBUTION",
         "-" * 40,
@@ -429,8 +438,10 @@ def main() -> None:
         f"  99th   : {results_df['auc_pr'].quantile(0.99):.4f}",
         f"  median : {results_df['auc_pr'].median():.4f}",
         f"  min    : {results_df['auc_pr'].min():.4f}",
-        f"  # beating baseline ({BASELINE_AUC_PR}): "
-        f"{(results_df['auc_pr'] > BASELINE_AUC_PR).sum()}",
+        f"  # beating LR  ({BASELINE_LR_AUC_PR}): "
+        f"{(results_df['auc_pr'] > BASELINE_LR_AUC_PR).sum()}",
+        f"  # beating GP  ({BASELINE_GP_AUC_PR}): "
+        f"{(results_df['auc_pr'] > BASELINE_GP_AUC_PR).sum()}",
         "",
         "TOP 10 BY AUC-PR",
         "-" * 40,
@@ -452,8 +463,8 @@ def main() -> None:
         f"  Successful runs: {len(ok_outputs)}",
         "",
         "STAGE 1 — PARSING",
-        f"  Candidates extracted : {n_raw_total}",
-        f"  Unique after exact   : {len(parsed_records)}",
+        f"  Candidates extracted (incl. cross-run duplicates): {n_raw_total}",
+        f"  Distinct formula strings                         : {len(distinct_formulas)}",
         "",
         "STAGE 2 — VALIDATION (sample_size={})".format(VALIDATION_ROWS),
         f"  Valid   : {len(valid_formulas)}",

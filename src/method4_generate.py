@@ -117,6 +117,8 @@ def run_inference(configs: list[dict], repeats: int) -> None:
         print(f"[{_ts()}] Resuming — {len(existing)} existing result(s) found.")
 
     results = list(existing)
+    # Session prefix ensures run_ids are unique across multiple invocations
+    session_id = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     model, tokenizer = load_model()
 
     total = len(configs) * repeats
@@ -141,7 +143,7 @@ def run_inference(configs: list[dict], repeats: int) -> None:
                 print(f"  [WARN] Inference failed: {exc}")
 
             entry = {
-                "run_id":         f"{cfg['name']}_r{repeat_idx}",
+                "run_id":         f"{session_id}_{cfg['name']}_r{repeat_idx}",
                 "config_name":    cfg["name"],
                 "strategy":       cfg["strategy"],
                 "temperature":    cfg["temperature"],
