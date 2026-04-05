@@ -5,8 +5,9 @@ Biomarker discovery for Rheumatoid Arthritis from CBC (Complete Blood Count) dat
 Uses MIMIC-IV dataset. Compares multiple methods for generating biomarker formulas.
 
 ## How to run
-All scripts run from the project root: `python src/<script_name>.py`
-Data must be in `data/modeling_data.csv` (not tracked in git).
+All scripts run from the project root (`biomarker-pipeline/`): `python src/<script_name>.py`
+Data file: `data/ra_modeling_data.csv` (not tracked in git).
+Python: use `.venv` from the **parent** directory — `../.venv/Scripts/python.exe` (the venv lives at `C:/Users/ofek/Downloads/gitRepos/Project/.venv`, not inside `biomarker-pipeline/`).
 
 ## Git commit standards
 - **Always include the issue number** in the commit message, e.g. `fix(#3): add AUC-PR metric` or `feat(#2): implement Youden threshold`
@@ -33,6 +34,10 @@ Data must be in `data/modeling_data.csv` (not tracked in git).
 - Test: 300 cases / 28,976 controls
 - Baseline AUC-ROC: 0.658 (all-features logistic regression)
 - Baseline AUC-PR: 0.017 (all-features logistic regression)
+
+## GitHub
+- Repo: `ofekvs18/UnderGradProject`
+- Git root: `biomarker-pipeline/` folder
 
 ## File structure
 ```
