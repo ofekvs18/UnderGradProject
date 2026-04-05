@@ -106,32 +106,33 @@ sqrt(abs(hct)) / (abs(rbc) + 1e-6)
 
 ## Method 3: Genetic Programming
 
-_Date: 2026-04-05_
-_Config: parsimony=0.0, function_set=[add,sub,mul,sqrt,log,abs], pop=100, gen=20 (attempt 2 of 3)_
+### Method 3A — Small config (pop=100, gen=20)
 
-### Config adjustment log
+_Date: 2026-04-05_
+
+#### Config adjustment log (small)
 | attempt | parsimony | function_set | best AUC-PR | outcome |
 |---------|-----------|--------------|-------------|---------|
-| 0 (baseline) | 0.005 | add,sub,mul,div,sqrt,log,abs | 0.0132 | FAIL — converged to `rdw` by gen 3 |
+| 0 | 0.005 | add,sub,mul,div,sqrt,log,abs | 0.0132 | FAIL — converged to `rdw` by gen 3 |
 | 1 | 0.0001 | add,sub,mul,div,sqrt,log,abs | 0.0152 | FAIL — stagnated gen 6 |
 | 2 | 0.0 | add,sub,mul,sqrt,log,abs | 0.0163 | PASS — still improving at gen 19 |
 
-### Top programs (attempt 2, sorted by AUC-PR)
+#### Top programs (small, attempt 2, sorted by AUC-PR)
 | rank | AUC-ROC | AUC-PR | P@R25 | P@R50 | P@R75 | F1 | F2 | formula (truncated) |
 |------|---------|--------|-------|-------|-------|----|----|---------------------|
 | 1 | 0.6590 | 0.0163 | 0.0185 | 0.0180 | 0.0145 | 0.032 | 0.075 | sqrt(mul(rdw, add(abs(...plt...mchc...mch...), mul(mch, ...)))) |
 | 2 | 0.6593 | 0.0163 | 0.0187 | 0.0181 | 0.0144 | 0.033 | 0.076 | (variant of #1) |
 
-### Best formula
+#### Best formula (small config)
 ```
 sqrt(mul(rdw, add(
   abs(add(abs(plt), abs(add(add(abs(add(abs(plt), mchc)), add(mchc, add(mchc,
     sqrt(mul(rdw, add(... [82-node nested tree] ...)))))), mchc)))),
   mul(mch, add(mchc, sqrt(mchc))))))
 ```
-Key features: **rdw, plt, mchc, mch, rbc**
+Key features: **rdw, plt, mchc, mch** (82-node tree)
 
-### Convergence (attempt 2)
+#### Convergence (small, attempt 2)
 | gen | avg_length | best_fitness |
 |-----|------------|--------------|
 | 0 | 9.4 | 0.6421 |
@@ -140,17 +141,68 @@ Key features: **rdw, plt, mchc, mch, rbc**
 | 15 | 38.8 | 0.6684 |
 | 19 | 61.0 | 0.6686 |
 
-### Notes
-- Attempt 0 (parsimony=0.005): severe premature convergence — entire population collapsed to `rdw` (single feature, length=1) by generation 3; parsimony cost outweighed gains from multi-feature combinations
-- Attempt 1 (parsimony=0.0001): better diversity (avg length 10-13) but stagnated with AUC-PR=0.0152; crossover found no combinations that clearly outperformed `rdw + slight adjustments`
-- Attempt 2 (parsimony=0.0, no div): programs grew freely (9 -> 82 nodes); fitness still improving at gen 19 — suggesting more generations could help, but diminishing returns
-- **AUC-ROC=0.659 marginally exceeds the LR baseline (0.658)** — first method to do so on this metric
-- Best AUC-PR=0.0163 is below LR baseline (0.017) and below Method 2 random (0.0174)
-- All top 10 programs are structural variants of the same formula (rdw * plt combination); hall of fame lacks diversity
-- Program bloat observed: length increased 9x (9 -> 82 nodes) for ~0.004 AUC-PR gain over single feature `rdw` — limited signal from feature combinations
-- **Feature selection**: rdw dominates (appears in all elite programs); plt, mchc, mch secondary; hct/rbc absent (contrast with Method 2 where hct/rbc ratios were best)
-- **GP vs random search**: random formulas (hct/rbc ratio) achieved higher AUC-PR (0.0174 vs 0.0163) than GP; random benefited from feature diversity while GP converged to rdw-centric solutions
-- Phase 2 (scale-up) is technically warranted (AUC-PR >= 0.016, fitness improving at gen 19) but incremental gains are small; see Summary for conclusion
+#### Notes (small config)
+- Attempt 0 (parsimony=0.005): severe premature convergence — entire population collapsed to `rdw` (single feature, length=1) by generation 3
+- Attempt 1 (parsimony=0.0001): better diversity (avg length 10-13) but stagnated with AUC-PR=0.0152
+- Attempt 2 (parsimony=0.0, no div): programs grew freely (9 → 82 nodes); fitness still improving at gen 19
+- AUC-ROC=0.659 marginally exceeds LR baseline; best AUC-PR=0.0163 is below both LR (0.017) and Method 2 (0.0174)
+- rdw dominates all elite programs; hct/rbc absent
+
+---
+
+### Method 3B — Large config (pop=500, gen=100)
+
+_Date: 2026-04-05_
+_SLURM job: 16872078, node: ise-cpu256-05, runtime: ~62 min_
+
+#### Config adjustment log (large)
+| attempt | parsimony | function_set | best AUC-PR | outcome |
+|---------|-----------|--------------|-------------|---------|
+| 0 | 0.005 | add,sub,mul,div,sqrt,log,abs | 0.0132 | FAIL — converged to `rdw` by gen 3 (same as small) |
+| 1 | 0.0001 | add,sub,mul,div,sqrt,log,abs | 0.0179 | PASS — plateau from gen 65, beats both baselines |
+
+#### Top programs (large, attempt 1, sorted by AUC-PR)
+| rank | AUC-ROC | AUC-PR | P@R25 | P@R50 | P@R75 | F1 | F2 | formula (truncated) |
+|------|---------|--------|-------|-------|-------|----|----|---------------------|
+| 1 | 0.6715 | 0.0179 | 0.0217 | 0.0200 | 0.0150 | 0.0314 | 0.0736 | mul(log(mul(add(sqrt(sqrt(mcv)), div(plt,wbc)), div(plt,rdw))), mul(...mchc²*(rdw-rbc)...)) |
+| 2 | 0.6709 | 0.0179 | 0.0218 | 0.0195 | 0.0148 | 0.0345 | 0.0795 | mul(log(mul(add(sqrt(hct), div(plt,wbc)), div(plt,rdw))), mul(...mchc²*(rdw-rbc)...)) |
+| 3 | 0.6712 | 0.0179 | 0.0218 | 0.0200 | 0.0150 | 0.0308 | 0.0724 | mul(log(mul(add(sqrt(div(plt,rdw)), div(plt,wbc)), div(plt,rdw))), mul(...)) |
+| 4 | 0.6727 | 0.0178 | 0.0220 | 0.0197 | 0.0151 | 0.0327 | 0.0761 | mul(log(mul(add(sqrt(hct), div(plt,wbc)), div(plt,rdw))), mul(...log(log(hct))...)) |
+
+#### Best formula (large config)
+```
+mul(
+  log(mul(add(sqrt(sqrt(mcv)), div(plt, wbc)), div(plt, rdw))),
+  mul(
+    log(mul(sqrt(log(sub(rdw, rbc))), log(mul(sqrt(sqrt(mcv)), log(log(hct)))))),
+    mul(mul(mchc, mchc), sub(rdw, rbc))
+  )
+)
+```
+Key features: **mcv, plt, wbc, rdw, rbc, hct, mchc** (35-node tree)
+
+#### Convergence (large, attempt 1)
+| gen | avg_length | best_fitness |
+|-----|------------|--------------|
+| 0 | 11.0 | 0.6441 |
+| 10 | 22.1 | 0.6867 |
+| 20 | 27.3 | 0.6887 |
+| 30 | 27.3 | 0.6882 |
+| 50 | 27.6 | 0.6881 |
+| 65 | 28.2 | 0.6896 |
+| 70 | 34.8 | 0.6899 |
+| 99 | 34.4 | 0.6899 |
+
+#### Notes (large config)
+- Attempt 0 replicated small-config failure: parsimony=0.005 collapses population to `rdw` by gen 3 regardless of pop size
+- Attempt 1 (parsimony=0.0001, WITH div): larger pop enabled better crossover diversity; reached plateau at gen ~65 (fitness 0.6899), no improvement gen 65–99
+- **AUC-PR=0.0179 beats BOTH baselines**: LR (0.017) and Method 2 random (0.0174) — first GP success
+- **AUC-ROC=0.6715** also exceeds LR baseline (0.658) and all prior methods
+- Formula is compact (35 nodes vs 82 in small config): diversity in function set (div available) prevented unbounded bloat
+- **Feature diversity**: 7 of 9 features used — contrast with small config where rdw dominated all elite programs
+- Core structure: `log(plt/rdw * (sqrt(mcv) + plt/wbc)) * log(...) * mchc² * (rdw-rbc)` — plt/rdw ratio and mchc² are recurring motifs
+- `div` in function set was critical: plt/wbc and plt/rdw ratios appear in all top programs; removing div (small attempt 2) forced bloat instead
+- Phase 2 convergence check: fitness plateau from gen 65 suggests diminishing returns; further scaling unlikely to help much
 
 ---
 
@@ -181,5 +233,6 @@ _Fill this in as you complete each method_
 | Literature threshold (1A) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
 | Data-driven threshold (1B) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
 | Random formulas (10k) | 0.6256 | 0.0174 | sqrt(hct)/rbc (PR) / mchc-log(wbc)/sqrt(rbc)*log(plt) (ROC) | Marginally (PR only, +0.0004) |
-| GP — attempt 2 (parsimony=0.0, no div, pop=100, gen=20) | 0.6590 | 0.0163 | rdw+plt+mchc+mch (nested) | No (below LR AUC-PR=0.017 and M2 AUC-PR=0.0174); AUC-ROC marginally above LR |
+| GP small — attempt 2 (parsimony=0.0, no div, pop=100, gen=20) | 0.6590 | 0.0163 | rdw+plt+mchc+mch (82-node) | No (below LR AUC-PR=0.017 and M2 AUC-PR=0.0174); AUC-ROC marginally above LR |
+| GP large — attempt 1 (parsimony=0.0001, pop=500, gen=100) | 0.6715 | 0.0179 | mcv,plt,wbc,rdw,rbc,hct,mchc (35-node) | **Yes** — beats LR (AUC-PR +0.0009) and M2 (AUC-PR +0.0005); best AUC-ROC overall |
 | LLM formulas | | | | |
