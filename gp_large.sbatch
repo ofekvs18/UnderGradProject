@@ -22,10 +22,10 @@ echo "=========================================="
 
 ### Setup environment ###
 module load anaconda
-source activate biomarker_env
+source activate biomarkers-discovery-env
 
 ### Run GP with LARGE config ###
-cd ~/biomarker-pipeline
+cd ~/UnderGradProject
 python -u src/method3_gp_large.py
 
 echo "=========================================="
