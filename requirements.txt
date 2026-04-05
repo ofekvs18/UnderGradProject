@@ -3,3 +3,6 @@ scikit-learn==1.2.2
 matplotlib
 numpy
 gplearn
+transformers>=4.40.0
+torch>=2.1.0
+accelerate
