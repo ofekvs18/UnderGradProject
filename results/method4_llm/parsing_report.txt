@@ -1,0 +1,33 @@
+PARSING REPORT — method4_evaluate.py
+============================================================
+
+INPUT
+  File           : results\method4_llm\raw_outputs.json
+  Total entries  : 24
+  Successful runs: 24
+
+STAGE 1 — PARSING
+  Candidates extracted (incl. cross-run duplicates): 110
+  Distinct formula strings                         : 101
+
+STAGE 2 — VALIDATION (full train set, 117,228 rows)
+  Valid   : 98
+  Rejected: 3
+
+STAGE 3 — DEDUPLICATION (corr_threshold=0.999, full train set)
+  Before: 98
+  After : 94
+  Removed: 4
+
+STAGE 4 — FULL EVALUATION
+  Evaluated : 94
+  Valid     : 94
+  Skipped   : 0
+
+NORMALIZATION RULES APPLIED
+- CBC variable names lowercased (e.g. RDW → rdw)
+- np.sqrt() → sqrt()
+- np.log1p() / np.log() / ln() / log1p() → log()
+- np.abs() → abs()
+- Assignment stripped (score = ...) from code-block lines
+- FORMULA: / numbered-list prefixes stripped

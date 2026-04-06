@@ -23,6 +23,10 @@ import sys
 import textwrap
 from pathlib import Path
 
+# Ensure UTF-8 output on Windows terminals
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 import numpy as np
 import pandas as pd
 
@@ -50,7 +54,6 @@ BASELINE_LR_AUC_ROC  = 0.658    # all-features logistic regression
 BASELINE_LR_AUC_PR   = 0.017
 BASELINE_GP_AUC_ROC  = 0.6715   # best genetic programming formula (method 3)
 BASELINE_GP_AUC_PR   = 0.0179
-VALIDATION_ROWS   = 100          # rows used for fast pre-validation
 FUNCTIONAL_CORR   = 0.999        # correlation threshold for functional dedup
 
 
@@ -310,9 +313,6 @@ def main() -> None:
     train_df, test_df = get_splits(df)
     print(f"Train: {len(train_df):,} | Test: {len(test_df):,}\n")
 
-    # Fixed sample for fast validation + functional dedup
-    sample_df = train_df.sample(n=min(VALIDATION_ROWS, len(train_df)), random_state=42)
-
     # ── Stage 1: Parse ─────────────────────────────────────────────────────────
     print("=== Stage 1: Parsing ===")
     parsed_records: list[dict] = []
@@ -347,7 +347,7 @@ def main() -> None:
     invalid_count = 0
 
     for formula in distinct_formulas:
-        result = validate_formula(formula, sample_df, features)
+        result = validate_formula(formula, train_df, features)
         if result is not None:
             valid_formulas.append(result)
         else:
@@ -358,7 +358,7 @@ def main() -> None:
     # ── Stage 3: Deduplicate ───────────────────────────────────────────────────
     print("\n=== Stage 3: Deduplication ===")
     before_dedup = len(valid_formulas)
-    unique_formulas = deduplicate(valid_formulas, sample_df, features)
+    unique_formulas = deduplicate(valid_formulas, train_df, features)
     print(f"Before dedup: {before_dedup}  |  After dedup: {len(unique_formulas)}")
 
     # ── Stage 4: Full evaluation ───────────────────────────────────────────────
@@ -466,11 +466,11 @@ def main() -> None:
         f"  Candidates extracted (incl. cross-run duplicates): {n_raw_total}",
         f"  Distinct formula strings                         : {len(distinct_formulas)}",
         "",
-        "STAGE 2 — VALIDATION (sample_size={})".format(VALIDATION_ROWS),
+        f"STAGE 2 — VALIDATION (full train set, {len(train_df):,} rows)",
         f"  Valid   : {len(valid_formulas)}",
         f"  Rejected: {invalid_count}",
         "",
-        "STAGE 3 — DEDUPLICATION (corr_threshold={})".format(FUNCTIONAL_CORR),
+        f"STAGE 3 — DEDUPLICATION (corr_threshold={FUNCTIONAL_CORR}, full train set)",
         f"  Before: {before_dedup}",
         f"  After : {len(unique_formulas)}",
         f"  Removed: {before_dedup - len(unique_formulas)}",

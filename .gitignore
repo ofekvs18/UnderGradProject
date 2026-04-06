@@ -15,6 +15,10 @@ results/*
 # Don't ignore experiment log (it's our tracking doc)
 !results/experiment_log.md
 
+# Track method4 LLM outputs (cluster-generated, small files)
+!results/method4_llm/
+!results/method4_llm/*
+
 # OS
 .DS_Store
 Thumbs.db

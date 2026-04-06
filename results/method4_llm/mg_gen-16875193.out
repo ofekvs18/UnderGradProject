@@ -1,0 +1,62 @@
+SLURM_JOBID=16875193
+SLURM_JOB_NODELIST=cs-pheno-01
+Start: Sun 05 Apr 2026 23:20:13 IDT
+[20:20:14] Starting inference: 6 config(s) × 4 repeat(s) = 24 calls
+[20:20:24] Using bfloat16 (native GPU support)
+[20:20:24] Loading processor from google/medgemma-4b-it ...
+[20:20:29] Loading model (torch.bfloat16, device_map=auto) ...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/883 [00:00<?, ?it/s]Loading weights:   0%|          | 1/883 [00:01<27:26,  1.87s/it]Loading weights:   0%|          | 4/883 [00:02<05:46,  2.54it/s]Loading weights:   1%|          | 11/883 [00:02<01:42,  8.47it/s]Loading weights:   2%|▏         | 15/883 [00:02<01:12, 11.98it/s]Loading weights:   2%|▏         | 19/883 [00:02<00:59, 14.60it/s]Loading weights:   3%|▎         | 29/883 [00:02<00:32, 26.21it/s]Loading weights:   4%|▍         | 34/883 [00:02<00:33, 24.97it/s]Loading weights:   5%|▍         | 42/883 [00:02<00:26, 31.25it/s]Loading weights:   5%|▌         | 47/883 [00:03<00:27, 29.92it/s]Loading weights:   6%|▌         | 55/883 [00:03<00:22, 37.27it/s]Loading weights:   7%|▋         | 60/883 [00:03<00:23, 35.35it/s]Loading weights:   8%|▊         | 68/883 [00:03<00:19, 41.59it/s]Loading weights:   8%|▊         | 73/883 [00:03<00:20, 39.22it/s]Loading weights:   9%|▉         | 80/883 [00:03<00:18, 43.48it/s]Loading weights:  10%|▉         | 85/883 [00:03<00:20, 39.72it/s]Loading weights:  11%|█         | 94/883 [00:04<00:16, 49.13it/s]Loading weights:  11%|█▏        | 100/883 [00:04<00:17, 45.64it/s]Loading weights:  12%|█▏        | 107/883 [00:04<00:15, 49.96it/s]Loading weights:  13%|█▎        | 113/883 [00:04<00:16, 45.90it/s]Loading weights:  14%|█▎        | 120/883 [00:04<00:15, 49.45it/s]Loading weights:  14%|█▍        | 126/883 [00:04<00:16, 44.64it/s]Loading weights:  15%|█▍        | 132/883 [00:04<00:15, 47.75it/s]Loading weights:  16%|█▌        | 138/883 [00:05<00:17, 42.31it/s]Loading weights:  17%|█▋        | 146/883 [00:05<00:15, 47.53it/s]Loading weights:  17%|█▋        | 151/883 [00:05<00:17, 41.33it/s]Loading weights:  18%|█▊        | 158/883 [00:05<00:17, 41.99it/s]Loading weights:  18%|█▊        | 163/883 [00:05<00:19, 36.78it/s]Loading weights:  19%|█▉        | 172/883 [00:05<00:16, 43.66it/s]Loading weights:  20%|██        | 177/883 [00:06<00:18, 37.95it/s]Loading weights:  21%|██        | 185/883 [00:06<00:15, 43.68it/s]Loading weights:  22%|██▏       | 190/883 [00:06<00:17, 39.85it/s]Loading weights:  22%|██▏       | 198/883 [00:06<00:14, 46.20it/s]Loading weights:  23%|██▎       | 203/883 [00:06<00:16, 40.65it/s]Loading weights:  24%|██▍       | 211/883 [00:06<00:14, 46.81it/s]Loading weights:  24%|██▍       | 216/883 [00:06<00:16, 41.55it/s]Loading weights:  25%|██▌       | 224/883 [00:07<00:14, 46.70it/s]Loading weights:  26%|██▌       | 229/883 [00:07<00:15, 42.14it/s]Loading weights:  27%|██▋       | 237/883 [00:07<00:13, 48.05it/s]Loading weights:  28%|██▊       | 243/883 [00:07<00:14, 43.50it/s]Loading weights:  28%|██▊       | 250/883 [00:07<00:12, 48.73it/s]Loading weights:  29%|██▉       | 256/883 [00:07<00:14, 42.54it/s]Loading weights:  30%|██▉       | 263/883 [00:07<00:12, 47.89it/s]Loading weights:  30%|███       | 269/883 [00:08<00:14, 41.03it/s]Loading weights:  31%|███       | 275/883 [00:08<00:13, 44.82it/s]Loading weights:  32%|███▏      | 280/883 [00:08<00:14, 40.44it/s]Loading weights:  33%|███▎      | 287/883 [00:08<00:13, 44.68it/s]Loading weights:  33%|███▎      | 292/883 [00:08<00:14, 40.33it/s]Loading weights:  34%|███▍      | 301/883 [00:08<00:11, 48.91it/s]Loading weights:  35%|███▍      | 307/883 [00:08<00:12, 44.53it/s]Loading weights:  36%|███▌      | 315/883 [00:09<00:11, 49.22it/s]Loading weights:  36%|███▋      | 321/883 [00:09<00:13, 43.04it/s]Loading weights:  37%|███▋      | 328/883 [00:09<00:11, 47.78it/s]Loading weights:  38%|███▊      | 334/883 [00:09<00:12, 44.23it/s]Loading weights:  39%|███▊      | 341/883 [00:09<00:11, 46.54it/s]Loading weights:  39%|███▉      | 346/883 [00:09<00:13, 41.16it/s]Loading weights:  40%|███▉      | 352/883 [00:09<00:12, 42.93it/s]Loading weights:  40%|████      | 357/883 [00:10<00:13, 38.26it/s]Loading weights:  42%|████▏     | 367/883 [00:10<00:10, 49.44it/s]Loading weights:  42%|████▏     | 373/883 [00:10<00:11, 43.68it/s]Loading weights:  43%|████▎     | 380/883 [00:10<00:10, 47.54it/s]Loading weights:  44%|████▎     | 386/883 [00:10<00:11, 43.78it/s]Loading weights:  45%|████▍     | 393/883 [00:10<00:10, 47.65it/s]Loading weights:  45%|████▌     | 399/883 [00:10<00:11, 43.88it/s]Loading weights:  46%|████▌     | 405/883 [00:11<00:10, 44.44it/s]Loading weights:  46%|████▋     | 410/883 [00:11<00:11, 40.08it/s]Loading weights:  47%|████▋     | 419/883 [00:11<00:09, 48.50it/s]Loading weights:  48%|████▊     | 425/883 [00:11<00:10, 42.31it/s]Loading weights:  49%|████▉     | 433/883 [00:11<00:10, 43.78it/s]Loading weights:  50%|████▉     | 438/883 [00:11<00:09, 44.76it/s]Loading weights:  53%|█████▎    | 471/883 [00:11<00:03, 108.80it/s]Loading weights:  57%|█████▋    | 503/883 [00:12<00:02, 159.82it/s]Loading weights:  61%|██████    | 537/883 [00:12<00:01, 203.14it/s]Loading weights:  66%|██████▌   | 579/883 [00:12<00:01, 260.64it/s]Loading weights:  70%|██████▉   | 615/883 [00:12<00:00, 279.85it/s]Loading weights:  73%|███████▎  | 649/883 [00:12<00:00, 293.22it/s]Loading weights:  78%|███████▊  | 688/883 [00:12<00:00, 319.83it/s]Loading weights:  82%|████████▏ | 725/883 [00:12<00:00, 325.68it/s]Loading weights:  86%|████████▌ | 761/883 [00:12<00:00, 324.58it/s]Loading weights:  90%|█████████ | 795/883 [00:12<00:00, 328.03it/s]Loading weights:  94%|█████████▍| 833/883 [00:13<00:00, 339.39it/s]Loading weights:  99%|█████████▊| 871/883 [00:13<00:00, 339.29it/s]Loading weights: 100%|██████████| 883/883 [00:13<00:00, 67.04it/s] 
+[20:20:43] Model loaded. Device map: N/A
+[20:20:43] GPU memory used: 8.60 GB
+[20:20:43] [1/24] config=blind_temp0.3  repeat=1/4
+  elapsed=9.3s  preview: 'FORMULA: hct + hgb - mch + mchc - mcv + plt * rdw / (wbc + 0.01) FORMULA: rdw * plt + mchc - mch / (hgb + 0.01) FORMULA:'
+[20:20:53] [2/24] config=blind_temp0.3  repeat=2/4
+  elapsed=9.1s  preview: 'FORMULA: (hgb - 13) * (plt - 250) / (hct - 40) FORMULA: (mch - 28) * (mchc - 33) / (mcv - 85) FORMULA: (rdw - 12) * (wbc'
+[20:21:02] [3/24] config=blind_temp0.3  repeat=3/4
+  elapsed=9.4s  preview: 'FORMULA: (hgb - 13) * (plt - 250) / (mcv - 85) FORMULA: (hct - 40) * (rdw - 12) + (wbc - 7) FORMULA: (mchc - 33) * (rdw '
+[20:21:11] [4/24] config=blind_temp0.3  repeat=4/4
+  elapsed=9.0s  preview: 'FORMULA: (hgb - 13) * (plt - 250) / (hct - 40) FORMULA: (mchc - 33) * (rdw - 12) / (wbc - 4) FORMULA: (plt - 250) + (rdw'
+[20:21:20] [5/24] config=blind_temp0.7  repeat=1/4
+  elapsed=25.1s  preview: 'Here are 5 formulas to identify patients likely to have RA using CBC measurements, along with their reasoning:  REASONIN'
+[20:21:45] [6/24] config=blind_temp0.7  repeat=2/4
+  elapsed=21.5s  preview: 'REASONING: Anemia of chronic disease (ACD) is common in RA, often leading to decreased hgb and mch. High RDW indicates i'
+[20:22:07] [7/24] config=blind_temp0.7  repeat=3/4
+  elapsed=23.2s  preview: 'Here are 5 mathematical biomarker formulas that can identify patients likely to have Rheumatoid Arthritis (RA) using Com'
+[20:22:30] [8/24] config=blind_temp0.7  repeat=4/4
+  elapsed=18.7s  preview: 'Here are 5 mathematical biomarker formulas to identify patients likely to have Rheumatoid Arthritis (RA) using Complete '
+[20:22:49] [9/24] config=blind_temp1.0  repeat=1/4
+  elapsed=15.4s  preview: 'Here are 5 mathematical biomarker formulas to estimate the likelihood of Rheumatoid Arthritis (RA) based on CBC measurem'
+[20:23:04] [10/24] config=blind_temp1.0  repeat=2/4
+  elapsed=22.6s  preview: 'Here are 5 formulas that calculate a continuous score for RA likelihood based on CBC measurements, leveraging my clinica'
+[20:23:27] [11/24] config=blind_temp1.0  repeat=3/4
+  elapsed=15.4s  preview: 'Here are five formula proposals designed to identify patients at higher risk of Rheumatoid Arthritis based on CBC measur'
+[20:23:42] [12/24] config=blind_temp1.0  repeat=4/4
+  elapsed=17.7s  preview: 'Here are five formulas for predicting RA likelihood based on CBC measurements:  REASONING: Anemia of chronic inflammatio'
+[20:24:00] [13/24] config=seeded_temp0.3  repeat=1/4
+  elapsed=9.3s  preview: 'FORMULA: np.log1p(plt) + np.sqrt(rdw) - np.sqrt(hct) FORMULA: np.log1p(rdw) + np.sqrt(mchc) - np.sqrt(hgb) FORMULA: np.l'
+[20:24:09] [14/24] config=seeded_temp0.3  repeat=2/4
+  elapsed=12.0s  preview: 'FORMULA: np.log1p(plt) + np.sqrt(rdw) - np.log1p(hct) + np.sqrt(mchc) FORMULA: np.log1p(plt) + np.sqrt(rdw) - np.log1p(h'
+[20:24:21] [15/24] config=seeded_temp0.3  repeat=3/4
+  elapsed=8.8s  preview: 'FORMULA: np.log1p(plt) + np.sqrt(rdw) - np.sqrt(hct) FORMULA: np.log1p(rdw) + np.sqrt(mchc) - np.sqrt(mcv) FORMULA: np.l'
+[20:24:30] [16/24] config=seeded_temp0.3  repeat=4/4
+  elapsed=8.9s  preview: 'FORMULA: np.log1p(plt) + np.sqrt(rdw) - np.sqrt(hct) FORMULA: np.log1p(wbc) + np.sqrt(mchc) - np.sqrt(mcv) FORMULA: np.l'
+[20:24:39] [17/24] config=seeded_temp0.7  repeat=1/4
+  elapsed=21.4s  preview: 'REASONING: This formula combines RDW (inflammation), Platelets (thrombocytosis), and HCT (anemia) to capture the key fea'
+[20:25:00] [18/24] config=seeded_temp0.7  repeat=2/4
+  elapsed=30.4s  preview: 'REASONING: RDW and PLT are both significant inflammatory markers, and their interaction may be particularly informative '
+[20:25:31] [19/24] config=seeded_temp0.7  repeat=3/4
+  elapsed=15.1s  preview: 'REASONING: This formula leverages the known association between RDW (a marker of inflammation) and platelet count (a mar'
+[20:25:46] [20/24] config=seeded_temp0.7  repeat=4/4
+  elapsed=19.5s  preview: 'REASONING: RDW is a good general marker of inflammation, and platelets are a classic RA marker. This formula aims to cap'
+[20:26:05] [21/24] config=seeded_temp1.0  repeat=1/4
+  elapsed=28.5s  preview: 'REASONING: A combination of red cell distribution width (RDW) representing inflammation and platelet count (PLT) for rea'
+[20:26:34] [22/24] config=seeded_temp1.0  repeat=2/4
+  elapsed=28.5s  preview: 'REASONING: This formula combines the RDW (a measure of red cell variation), platelets (a thrombocytosis marker), and the'
+[20:27:02] [23/24] config=seeded_temp1.0  repeat=3/4
+  elapsed=24.1s  preview: 'REASONING: RDW and PLT together capture the reactive thrombocytosis and inflammation present in RA. The platelet count i'
+[20:27:26] [24/24] config=seeded_temp1.0  repeat=4/4
+  elapsed=26.4s  preview: 'REASONING: RDW is a reliable marker of inflammation, and platelets track disease activity; we use both to amplify subtle'
+
+[20:27:53] Done. 24 ok / 0 errors → results/method4_llm/raw_outputs.json
+End: Sun 05 Apr 2026 23:27:54 IDT

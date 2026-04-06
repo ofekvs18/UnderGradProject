@@ -1,0 +1,772 @@
+[
+  {
+    "formula": "hct + hgb - mch + mchc - mcv + plt * rdw / (wbc + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r0",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "rdw * plt + mchc - mch / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r0",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "hct * rdw + mchc - mch / (wbc + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r0",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "hgb + mchc - mch / (rwb + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r0",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb - 13) * (plt - 250) / (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r1",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(mch - 28) * (mchc - 33) / (mcv - 85)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r1",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(rdw - 12) * (wbc - 8) / (hct - 45)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r1",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(plt - 250) * (rdw - 12) / (hgb - 13)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r1",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(mchc - 33) * (mcv - 85) / (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r1",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb - 13) * (plt - 250) / (mcv - 85)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r2",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hct - 40) * (rdw - 12) + (wbc - 7)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r2",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(mchc - 33) * (rdw - 11.5) + (plt - 250)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r2",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb + mchc + rdw) / (hct + plt + wbc)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r2",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb - 12) * (rdw - 12) + (plt - 200) * (mcv - 88)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r2",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb - 13) * (plt - 250) / (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r3",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(mchc - 33) * (rdw - 12) / (wbc - 4)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r3",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(plt - 250) + (rdw - 12) + (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r3",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(hgb - 13) * (mch - 27) / (mcv - 80)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r3",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "(rdw - 12) + (wbc - 4) + (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.3_r3",
+    "config_name": "blind_temp0.3",
+    "strategy": "blind",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(hgb) + log(hct) + log(mch) + log(mchc) + log(plt)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r0",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) + log(wbc) + log(plt)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r0",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb - 13) * (rdw - 12) / (plt - 200)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r1",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hct - 40) / (mchc - 33) * (rdw - 12)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r1",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(wbc - 8) * (rdw - 12) / (plt - 200)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r1",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb - 13) * (rdw - 12) + (plt - 200)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r1",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hct - 40) / (mchc - 33) * (rdw - 12) + (plt - 200)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r1",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb + hct + mchc) / (plt + rdw + wbc)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r2",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(mchc * rdw) / (hgb + plt)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r2",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(mcv + rdw) / (plt + hct)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r2",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb * mchc) / (plt * rdw)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r2",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb - 35) * (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r3",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "plt * (plt - 150)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r3",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "rdw * plt / (mchc + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r3",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb - 35) * (hct - 40) + plt * (plt - 150)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r3",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hct - 40) * (mch - 28) + rdw * (rdw - 12)",
+    "source_run_id": "20260405T202014_blind_temp0.7_r3",
+    "config_name": "blind_temp0.7",
+    "strategy": "blind",
+    "temperature": 0.7
+  },
+  {
+    "formula": "(hgb - 13.5) * (mch - 28.5) / (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r0",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "plt * 0.4",
+    "source_run_id": "20260405T202014_blind_temp1.0_r0",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "rdw * 0.6",
+    "source_run_id": "20260405T202014_blind_temp1.0_r0",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "rbc * 0.3",
+    "source_run_id": "20260405T202014_blind_temp1.0_r0",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "wbc * 0.2",
+    "source_run_id": "20260405T202014_blind_temp1.0_r0",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(hgb - 13) * (plt - 250) + (rdw - 12) * (wbc - 5)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r1",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(1 / (hct + 0.01)) - (1 / (mchc + 0.01)) * (plt + 50)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r1",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(mch + 0.01) * (rdw - 12) - (rbc + 0.01) * (wbc + 1)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r1",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(hgb + mchc) / (rdw * plt + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r1",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "hct * (hgb / 30) - (mch / 30) * (mchc / 30)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r2",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "plt * (rdw / 100) + wbc",
+    "source_run_id": "20260405T202014_blind_temp1.0_r2",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(hgb / 14) * (wbc / 10)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r2",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "rdw * (rdw / 100) * (plt / 200)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r2",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(hgb - 13) * (plt - 250) / (mcv - 85)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r3",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r3",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "rdw * (mch - 28) / (mcv - 85)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r3",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "(rch/ 5) * (mchc -31) / (mch - 27)  # corrected relative height",
+    "source_run_id": "20260405T202014_blind_temp1.0_r3",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "wbc * (rdw -12) / (hct - 40)",
+    "source_run_id": "20260405T202014_blind_temp1.0_r3",
+    "config_name": "blind_temp1.0",
+    "strategy": "blind",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - sqrt(hct)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r0",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(mchc) - sqrt(hgb)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r0",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(mchc) - sqrt(hct)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r0",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(mch) - sqrt(hgb)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r0",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(mchc) - sqrt(hct) + sqrt(wbc)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r0",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - log(hct) + sqrt(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r1",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - sqrt(hct)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r2",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(mchc) - sqrt(mcv)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r2",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - sqrt(hgb)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r2",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(mchc) - sqrt(hct)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r2",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - sqrt(mch)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r2",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) - sqrt(hct)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r3",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(wbc) + sqrt(mchc) - sqrt(mcv)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r3",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(hct) - sqrt(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r3",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(plt) + sqrt(mch) - sqrt(mcv)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r3",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) + sqrt(hgb) - sqrt(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp0.3_r3",
+    "config_name": "seeded_temp0.3",
+    "strategy": "seeded",
+    "temperature": 0.3
+  },
+  {
+    "formula": "log(rdw) * plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r0",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (mcv + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r0",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (wbc + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r0",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (mchc + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r0",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) + plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(mch) + log(mchc) + hct / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "sqrt(rdw) * (wbc / (hgb + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(mcv) + log(mch) + rdw * (plt / (hgb + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(hct) + log(mchc) + sqrt(rdw) * (plt / (hgb + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(wbc) + rbc / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r1",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r2",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(plt) * log(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r2",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * wbc",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r2",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(hct) * log(mcv)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r2",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r3",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "sqrt(hct) * (mchc / (mch + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r3",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * (mchc / (mch + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r3",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(wbc) * plt / (mchc + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r3",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "sqrt(hct) * (mcv / (mch + 0.01))",
+    "source_run_id": "20260405T202014_seeded_temp0.7_r3",
+    "config_name": "seeded_temp0.7",
+    "strategy": "seeded",
+    "temperature": 0.7
+  },
+  {
+    "formula": "log(rdw) * plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(hct) * log(hgb) * log(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) * plt / (sqrt(mchc) + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) * wbc / (sqrt(hgb) + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) * log(mcv) / (sqrt(hgb) + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rbc) * wbc / (log(plt) + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r0",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) * plt / (sqrt(mchc) + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r1",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) * (hct - 35) / (mchc - 33)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r1",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) * (mchc - 33) / (hct - 35)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r1",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) * (1 / (mchc - 33)) * (hct - 35)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r1",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw) + plt / (hgb + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(mcv) + sqrt(mchc)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(hct) + mchc / hct",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rpb) + rdw / mcv",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(hct) / (mcv + mch)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(hgb) + plt * rdw",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r2",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) / hgb",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(rdw)  *  sqrt(mchc) / hct",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) * sqrt(rdw) / hct",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) + sqrt(rdw) / mchc",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) * hct + sqrt(rdw) / mch",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  },
+  {
+    "formula": "log(plt) + rdw**0.5 / (mchc + 0.01)",
+    "source_run_id": "20260405T202014_seeded_temp1.0_r3",
+    "config_name": "seeded_temp1.0",
+    "strategy": "seeded",
+    "temperature": 1.0
+  }
+]
