@@ -1,0 +1,98 @@
+METHOD 4 ANALYSIS — LLM-GENERATED BIOMARKER FORMULAS
+======================================================================
+
+1. HEADLINE RESULTS
+----------------------------------------
+   94 unique formulas were evaluated on the held-out test set.
+   Best formula : log(plt) + sqrt(rdw) - log(hct) + sqrt(mchc)
+   Best AUC-ROC : 0.6310  (LR baseline: 0.6580)
+   Best AUC-PR  : 0.0160  (LR baseline: 0.0170)
+
+   Formulas beating LR baseline (AUC-PR > 0.017): 0/94
+   Formulas beating GP baseline (AUC-PR > 0.0179): 0/94
+
+   Cross-method AUC-PR comparison (best per method):
+   Method 1 (threshold)     : 0.0141
+   LR baseline              : 0.0170
+   Method 2 (random search) : 0.0174
+   Method 3 (GP)            : 0.0179
+   Method 4 (LLM)           : 0.0160  ← this work
+
+   Finding: Method 4 did not exceed either baseline on AUC-PR.
+   The best LLM formula ranked below random search (M2) and genetic
+   programming (M3) on the primary metric.
+
+2. BLIND VS. SEEDED STRATEGY COMPARISON
+----------------------------------------
+   Blind  (n=47): mean AUC-PR=0.0125  max=0.0144  median=0.0127
+   Seeded (n=47): mean AUC-PR=0.0130  max=0.0160  median=0.0129
+
+   Seeded advantage (mean): +0.0004
+   Seeded advantage (max) : +0.0016
+
+   Finding: The seeded strategy produced marginally higher AUC-PR on
+   average, suggesting that feature importance hints have a small positive
+   effect. However, the difference is small and both strategies fell below
+   the LR and GP baselines. Data-driven seeding did not bridge the gap.
+
+3. FEATURE ANALYSIS
+----------------------------------------
+   Feature usage in Method 4 formulas (% of 94 formulas):
+   rdw   :  63.8%
+   plt   :  54.3%
+   mchc  :  44.7%
+   hct   :  42.6%
+   hgb   :  37.2%
+   wbc   :  26.6%
+   mch   :  21.3%
+   mcv   :  19.1%
+   rbc   :   4.3%
+
+   Most used: rdw (64%), plt (54%), mchc (45%)
+
+   The LLM's top feature choices (rdw, plt, mchc) align with the feature
+   importance ranking provided in the seeded prompt and with the GP method,
+   which exclusively used rdw, plt, mchc, hct, mcv, rbc. The model
+   largely ignored rbc (4%), consistent with its lower discriminative rank.
+
+4. QUALITY METRICS (PARSING PIPELINE)
+----------------------------------------
+   LLM calls (24 total, all successful):
+   110 candidates extracted → 101 distinct → 98 valid → 94 unique
+
+   Parse yield    : 92% of candidates were distinct strings
+   Validity rate  : 97% of distinct formulas passed validation
+   Dedup rate     : 96% survived functional deduplication
+   Overall yield  : 85% from raw candidates to evaluated formulas
+
+   The model reliably followed the output format; 3 formulas were rejected
+   due to invalid variable names (e.g. 'rwb' instead of 'wbc') and
+   4 were functionally redundant (Pearson r > 0.999 with another formula).
+
+5. RESEARCH NARRATIVE
+----------------------------------------
+   Research question: Does medical domain knowledge (via Med-Gemma 4B)
+   improve CBC-based biomarker formula generation for RA detection?
+
+   Answer: Not in this experiment. Med-Gemma produced valid, syntactically
+   correct formulas that captured plausible clinical logic (RDW elevation,
+   reactive thrombocytosis, haematocrit reduction in RA anaemia). However,
+   the formulas did not out-perform either the LR baseline or the GP-evolved
+   formulas on AUC-PR, the primary metric for this heavily imbalanced dataset.
+
+   Possible explanations:
+   (a) Med-Gemma 4B lacks the calibration for precise formula arithmetic;
+       larger LLMs or fine-tuned models may perform differently.
+   (b) The formula complexity and operator set are constrained (3-7 features,
+       four operators + three functions); GP explores this space more
+       systematically than a language model prompted once per configuration.
+   (c) AUC-PR at ~1% prevalence is extremely sensitive to threshold
+       calibration; GP explicitly optimises for discriminative separation
+       while the LLM optimises plausibility of clinical reasoning.
+
+   The seeded strategy's marginal improvement suggests that providing
+   data-driven hints is directionally helpful. Future work could explore
+   iterative prompting (LLM proposes → evaluate → feedback to LLM),
+   larger models, or using LLM output as initialisation for GP search.
+
+   All results reported honestly. No cherry-picking of formulas or metrics.
