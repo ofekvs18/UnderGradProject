@@ -206,33 +206,108 @@ Key features: **mcv, plt, wbc, rdw, rbc, hct, mchc** (35-node tree)
 
 ---
 
-## Method 4: LLM-Generated Formulas
+## Method 4: LLM-Generated Formulas (Med-Gemma 4B)
 
-_Date: ____
+_Date: 2026-04-05_
+_SLURM job: 16875193, cluster GPU node, runtime: ~8 min (24 inference calls)_
 
-| prompt_strategy | formula | AUC-ROC | AUC-PR | P@R50 | F1 | F2 | precision | recall |
-|----------------|---------|---------|--------|-------|----|----|-----------|--------|
-| | | | | | | | | |
+### Setup
+- **Model**: Med-Gemma 4B instruction-tuned (`google/medgemma-4b-it`), bfloat16, single GPU
+- **Strategies**: Blind (medical knowledge only) and Seeded (medical knowledge + GP feature importance)
+- **Temperatures**: 0.3 (focused), 0.7 (balanced), 1.0 (creative) per strategy
+- **Repeats**: 4 per config × 6 configs = 24 inference calls
+- **Scripts**: `method4_prompts.py` → `method4_generate.py` (GPU) → `method4_evaluate.py` (CPU)
+
+### Parsing funnel
+| stage | count |
+|-------|-------|
+| Raw LLM responses | 24 |
+| Candidate formulas extracted | 110 |
+| Distinct formula strings | 101 |
+| Valid after eval | 98 |
+| Unique after deduplication (corr > 0.999) | 94 |
+
+Parse yield: 85% from raw candidates to evaluated formulas. 3 rejected for invalid variable names (e.g. `rwb`), 4 removed as functional duplicates.
+
+### Top 10 formulas (sorted by AUC-PR)
+| rank | AUC-ROC | AUC-PR | P@R25 | P@R50 | P@R75 | F1 | F2 | formula |
+|------|---------|--------|-------|-------|-------|----|----|---------|
+| 1 | 0.6310 | 0.0160 | 0.0187 | 0.0163 | 0.0135 | 0.029 | 0.068 | `log(plt) + sqrt(rdw) - log(hct) + sqrt(mchc)` |
+| 2 | 0.6065 | 0.0158 | 0.0170 | 0.0149 | 0.0127 | 0.027 | 0.064 | `log(plt) + sqrt(mchc) - sqrt(hct)` |
+| 3 | 0.5775 | 0.0157 | 0.0131 | 0.0126 | 0.0121 | 0.025 | 0.059 | `sqrt(hct) * (mchc / (mch + 0.01))` |
+| 4 | 0.5642 | 0.0156 | 0.0138 | 0.0122 | 0.0116 | 0.024 | 0.055 | `log(hct) / (mcv + mch)` |
+| 5 | 0.6158 | 0.0147 | 0.0161 | 0.0156 | 0.0131 | 0.027 | 0.064 | `log(plt) + sqrt(rdw) - sqrt(hct)` |
+| 6 | 0.6056 | 0.0145 | 0.0158 | 0.0151 | 0.0127 | 0.027 | 0.063 | `log(mcv) + log(mch) + rdw * (plt / (hgb + 0.01))` |
+| 7 | 0.6114 | 0.0144 | 0.0160 | 0.0155 | 0.0127 | 0.029 | 0.067 | `rdw * (rdw / 100) * (plt / 200)` |
+| 8 | 0.6154 | 0.0144 | 0.0155 | 0.0157 | 0.0133 | 0.028 | 0.066 | `log(plt) + sqrt(rdw) - sqrt(hgb)` |
+| 9 | 0.5940 | 0.0144 | 0.0160 | 0.0148 | 0.0121 | 0.028 | 0.065 | `log(rdw) * plt / (hgb + 0.01)` |
+| 10 | 0.5968 | 0.0144 | 0.0160 | 0.0149 | 0.0121 | 0.029 | 0.066 | `log(hct) + log(mchc) + sqrt(rdw) * (plt / (hgb + 0.01))` |
 
 ### Best formula
 ```
-(formula here)
+log(plt) + sqrt(rdw) - log(hct) + sqrt(mchc)
 ```
+AUC-ROC=0.6310, AUC-PR=0.0160. Uses 4 features: PLT, RDW, HCT, MCHC.
+
+### Blind vs Seeded comparison
+| strategy | n | mean AUC-PR | max AUC-PR | median AUC-PR |
+|----------|---|-------------|------------|---------------|
+| Blind | 47 | 0.0125 | 0.0144 | 0.0127 |
+| Seeded | 47 | 0.0130 | 0.0160 | 0.0129 |
+
+Seeded advantage: +0.0004 mean, +0.0016 max. Small positive effect from data-driven hints, but neither strategy reached the LR baseline.
+
+### AUC-PR distribution
+| stat | value |
+|------|-------|
+| max | 0.0160 |
+| 99th | 0.0158 |
+| median | 0.0128 |
+| min | 0.0101 |
+| # beating LR (0.017) | 0 / 94 |
+| # beating GP (0.0179) | 0 / 94 |
+
+### Feature usage (across all 94 formulas)
+| feature | % of formulas |
+|---------|---------------|
+| RDW | 63.8% |
+| PLT | 54.3% |
+| MCHC | 44.7% |
+| HCT | 42.6% |
+| HGB | 37.2% |
+| WBC | 26.6% |
+| MCH | 21.3% |
+| MCV | 19.1% |
+| RBC | 4.3% |
 
 ### Notes
+- **0 out of 94 LLM formulas beat either baseline** (LR AUC-PR=0.017 or GP AUC-PR=0.0179)
+- Med-Gemma correctly identified the right features: RDW (64%), PLT (54%), MCHC (45%) match GP's top features exactly
+- The bottleneck is **mathematical structure, not feature selection** — LLM formulas use simple additive log/sqrt combinations while GP discovered multiplicative interactions (plt/rdw ratios, mchc² terms, rdw-rbc differences)
+- Seeded prompts produced marginally better results (+0.0016 max AUC-PR), suggesting feature hints help but are insufficient
+- The parsing pipeline was robust: 85% of raw candidates survived to evaluation, with only 3 invalid and 4 functional duplicates
+- LLM formulas are notably more interpretable than GP (4 features, simple arithmetic vs 35-node tree with 7 features)
+- **Possible explanations for underperformance**: (a) Med-Gemma 4B may lack arithmetic precision for formula optimization; (b) GP explicitly optimizes for discriminative performance while LLM optimizes for clinical plausibility; (c) the constrained formula space requires systematic search that language models aren't designed for
+- **Future work**: Iterative prompting (LLM proposes → evaluate → feedback), larger medical LLMs, or using LLM output as initialization for GP
 
 ---
 
 ## Summary Comparison
 
-_Fill this in as you complete each method_
+| method | best AUC-ROC | best AUC-PR | key features / formula | beats LR baseline? |
+|--------|-------------|------------|------------------------|-------------------|
+| Logistic regression (all 9 features) | 0.658 | 0.017 | All 9 CBC | — (this IS the baseline) |
+| Literature threshold (M1A) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
+| Data-driven threshold (M1B) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
+| Random formulas — 10k (M2) | 0.6256 | 0.0174 | sqrt(hct)/rbc | Marginally (PR only, +0.0004) |
+| GP small (pop=100, gen=20) (M3A) | 0.6590 | 0.0163 | rdw+plt+mchc+mch (82-node) | No |
+| **GP large (pop=500, gen=100) (M3B)** | **0.6715** | **0.0179** | **log(plt/rdw)*mchc²*(rdw-rbc) (35-node, 7 features)** | **Yes — best overall** |
+| LLM Med-Gemma 4B (M4) | 0.6310 | 0.0160 | log(plt)+sqrt(rdw)-log(hct)+sqrt(mchc) (4 features) | No |
 
-| method | best AUC-ROC | best AUC-PR | best feature | beats baseline? |
-|--------|-------------|------------|--------------|-----------------|
-| Logistic regression (all features) | 0.658 | 0.017 | All 9 CBC | — (this IS the baseline) |
-| Literature threshold (1A) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
-| Data-driven threshold (1B) | 0.617 | 0.0141 | RDW (ROC) / RBC (PR) | No |
-| Random formulas (10k) | 0.6256 | 0.0174 | sqrt(hct)/rbc (PR) / mchc-log(wbc)/sqrt(rbc)*log(plt) (ROC) | Marginally (PR only, +0.0004) |
-| GP small — attempt 2 (parsimony=0.0, no div, pop=100, gen=20) | 0.6590 | 0.0163 | rdw+plt+mchc+mch (82-node) | No (below LR AUC-PR=0.017 and M2 AUC-PR=0.0174); AUC-ROC marginally above LR |
-| GP large — attempt 1 (parsimony=0.0001, pop=500, gen=100) | 0.6715 | 0.0179 | mcv,plt,wbc,rdw,rbc,hct,mchc (35-node) | **Yes** — beats LR (AUC-PR +0.0009) and M2 (AUC-PR +0.0005); best AUC-ROC overall |
-| LLM formulas | | | | |
+### Key takeaways across all methods
+
+1. **GP (large config) is the overall winner** for RA on this dataset, beating all baselines on both AUC-ROC and AUC-PR
+2. **Feature consensus**: RDW, PLT, and MCHC emerge as the most important features across all methods — GP selects them data-driven, LLM selects them from medical knowledge, and they rank highest in single-feature analysis
+3. **Mathematical structure matters more than feature selection**: The LLM picked the right features but couldn't find the right way to combine them. GP's multiplicative interactions and ratio terms (plt/rdw, mchc², rdw-rbc) provide discriminative power that simple additive formulas lack
+4. **Brute force has diminishing returns**: Random search (10k formulas) found 7 that marginally beat baseline; GP (500 × 100 generations) found a clear winner; LLM (94 formulas) found 0 that beat baseline. Formula generation quality scales with optimization pressure, not just volume
+5. **Class imbalance dominates**: At ~1% prevalence, even the best method achieves AUC-PR of only 0.0179. All precision values are 1-2%, meaning ~99% of flagged patients are false positives. This is a fundamental limitation of CBC-only prediction for RA
