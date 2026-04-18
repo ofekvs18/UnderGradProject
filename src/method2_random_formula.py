@@ -9,8 +9,11 @@ Research question: can random CBC combinations beat single-feature thresholds
 (AUC-PR=0.014) or all-features logistic regression (AUC-PR=0.017)?
 """
 
+# Standard library
 import sys
 import warnings
+
+# Third-party
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -18,6 +21,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, precision_recall_curve
 
+# Local
 sys.path.insert(0, "src")
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,

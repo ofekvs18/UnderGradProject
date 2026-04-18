@@ -11,8 +11,11 @@ outperform random search (Method 2, AUC-PR=0.0174) and logistic regression
 (AUC-PR=0.017)?
 """
 
+# Standard library
 import sys
 import warnings
+
+# Third-party
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -22,6 +25,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score, precision_re
 from gplearn.genetic import SymbolicTransformer
 from gplearn.fitness import make_fitness
 
+# Local
 sys.path.insert(0, "src")
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
@@ -169,7 +173,18 @@ CONFIG_ATTEMPTS = [
 
 
 def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_label):
-    """Fit SymbolicTransformer and return list of (program, metrics_dict)."""
+    """
+    Fit SymbolicTransformer and return evaluated programs.
+
+    Args:
+        size_config: Dict with 'population_size' and 'generations'
+        parsimony_coefficient: Penalty for program complexity (0.0 = no penalty)
+        function_set: List of function names for GP primitives
+        attempt_label: Description for logging
+
+    Returns:
+        List of (program, metrics_dict) tuples sorted by AUC-PR descending
+    """
     print(f"\n=== {attempt_label} ===")
     print(f"  pop={size_config['population_size']}  gen={size_config['generations']}"
           f"  parsimony={parsimony_coefficient}"
