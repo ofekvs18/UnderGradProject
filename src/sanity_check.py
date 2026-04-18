@@ -12,9 +12,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score, precision_recall_curve
+from sklearn.metrics import roc_auc_score, average_precision_score, precision_recall_curve
 
-from utils import load_data, get_splits, compute_binary_metrics, find_youden_threshold, ensure_dir, RESULTS_DIR
+from utils import (
+    load_data, get_splits, compute_binary_metrics, find_youden_threshold,
+    precision_at_recall_levels, ensure_dir, RESULTS_DIR,
+)
 
 ensure_dir(RESULTS_DIR)
 
@@ -48,28 +51,40 @@ def fit_evaluate(X_train, y_train, X_test, y_test, label):
     Uses Youden's index to pick an operating threshold.
     No hyperparameter tuning — just default solver with balanced class weight
     to handle the severe class imbalance (~1:100).
+
+    Returns:
+        Dict with AUC-ROC, AUC-PR, threshold-based metrics (precision, recall, F1, F2),
+        and precision@recall levels (0.25, 0.50, 0.75).
     """
     clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42)
     clf.fit(X_train, y_train)
-    proba = clf.predict_proba(X_test)[:, 1]
+    proba_train = clf.predict_proba(X_train)[:, 1]
+    proba_test = clf.predict_proba(X_test)[:, 1]
 
-    from sklearn.metrics import roc_auc_score
-    auc = roc_auc_score(y_test, proba)
+    auc_roc = roc_auc_score(y_test, proba_test)
+    auc_pr = average_precision_score(y_test, proba_test)
 
-    threshold, fpr, tpr = find_youden_threshold(y_test, proba)
-    preds = (proba >= threshold).astype(int)
+    threshold, fpr, tpr = find_youden_threshold(y_test, proba_test)
+    preds = (proba_test >= threshold).astype(int)
     m = compute_binary_metrics(y_test, preds)
+    par = precision_at_recall_levels(proba_train, y_train, proba_test, y_test)
 
     return {
-        "model":     label,
-        "n_train":   len(X_train),
-        "n_test":    len(X_test),
-        "auc":       round(auc, 4),
-        "threshold": round(threshold, 4),
-        "precision": round(m["precision"], 4),
-        "recall":    round(m["recall"], 4),
-        "fpr_arr":   fpr,
-        "tpr_arr":   tpr,
+        "model":                    label,
+        "n_train":                  len(X_train),
+        "n_test":                   len(X_test),
+        "auc_roc":                  round(auc_roc, 4),
+        "auc_pr":                   round(auc_pr, 4),
+        "threshold":                round(threshold, 4),
+        "precision":                round(m["precision"], 4),
+        "recall":                   round(m["recall"], 4),
+        "f1":                       round(m["f1"], 4),
+        "f2":                       round(m["f2"], 4),
+        "precision_at_recall_25":   par[0.25][0],
+        "precision_at_recall_50":   par[0.50][0],
+        "precision_at_recall_75":   par[0.75][0],
+        "fpr_arr":                  fpr,
+        "tpr_arr":                  tpr,
     }
 
 # ── Single-feature models ─────────────────────────────────────────────────────
@@ -87,7 +102,8 @@ for feat in features:
     res = fit_evaluate(tr[[feat]].values, tr["is_case"].values,
                        te[[feat]].values, te["is_case"].values, label=feat)
     results.append(res)
-    print(f"  {feat:8s}: AUC={res['auc']:.4f}  precision={res['precision']:.4f}  recall={res['recall']:.4f}  (n_test={res['n_test']:,})")
+    print(f"  {feat:8s}: AUC-ROC={res['auc_roc']:.4f}  AUC-PR={res['auc_pr']:.4f}  "
+          f"P@R50={res['precision_at_recall_50']:.4f}  F1={res['f1']:.4f}  F2={res['f2']:.4f}")
 
 # ── All-features model ────────────────────────────────────────────────────────
 print("\n=== All-features logistic regression ===")
@@ -97,28 +113,35 @@ te_all = test_df[features + ["is_case"]].dropna()
 res_all = fit_evaluate(tr_all[features].values, tr_all["is_case"].values,
                        te_all[features].values, te_all["is_case"].values, label="all_features")
 results.append(res_all)
-print(f"  all_features: AUC={res_all['auc']:.4f}  precision={res_all['precision']:.4f}  recall={res_all['recall']:.4f}  (n_test={res_all['n_test']:,})")
+print(f"  all_features: AUC-ROC={res_all['auc_roc']:.4f}  AUC-PR={res_all['auc_pr']:.4f}  "
+      f"P@R50={res_all['precision_at_recall_50']:.4f}  F1={res_all['f1']:.4f}  F2={res_all['f2']:.4f}")
 
 # ── Verdict ───────────────────────────────────────────────────────────────────
-single_aucs      = [r["auc"] for r in results if r["model"] != "all_features"]
-best_single_auc  = max(single_aucs) if single_aucs else 0.0
-best_single_feat = next(r["model"] for r in results if r["auc"] == best_single_auc and r["model"] != "all_features")
-all_feat_auc     = res_all["auc"]
+single_aucs_roc  = [r["auc_roc"] for r in results if r["model"] != "all_features"]
+single_aucs_pr   = [r["auc_pr"] for r in results if r["model"] != "all_features"]
+best_single_roc  = max(single_aucs_roc) if single_aucs_roc else 0.0
+best_single_pr   = max(single_aucs_pr) if single_aucs_pr else 0.0
+best_feat_roc    = next(r["model"] for r in results if r["auc_roc"] == best_single_roc and r["model"] != "all_features")
+best_feat_pr     = next(r["model"] for r in results if r["auc_pr"] == best_single_pr and r["model"] != "all_features")
+all_feat_roc     = res_all["auc_roc"]
+all_feat_pr      = res_all["auc_pr"]
 
-if best_single_auc > 0.95:
-    verdict = "FAIL — likely data leakage (single-feature AUC > 0.95)"
-elif best_single_auc >= 0.85:
-    verdict = "WARNING — single-feature AUC 0.85–0.95, investigate potential leakage"
-elif all_feat_auc >= 0.95:
-    verdict = "FAIL — likely data leakage (all-features AUC >= 0.95)"
+if best_single_roc > 0.95:
+    verdict = "FAIL — likely data leakage (single-feature AUC-ROC > 0.95)"
+elif best_single_roc >= 0.85:
+    verdict = "WARNING — single-feature AUC-ROC 0.85–0.95, investigate potential leakage"
+elif all_feat_roc >= 0.95:
+    verdict = "FAIL — likely data leakage (all-features AUC-ROC >= 0.95)"
 else:
     verdict = "PASS — AUC in expected range, pipeline appears clean"
 
-print(f"\n{'='*55}")
-print(f"Best single-feature AUC : {best_single_auc:.4f}  ({best_single_feat})")
-print(f"All-features AUC        : {all_feat_auc:.4f}")
-print(f"Verdict                 : {verdict}")
-print(f"{'='*55}\n")
+print(f"\n{'='*70}")
+print(f"Best single-feature AUC-ROC : {best_single_roc:.4f}  ({best_feat_roc})")
+print(f"Best single-feature AUC-PR  : {best_single_pr:.4f}  ({best_feat_pr})")
+print(f"All-features AUC-ROC        : {all_feat_roc:.4f}")
+print(f"All-features AUC-PR         : {all_feat_pr:.4f}")
+print(f"Verdict                     : {verdict}")
+print(f"{'='*70}\n")
 
 # ── Save CSV results ──────────────────────────────────────────────────────────
 csv_rows   = [{k: v for k, v in r.items() if k not in ("fpr_arr", "tpr_arr")} for r in results]
@@ -146,25 +169,52 @@ plt.close()
 print(f"Saved {RESULTS_DIR}/roc_curves.png")
 
 # ── Plain text summary ────────────────────────────────────────────────────────
+prevalence = test_df["is_case"].mean()
+rankings_match = best_feat_roc == best_feat_pr
+
 summary_lines = [
-    "Sanity Check Summary",
-    "=" * 40,
+    "Sanity Check Summary — AUC-ROC vs AUC-PR",
+    "=" * 70,
     "",
-    "Single-feature results:",
+    f"Class imbalance: {prevalence:.4f} positive rate in test set",
+    f"  -> Random classifier AUC-PR baseline: ~{prevalence:.4f}",
+    "",
+    f"{'Model':<14} {'AUC-ROC':>8} {'AUC-PR':>8} {'P@R25':>7} {'P@R50':>7} {'P@R75':>7} {'F1':>6} {'F2':>6}",
+    "-" * 70,
 ]
-for r in sorted(single_results, key=lambda r: r["auc"], reverse=True):
+for r in sorted(single_results, key=lambda r: r["auc_pr"], reverse=True):
     summary_lines.append(
-        f"  {r['model']:8s}  AUC={r['auc']:.4f}  precision={r['precision']:.4f}  recall={r['recall']:.4f}"
+        f"{r['model']:<14} {r['auc_roc']:>8.4f} {r['auc_pr']:>8.4f} "
+        f"{r['precision_at_recall_25']:>7.4f} {r['precision_at_recall_50']:>7.4f} "
+        f"{r['precision_at_recall_75']:>7.4f} {r['f1']:>6.4f} {r['f2']:>6.4f}"
     )
 summary_lines += [
     "",
     "All-features result:",
-    f"  all_features  AUC={all_feat_auc:.4f}  precision={res_all['precision']:.4f}  recall={res_all['recall']:.4f}",
+    f"  {'all_features':<12} AUC-ROC={all_feat_roc:.4f}  AUC-PR={all_feat_pr:.4f}  "
+    f"P@R50={res_all['precision_at_recall_50']:.4f}  F1={res_all['f1']:.4f}  F2={res_all['f2']:.4f}",
     "",
-    f"Best single-feature AUC : {best_single_auc:.4f}  ({best_single_feat})",
-    f"All-features AUC        : {all_feat_auc:.4f}",
+    f"Best single-feature AUC-ROC : {best_single_roc:.4f}  ({best_feat_roc})",
+    f"Best single-feature AUC-PR  : {best_single_pr:.4f}  ({best_feat_pr})",
+    f"Rankings identical          : {rankings_match}",
     "",
     f"VERDICT: {verdict}",
+    "",
+    "Key Findings:",
+]
+
+if best_feat_roc == best_feat_pr:
+    summary_lines.append(f"  * Best feature is {best_feat_roc.upper()} by both AUC-ROC and AUC-PR.")
+    summary_lines.append(f"    Class imbalance does not change feature selection.")
+else:
+    summary_lines.append(f"  * Best feature by AUC-ROC: {best_feat_roc.upper()}")
+    summary_lines.append(f"  * Best feature by AUC-PR:  {best_feat_pr.upper()}")
+    summary_lines.append(f"    Rankings diverge — AUC-PR should be preferred for model selection.")
+
+summary_lines += [
+    "",
+    f"All-features LR: AUC-ROC={all_feat_roc:.4f}  AUC-PR={all_feat_pr:.4f}",
+    f"  -> This is the baseline all future methods must beat on BOTH metrics.",
 ]
 
 with open(RESULTS_DIR / "sanity_summary.txt", "w") as f:

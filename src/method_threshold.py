@@ -12,7 +12,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score, roc_curve, average_precision_score
+from sklearn.metrics import roc_auc_score, roc_curve, average_precision_score, precision_recall_curve
 
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
@@ -274,6 +274,66 @@ plt.tight_layout()
 plt.savefig(M1_DIR / "best_feature_roc.png", dpi=150)
 plt.close()
 print(f"Saved {M1_DIR}/best_feature_roc.png")
+
+# ── PR curves for all features ────────────────────────────────────────────────
+print("\n=== Generating PR curves for all features ===")
+
+features_list = comp["feature"].tolist()
+n_features = len(features_list)
+n_cols = 3
+n_rows = (n_features + n_cols - 1) // n_cols
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(13, 11))
+axes = axes.flatten() if n_features > 1 else [axes]
+
+for i, feat in enumerate(features_list):
+    ax = axes[i]
+
+    # Get data for this feature
+    te = test_df[[feat, "is_case"]].dropna()
+    y_te = te["is_case"].values
+    x_te = te[feat].values
+
+    # Get direction and threshold info from comp table
+    lit_dir = comp.loc[comp["feature"] == feat, "literature_direction"].values[0]
+    lit_thresh = comp.loc[comp["feature"] == feat, "literature_threshold"].values[0]
+    dd_thresh = comp.loc[comp["feature"] == feat, "datadriven_threshold"].values[0]
+    lit_prec = comp.loc[comp["feature"] == feat, "literature_precision"].values[0]
+    lit_rec = comp.loc[comp["feature"] == feat, "literature_recall"].values[0]
+    dd_prec = comp.loc[comp["feature"] == feat, "datadriven_precision"].values[0]
+    dd_rec = comp.loc[comp["feature"] == feat, "datadriven_recall"].values[0]
+    auc_pr_val = comp.loc[comp["feature"] == feat, "auc_pr"].values[0]
+
+    # Compute score (flip for "below" direction)
+    score_te = x_te if lit_dir == "above" else -x_te
+    prevalence = y_te.mean()
+
+    # PR curve
+    prec_c, rec_c, _ = precision_recall_curve(y_te, score_te)
+
+    ax.plot(rec_c, prec_c, color="#4C72B0", lw=1.5, label=f"AUC-PR={auc_pr_val:.4f}")
+    ax.axhline(prevalence, color="gray", linestyle=":", lw=1, label=f"Baseline ({prevalence:.3f})")
+    ax.scatter([lit_rec], [lit_prec], s=80, color="green", zorder=5,
+               label=f"Lit ({lit_thresh:.1f})")
+    ax.scatter([dd_rec], [dd_prec], s=80, color="orange", marker="^", zorder=5,
+               label=f"DD ({dd_thresh:.2f})")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, max(prec_c.max() * 1.15, prevalence * 3))
+    ax.set_title(feat.upper(), fontsize=10)
+    ax.set_xlabel("Recall", fontsize=8)
+    ax.set_ylabel("Precision", fontsize=8)
+    ax.legend(fontsize=6)
+    ax.grid(alpha=0.3)
+
+# Hide unused subplots
+for j in range(i + 1, len(axes)):
+    axes[j].axis("off")
+
+fig.suptitle("Method 1: Precision-Recall Curves (all features)", fontsize=13)
+plt.tight_layout()
+plt.savefig(M1_DIR / "pr_curves.png", dpi=150)
+plt.close()
+print(f"Saved {M1_DIR}/pr_curves.png")
 
 # ── Summary text ──────────────────────────────────────────────────────────────
 best_lit_row     = lit_df.loc[lit_df["feature"] == best_feat].iloc[0]
