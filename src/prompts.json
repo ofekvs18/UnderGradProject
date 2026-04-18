@@ -1,0 +1,196 @@
+{
+  "method1_threshold": {
+    "literature_thresholds": {
+      "description": "Prompt for retrieving literature-based CBC thresholds for a disease via LLM",
+      "template": "You are a clinical hematology expert. For {disease_full}, provide CBC biomarker thresholds used in clinical practice to help identify or screen for the disease.\n\nReturn ONLY a JSON object. Keys are CBC feature names from this list: rdw, hgb, hct, wbc, plt, mcv, mch, mchc, rbc.\nEach value is an object with:\n  \"threshold\": numeric value (float)\n  \"direction\": \"above\" (high value indicates disease) or \"below\" (low value indicates disease)\n  \"source\": one-sentence clinical rationale\n\nOmit features with no relevant threshold for {disease_full}.\nReturn ONLY the JSON object, no explanation, no markdown.",
+      "variables": ["disease_full"],
+      "source_file": "src/utils.py",
+      "source_function": "build_threshold_prompt"
+    }
+  },
+  "method4_llm": {
+    "components": {
+      "cbc_features": {
+        "description": "Detailed descriptions of CBC features and their RA relevance",
+        "source_file": "src/method4_llm.py",
+        "source_variable": "CBC_FEATURES",
+        "features": {
+          "hct": {
+            "name": "Hematocrit",
+            "description": "Percentage of red blood cells in total blood volume",
+            "unit": "%",
+            "normal_range": "37–52%",
+            "ra_relevance": "Often decreased in RA due to anemia of chronic disease"
+          },
+          "hgb": {
+            "name": "Hemoglobin",
+            "description": "Oxygen-carrying protein in red blood cells",
+            "unit": "g/dL",
+            "normal_range": "12–17 g/dL",
+            "ra_relevance": "Reduced in anemia of chronic inflammation common in RA"
+          },
+          "mch": {
+            "name": "Mean Corpuscular Hemoglobin",
+            "description": "Average amount of hemoglobin per red blood cell",
+            "unit": "pg",
+            "normal_range": "27–33 pg",
+            "ra_relevance": "May be reduced in iron-deficiency anemia secondary to RA"
+          },
+          "mchc": {
+            "name": "Mean Corpuscular Hemoglobin Concentration",
+            "description": "Average concentration of hemoglobin in red blood cells",
+            "unit": "g/dL",
+            "normal_range": "32–36 g/dL",
+            "ra_relevance": "Decreased in hypochromic anemias associated with RA"
+          },
+          "mcv": {
+            "name": "Mean Corpuscular Volume",
+            "description": "Average size/volume of red blood cells",
+            "unit": "fL",
+            "normal_range": "80–100 fL",
+            "ra_relevance": "Normocytic or microcytic pattern common in RA anemia"
+          },
+          "plt": {
+            "name": "Platelets",
+            "description": "Cell fragments involved in clotting and inflammation",
+            "unit": "10^9/L",
+            "normal_range": "150–400 × 10⁹/L",
+            "ra_relevance": "Reactive thrombocytosis is a well-documented marker of active RA"
+          },
+          "rbc": {
+            "name": "Red Blood Cell Count",
+            "description": "Number of red blood cells per volume of blood",
+            "unit": "10^12/L",
+            "normal_range": "4.2–5.8 × 10¹²/L",
+            "ra_relevance": "Decreased count observed in RA-associated anemia"
+          },
+          "rdw": {
+            "name": "Red Cell Distribution Width",
+            "description": "Variation in red blood cell size (anisocytosis)",
+            "unit": "%",
+            "normal_range": "11.5–14.5%",
+            "ra_relevance": "Elevated RDW is a systemic inflammation marker linked to RA severity"
+          },
+          "wbc": {
+            "name": "White Blood Cell Count",
+            "description": "Total count of immune cells in blood",
+            "unit": "10^9/L",
+            "normal_range": "4.5–11.0 × 10⁹/L",
+            "ra_relevance": "Can be elevated in active RA inflammation or lowered by immunosuppressive treatment"
+          }
+        }
+      },
+      "format_spec": {
+        "description": "Output format specification for LLM-generated formulas",
+        "source_file": "src/method4_llm.py",
+        "source_variable": "_FORMAT_SPEC",
+        "template": "OUTPUT FORMAT (strict):\nReturn exactly {n_formulas} formula(s), one per line, using this syntax:\n  FORMULA: <python expression>\n\nRules:\n- Use only these variable names: hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc\n- Allowed operators: +  -  *  /  **\n- Allowed functions: np.sqrt()  np.log1p()  np.abs()\n- No conditionals, no loops, no external symbols\n- Each formula must be a single expression (no assignment, no def)\n- Use 3 to 7 features per formula\n- Higher output should correspond to higher probability of Rheumatoid Arthritis\n\nExample (style only, do not reuse):\n  FORMULA: rdw * plt / (hgb + 0.01)",
+        "variables": ["n_formulas"]
+      },
+      "cot_instruction": {
+        "description": "Chain-of-thought instruction for reasoning before formula generation",
+        "source_file": "src/method4_llm.py",
+        "source_variable": "_COT_INSTRUCTION",
+        "template": "Before each formula, briefly explain (2–3 sentences) the clinical rationale\nfor the combination you chose. Label each block:\n  REASONING: <your reasoning>\n  FORMULA: <python expression>"
+      }
+    },
+    "prompts": {
+      "blind": {
+        "description": "Prompt that relies solely on clinical/medical knowledge without data-driven hints",
+        "source_file": "src/method4_llm.py",
+        "source_function": "build_blind_prompt",
+        "variables": ["n_formulas", "chain_of_thought"],
+        "template": "You are a clinical data scientist with deep expertise in hematology and autoimmune disease. Your task is to design mathematical biomarker formulas that can identify patients likely to have Rheumatoid Arthritis (RA) using Complete Blood Count (CBC) measurements alone.\n\nCLINICAL CONTEXT:\nRheumatoid Arthritis is a systemic autoimmune disease causing chronic joint inflammation. It commonly induces anemia of chronic disease, reactive thrombocytosis, and elevated markers of red cell heterogeneity. CBC panels are routinely collected and may carry subtle RA-related signals.\n\nAVAILABLE CBC FEATURES:\n{feature_block}\n\nTASK:\nUsing your medical knowledge of how RA affects hematological parameters, propose {n_formulas} distinct formula(s) that compute a continuous score where higher values indicate a greater likelihood of RA.\n{cot_section}\n{format_spec}",
+        "notes": [
+          "feature_block is generated from CBC_FEATURES",
+          "cot_section is either empty string or COT_INSTRUCTION based on chain_of_thought parameter",
+          "format_spec is filled with n_formulas value"
+        ]
+      },
+      "seeded": {
+        "description": "Prompt seeded with data-driven insights from prior experiments",
+        "source_file": "src/method4_llm.py",
+        "source_function": "build_seeded_prompt",
+        "variables": ["n_formulas", "chain_of_thought"],
+        "template": "You are a clinical data scientist with deep expertise in hematology and autoimmune disease. Your task is to design mathematical biomarker formulas that can identify patients likely to have Rheumatoid Arthritis (RA) using Complete Blood Count (CBC) measurements alone.\n\nCLINICAL CONTEXT:\nRheumatoid Arthritis is a systemic autoimmune disease causing chronic joint inflammation. It commonly induces anemia of chronic disease, reactive thrombocytosis, and elevated markers of red cell heterogeneity. CBC panels are routinely collected and may carry subtle RA-related signals.\n\nAVAILABLE CBC FEATURES:\n{feature_block}\n\nDATA-DRIVEN GUIDANCE (derived from prior experiments on this dataset):\n1. Feature importance ranking (most to least discriminative):\n   RDW > PLT > MCHC > HCT > MCV > WBC > RBC\n   (hgb and mch tend to be redundant with hct and mchc respectively)\n\n2. Effective transformations observed on this heavily imbalanced dataset (~1% positive rate):\n   - np.log1p() on skewed count features (e.g. plt, wbc, rbc) reduces outlier influence\n   - np.sqrt() on ratio features helps compress variance\n   - Ratios between features (e.g. rdw / mcv) can amplify subtle group differences\n\n3. Optimal formula complexity: 3–7 features per formula. Simpler formulas\n   generalise better; overly complex formulas tend to overfit.\n\nTASK:\nUsing the above clinical knowledge and data-driven guidance, propose {n_formulas} distinct formula(s) that compute a continuous score where higher values indicate a greater likelihood of RA. Aim for diverse combinations — avoid repeating the same feature pairings.\n{cot_section}\n{format_spec}",
+        "notes": [
+          "feature_block is generated from CBC_FEATURES",
+          "cot_section is either empty string or COT_INSTRUCTION based on chain_of_thought parameter",
+          "format_spec is filled with n_formulas value",
+          "Contains hardcoded feature importance ranking and transformation guidance based on experiments"
+        ]
+      }
+    },
+    "configurations": {
+      "description": "Standard prompt configurations used in method4_llm.py",
+      "notes": [
+        "6 configurations total: 2 strategies × 3 temperatures",
+        "Blind strategy: no data-driven hints",
+        "Seeded strategy: includes feature importance and transformation guidance",
+        "Temperatures: 0.3 (low creativity), 0.7 (medium), 1.0 (high)",
+        "Chain-of-thought enabled for temperature >= 0.7",
+        "Default n_formulas = 5"
+      ],
+      "configs": [
+        {
+          "name": "blind_temp0.3",
+          "strategy": "blind",
+          "temperature": 0.3,
+          "n_formulas": 5,
+          "chain_of_thought": false
+        },
+        {
+          "name": "blind_temp0.7",
+          "strategy": "blind",
+          "temperature": 0.7,
+          "n_formulas": 5,
+          "chain_of_thought": true
+        },
+        {
+          "name": "blind_temp1.0",
+          "strategy": "blind",
+          "temperature": 1.0,
+          "n_formulas": 5,
+          "chain_of_thought": true
+        },
+        {
+          "name": "seeded_temp0.3",
+          "strategy": "seeded",
+          "temperature": 0.3,
+          "n_formulas": 5,
+          "chain_of_thought": false
+        },
+        {
+          "name": "seeded_temp0.7",
+          "strategy": "seeded",
+          "temperature": 0.7,
+          "n_formulas": 5,
+          "chain_of_thought": true
+        },
+        {
+          "name": "seeded_temp1.0",
+          "strategy": "seeded",
+          "temperature": 1.0,
+          "n_formulas": 5,
+          "chain_of_thought": true
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "description": "Centralized prompt library for the RA biomarker pipeline",
+    "created": "2026-04-18",
+    "source_files": [
+      "src/method4_llm.py",
+      "src/method_threshold.py",
+      "src/utils.py"
+    ],
+    "usage_notes": [
+      "All prompts use MedGemma 4B IT model (google/medgemma-4b-it)",
+      "Method 1 prompts query for clinical literature thresholds",
+      "Method 4 prompts generate mathematical biomarker formulas",
+      "Template variables are indicated with {variable_name}",
+      "See source files for implementation details"
+    ]
+  }
+}

@@ -223,6 +223,18 @@ MEDGEMMA_MAX_NEW_TOKENS = 1024
 CBC_FEATURE_LIST = ["rdw", "hgb", "hct", "wbc", "plt", "mcv", "mch", "mchc", "rbc"]
 THRESHOLDS_CACHE_DIR = RESULTS_DIR / "literature_thresholds"
 
+# Prompt library cache
+_PROMPTS = None
+
+def load_prompts():
+    """Load prompts from prompts.json (cached after first call)."""
+    global _PROMPTS
+    if _PROMPTS is None:
+        prompts_path = Path(__file__).parent / "prompts.json"
+        with open(prompts_path, encoding="utf-8") as f:
+            _PROMPTS = json.load(f)
+    return _PROMPTS
+
 
 def load_medgemma():
     """Load Med-Gemma 4B IT with automatic device placement. Returns (model, processor)."""
@@ -267,16 +279,9 @@ def medgemma_generate(model, processor, prompt: str, temperature: float = 0.1,
 
 def build_threshold_prompt(disease_full: str) -> str:
     """Build the LLM prompt for retrieving literature thresholds."""
-    return f"""You are a clinical hematology expert. For {disease_full}, provide CBC biomarker thresholds used in clinical practice to help identify or screen for the disease.
-
-Return ONLY a JSON object. Keys are CBC feature names from this list: rdw, hgb, hct, wbc, plt, mcv, mch, mchc, rbc.
-Each value is an object with:
-  "threshold": numeric value (float)
-  "direction": "above" (high value indicates disease) or "below" (low value indicates disease)
-  "source": one-sentence clinical rationale
-
-Omit features with no relevant threshold for {disease_full}.
-Return ONLY the JSON object, no explanation, no markdown."""
+    prompts = load_prompts()
+    template = prompts["method1_threshold"]["literature_thresholds"]["template"]
+    return template.format(disease_full=disease_full)
 
 
 def get_literature_thresholds(disease_full: str, force_refresh: bool = False) -> dict:
