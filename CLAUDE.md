@@ -14,6 +14,9 @@ Python: use `.venv` from the **parent** directory — `../.venv/Scripts/python.e
 - Use the format: `<type>(#<issue>): <description>`
 
 ## Coding standards
+**See [STANDARDS.md](STANDARDS.md) for complete coding standards** — file organization, style guide, data rules, metrics, experiment tracking, and git conventions.
+
+Quick reference:
 - **One file per method** in `src/`, named `method<N>_<name>.py`
 - **Shared code goes in `src/utils.py`** — never duplicate data loading or metric computation
 - **No classes, no frameworks** — keep it flat, functions only
@@ -27,13 +30,7 @@ Python: use `.venv` from the **parent** directory — `../.venv/Scripts/python.e
 - `data/modeling_data.csv` — exported from BigQuery, gitignored
 - Columns: subject_id, is_case, split, hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc
 - Split is immutable: train (80%) / test (20%), patient-level, deterministic
-- ~1% positive rate (RA cases) — always use imbalanced-aware metrics
-
-## Key numbers
-- Train: 1,273 cases / 115,955 controls
-- Test: 300 cases / 28,976 controls
-- Baseline AUC-ROC: 0.658 (all-features logistic regression)
-- Baseline AUC-PR: 0.017 (all-features logistic regression)
+- ~1% positive rate — always use imbalanced-aware metrics
 
 ## GitHub
 - Repo: `ofekvs18/UnderGradProject`
@@ -44,6 +41,7 @@ Python: use `.venv` from the **parent** directory — `../.venv/Scripts/python.e
 biomarker-pipeline/
 ├── CLAUDE.md              # this file
 ├── README.md              # project overview
+├── STANDARDS.md           # project standards
 ├── requirements.txt
 ├── data/                  # gitignored
 ├── results/               # generated outputs, mostly gitignored
@@ -55,3 +53,12 @@ biomarker-pipeline/
     ├── eval_pr_metrics.py
     └── (future method scripts)
 ```
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)

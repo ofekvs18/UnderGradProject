@@ -1,6 +1,9 @@
 # Data (large files, not tracked)
 data/
 
+# Service account keys — NEVER commit
+.secrets/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -22,3 +25,9 @@ results/*
 # OS
 .DS_Store
 Thumbs.db
+
+graphify-out/
+.graphify/
+.graphify_*.json
+.graphify_python
+.graphify_uncached.txt
