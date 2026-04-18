@@ -31,3 +31,5 @@ graphify-out/
 .graphify_*.json
 .graphify_python
 .graphify_uncached.txt
+
+.claude/
