@@ -7,6 +7,8 @@ Parts:
   1C: Comparison table, bar chart, ROC curve for best feature, summary text.
 """
 
+import argparse
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -17,7 +19,16 @@ from sklearn.metrics import roc_auc_score, roc_curve, average_precision_score, p
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
     precision_at_recall_levels, ensure_dir, RESULTS_DIR, DISEASE_FULL,
+    get_literature_thresholds, build_threshold_prompt, THRESHOLDS_CACHE_DIR,
 )
+
+# ── CLI Arguments ─────────────────────────────────────────────────────────────
+parser = argparse.ArgumentParser(description="Method 1 — Threshold Optimization")
+parser.add_argument("--dry-run", action="store_true",
+                    help="Print LLM prompt without loading model")
+parser.add_argument("--force-refresh", action="store_true",
+                    help="Re-query LLM even if cache exists")
+args = parser.parse_args()
 
 M1_DIR = RESULTS_DIR / "method1_threshold"
 ensure_dir(M1_DIR)
@@ -26,26 +37,28 @@ ensure_dir(M1_DIR)
 BASELINE_AUC_ROC = 0.658
 BASELINE_AUC_PR = 0.017
 
+# ── Dry-run mode ──────────────────────────────────────────────────────────────
+if args.dry_run:
+    print("=" * 70)
+    print("=== DRY RUN: LLM prompt for literature thresholds ===")
+    print("=" * 70)
+    print(build_threshold_prompt(DISEASE_FULL))
+    print("\n" + "=" * 70)
+    slug = DISEASE_FULL.lower().replace(" ", "_").replace("-", "_")
+    print(f"Cache would be written to: {THRESHOLDS_CACHE_DIR / f'{slug}.json'}")
+    print("=" * 70)
+    sys.exit(0)
+
 # ── Load ──────────────────────────────────────────────────────────────────────
 print("Loading data...")
 df, _ = load_data()
 train_df, test_df = get_splits(df)
 print(f"Train: {len(train_df):,} rows  |  Test: {len(test_df):,} rows\n")
 
-# ── Literature thresholds ─────────────────────────────────────────────────────
-# Values from standard clinical references for inflammatory/autoimmune conditions.
-literature_thresholds = {
-    # feature: (threshold, direction, source)
-    "rdw":  (14.5, "above", "RDW >14.5% associated with inflammatory conditions"),
-    "hgb":  (12.0, "below", "Anemia (Hgb <12 g/dL) common in chronic inflammation"),
-    "hct":  (36.0, "below", "Low hematocrit in anemia of chronic disease"),
-    "wbc":  (11.0, "above", "Leukocytosis in active inflammation"),
-    "plt":  (400.0, "above", "Thrombocytosis (reactive) in chronic inflammation"),
-    "mcv":  (80.0, "below", "Microcytosis in anemia of chronic disease"),
-    "mch":  (27.0, "below", "Low MCH in iron-deficiency/chronic disease anemia"),
-    "mchc": (32.0, "below", "Low MCHC in chronic disease"),
-    "rbc":  (4.0,  "below", "Low RBC in anemia of chronic disease"),
-}
+# ── Literature thresholds (auto-retrieved via MedGemma) ───────────────────────
+print(f"Fetching literature thresholds for {DISEASE_FULL}...")
+literature_thresholds = get_literature_thresholds(DISEASE_FULL, force_refresh=args.force_refresh)
+print(f"  Retrieved thresholds for: {list(literature_thresholds.keys())}\n")
 
 # ── Part 1A: Literature-based evaluation ─────────────────────────────────────
 print("=== Part 1A: Literature-based thresholds ===")
@@ -177,8 +190,8 @@ comp = comp.merge(
     }),
     on="feature",
 )
-comp = comp[["feature", "literature_threshold", "literature_precision", "literature_recall",
-             "datadriven_threshold", "datadriven_precision", "datadriven_recall", "auc_roc", "auc_pr"]]
+comp = comp[["feature", "literature_threshold", "literature_direction", "literature_precision", "literature_recall",
+             "datadriven_threshold", "datadriven_direction", "datadriven_precision", "datadriven_recall", "auc_roc", "auc_pr"]]
 comp = comp.sort_values("auc_pr", ascending=False).reset_index(drop=True)
 
 comp.to_csv(M1_DIR / "comparison_table.csv", index=False)

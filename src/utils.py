@@ -5,6 +5,8 @@ Import from here instead of duplicating data loading, metric computation,
 or path constants across method scripts.
 """
 
+import json
+import re
 import warnings
 import numpy as np
 import pandas as pd
@@ -213,3 +215,112 @@ def evaluate_formula_full(formula, train_df, test_df, features):
 def ensure_dir(path):
     """Create directory (and parents) if it doesn't exist."""
     Path(path).mkdir(parents=True, exist_ok=True)
+
+
+# ── LLM helpers (MedGemma on cluster) ─────────────────────────────────────────
+MEDGEMMA_MODEL_ID = "google/medgemma-4b-it"
+MEDGEMMA_MAX_NEW_TOKENS = 1024
+CBC_FEATURE_LIST = ["rdw", "hgb", "hct", "wbc", "plt", "mcv", "mch", "mchc", "rbc"]
+THRESHOLDS_CACHE_DIR = RESULTS_DIR / "literature_thresholds"
+
+
+def load_medgemma():
+    """Load Med-Gemma 4B IT with automatic device placement. Returns (model, processor)."""
+    try:
+        import torch
+        from transformers import AutoModelForImageTextToText, AutoProcessor
+    except ImportError as e:
+        raise ImportError(f"Missing dependency: {e}. Install: pip install transformers torch accelerate") from e
+
+    if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+        dtype = torch.bfloat16
+    elif torch.cuda.is_available():
+        dtype = torch.float16
+    else:
+        dtype = torch.float32
+
+    processor = AutoProcessor.from_pretrained(MEDGEMMA_MODEL_ID)
+    model = AutoModelForImageTextToText.from_pretrained(
+        MEDGEMMA_MODEL_ID, torch_dtype=dtype, device_map="auto"
+    )
+    model.eval()
+    return model, processor
+
+
+def medgemma_generate(model, processor, prompt: str, temperature: float = 0.1,
+                      max_new_tokens: int = MEDGEMMA_MAX_NEW_TOKENS) -> str:
+    """Run one inference call with MedGemma. Returns decoded text (new tokens only)."""
+    import torch
+    messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
+    inputs = processor.apply_chat_template(
+        messages, add_generation_prompt=True, tokenize=True,
+        return_dict=True, return_tensors="pt",
+    ).to(model.device)
+    input_len = inputs["input_ids"].shape[1]
+    with torch.inference_mode():
+        output_ids = model.generate(
+            **inputs, max_new_tokens=max_new_tokens,
+            do_sample=(temperature > 0), temperature=temperature,
+        )
+    return processor.decode(output_ids[0][input_len:], skip_special_tokens=True)
+
+
+def build_threshold_prompt(disease_full: str) -> str:
+    """Build the LLM prompt for retrieving literature thresholds."""
+    return f"""You are a clinical hematology expert. For {disease_full}, provide CBC biomarker thresholds used in clinical practice to help identify or screen for the disease.
+
+Return ONLY a JSON object. Keys are CBC feature names from this list: rdw, hgb, hct, wbc, plt, mcv, mch, mchc, rbc.
+Each value is an object with:
+  "threshold": numeric value (float)
+  "direction": "above" (high value indicates disease) or "below" (low value indicates disease)
+  "source": one-sentence clinical rationale
+
+Omit features with no relevant threshold for {disease_full}.
+Return ONLY the JSON object, no explanation, no markdown."""
+
+
+def get_literature_thresholds(disease_full: str, force_refresh: bool = False) -> dict:
+    """
+    Query MedGemma to retrieve literature-based CBC thresholds for a disease.
+    Returns {feature: (threshold, direction, source)}.
+    direction is "above" or "below".
+
+    Caches results to results/literature_thresholds/<disease_slug>.json.
+    """
+    slug = re.sub(r'[^a-z0-9]+', '_', disease_full.lower()).strip('_')
+    cache_path = THRESHOLDS_CACHE_DIR / f"{slug}.json"
+
+    if not force_refresh and cache_path.exists():
+        print(f"  Loading cached thresholds from {cache_path}")
+        with open(cache_path, encoding="utf-8") as f:
+            raw = json.load(f)
+        return {feat: (entry["threshold"], entry["direction"], entry["source"])
+                for feat, entry in raw.items()}
+
+    # Query LLM
+    print(f"  Querying MedGemma for {disease_full} thresholds...")
+    prompt = build_threshold_prompt(disease_full)
+    model, processor = load_medgemma()
+    raw = medgemma_generate(model, processor, prompt, temperature=0.1)
+
+    # Extract JSON from response (may have surrounding text)
+    match = re.search(r'\{.*\}', raw, re.DOTALL)
+    if not match:
+        raise ValueError(f"MedGemma did not return valid JSON. Response: {raw[:200]}")
+    data = json.loads(match.group())
+
+    thresholds = {}
+    for feat in CBC_FEATURE_LIST:
+        if feat in data:
+            entry = data[feat]
+            thresholds[feat] = (float(entry["threshold"]), entry["direction"], entry["source"])
+
+    # Save to disk
+    ensure_dir(THRESHOLDS_CACHE_DIR)
+    serializable = {feat: {"threshold": t, "direction": d, "source": s}
+                    for feat, (t, d, s) in thresholds.items()}
+    with open(cache_path, "w", encoding="utf-8") as f:
+        json.dump(serializable, f, indent=2)
+    print(f"  Saved thresholds to {cache_path}")
+
+    return thresholds

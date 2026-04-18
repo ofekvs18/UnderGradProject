@@ -45,6 +45,8 @@ from utils import (
     evaluate_formula_full,
     get_splits,
     load_data,
+    load_medgemma,
+    medgemma_generate,
 )
 
 
@@ -90,7 +92,7 @@ C_SEEDED = "#DD8452"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 1 — PROMPTS (from method4_prompts.py)
+# SECTION 1 — PROMPTS
 # ══════════════════════════════════════════════════════════════════════════════
 
 CBC_FEATURES = {
@@ -286,7 +288,7 @@ def get_all_prompt_configs() -> list[dict]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 2 — GENERATION (from method4_generate.py)
+# SECTION 2 — GENERATION
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _ts() -> str:
@@ -307,70 +309,23 @@ def run_dry(configs: list[dict]) -> None:
 
 
 def load_model():
-    """Load Med-Gemma 4B IT with automatic device placement."""
-    try:
-        import torch
-        from transformers import AutoModelForImageTextToText, AutoProcessor
-    except ImportError as e:
-        print(f"[ERROR] Missing dependency: {e}")
-        print("Install with: pip install transformers torch accelerate")
-        sys.exit(1)
-
-    if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
-        dtype = torch.bfloat16
-        print(f"[{_ts()}] Using bfloat16 (native GPU support)")
-    elif torch.cuda.is_available():
-        dtype = torch.float16
-        print(f"[{_ts()}] Using float16 (bfloat16 not supported on this GPU)")
-    else:
-        dtype = torch.float32
-        print(f"[{_ts()}] WARNING: no GPU detected, using float32 (CPU only — very slow)")
-
-    print(f"[{_ts()}] Loading processor from {MODEL_ID} ...")
-    processor = AutoProcessor.from_pretrained(MODEL_ID)
-
-    print(f"[{_ts()}] Loading model ({dtype}, device_map=auto) ...")
-    model = AutoModelForImageTextToText.from_pretrained(
-        MODEL_ID,
-        torch_dtype=dtype,
-        device_map="auto",
-    )
-    model.eval()
+    """Load Med-Gemma 4B IT with automatic device placement (wrapper for utils.load_medgemma)."""
+    import torch
+    print(f"[{_ts()}] Loading model {MODEL_ID} ...")
+    model, processor = load_medgemma()
 
     device_info = {k: str(v) for k, v in model.hf_device_map.items()} if hasattr(model, "hf_device_map") else "N/A"
     print(f"[{_ts()}] Model loaded. Device map: {device_info}")
     if torch.cuda.is_available():
-        import torch
         print(f"[{_ts()}] GPU memory used: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
     return model, processor
 
 
 def generate_one(model, processor, prompt: str, temperature: float) -> tuple[str, float]:
     """Run one inference call. Returns (raw_text, elapsed_seconds)."""
-    import torch
-
-    messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
-    inputs = processor.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        tokenize=True,
-        return_dict=True,
-        return_tensors="pt",
-    ).to(model.device)
-
-    input_len = inputs["input_ids"].shape[1]
-
     t0 = time.perf_counter()
-    with torch.inference_mode():
-        output_ids = model.generate(
-            **inputs,
-            max_new_tokens=MAX_NEW_TOKENS,
-            do_sample=DO_SAMPLE,
-            temperature=temperature,
-        )
+    raw_text = medgemma_generate(model, processor, prompt, temperature=temperature, max_new_tokens=MAX_NEW_TOKENS)
     elapsed = time.perf_counter() - t0
-
-    raw_text = processor.decode(output_ids[0][input_len:], skip_special_tokens=True)
     return raw_text, elapsed
 
 
@@ -440,7 +395,7 @@ def run_inference(configs: list[dict], repeats: int) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 3 — EVALUATION (from method4_evaluate.py)
+# SECTION 3 — EVALUATION
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _normalize(raw: str) -> str:
@@ -799,7 +754,7 @@ def run_evaluate() -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 4 — ANALYSIS (from method4_analysis.py)
+# SECTION 4 — ANALYSIS
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_all():
