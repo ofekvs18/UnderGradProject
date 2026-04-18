@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# ── Disease config (change this when switching diseases) ───────────────────────
+# ── Disease config (legacy constants — used by existing method scripts) ────────
 DISEASE      = "ra"
 DISEASE_FULL = "Rheumatoid Arthritis"
 ICD9_PATTERN = "714%"
@@ -19,6 +19,41 @@ ICD9_PATTERN = "714%"
 DATA_DIR    = Path("data")
 RESULTS_DIR = Path("results")
 DATA_PATH   = DATA_DIR / "ra_modeling_data.csv"
+
+
+# ── Multi-disease helpers (used by run_pipeline.py and future method scripts) ──
+
+def make_disease_config(name, icd_patterns, icd_version, full_name=""):
+    """
+    Build a disease config dict for the parameterized pipeline.
+
+    Args:
+        name:         Slug used for BQ table names and output CSV (e.g. 'ra').
+        icd_patterns: List of ICD LIKE patterns (e.g. ['714%'] or ['250.01%', '250.03%']).
+        icd_version:  9 or 10.
+        full_name:    Human-readable name for logs (defaults to name.upper()).
+
+    Returns:
+        dict with keys: disease, disease_full, icd_patterns, icd_version.
+    """
+    if isinstance(icd_patterns, str):
+        icd_patterns = [icd_patterns]
+    return {
+        "disease":      name,
+        "disease_full": full_name or name.upper(),
+        "icd_patterns": icd_patterns,
+        "icd_version":  icd_version,
+    }
+
+
+def data_path(disease):
+    """Return the modeling CSV path for a given disease slug."""
+    return DATA_DIR / f"{disease}_modeling_data.csv"
+
+
+def load_data_for(disease):
+    """Load the modeling CSV for a given disease slug. Returns (df, feature_names)."""
+    return load_data(data_path(disease))
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 META_COLS    = {"subject_id", "is_case", "split"}
