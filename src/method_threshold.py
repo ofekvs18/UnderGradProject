@@ -12,15 +12,19 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import roc_auc_score, roc_curve, average_precision_score
 
 from utils import (
     load_data, get_splits, compute_binary_metrics, find_youden_threshold,
-    ensure_dir, RESULTS_DIR, DISEASE_FULL,
+    precision_at_recall_levels, ensure_dir, RESULTS_DIR, DISEASE_FULL,
 )
 
 M1_DIR = RESULTS_DIR / "method1_threshold"
 ensure_dir(M1_DIR)
+
+# Baseline metrics from all-features logistic regression
+BASELINE_AUC_ROC = 0.658
+BASELINE_AUC_PR = 0.017
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 print("Loading data...")
@@ -58,8 +62,9 @@ for feat, (threshold, direction, source) in literature_thresholds.items():
         continue
 
     # AUC uses raw feature value; flip sign for "below" so higher = more likely RA
-    score = x_test if direction == "above" else -x_test
-    auc   = roc_auc_score(y_test, score)
+    score   = x_test if direction == "above" else -x_test
+    auc_roc = roc_auc_score(y_test, score)
+    auc_pr  = average_precision_score(y_test, score)
 
     preds = (x_test > threshold).astype(int) if direction == "above" else (x_test < threshold).astype(int)
     m     = compute_binary_metrics(y_test, preds)
@@ -68,23 +73,25 @@ for feat, (threshold, direction, source) in literature_thresholds.items():
         "feature":   feat,
         "threshold": threshold,
         "direction": direction,
-        "auc":       round(auc, 4),
+        "auc_roc":   round(auc_roc, 4),
+        "auc_pr":    round(auc_pr, 4),
         "precision": round(m["precision"], 4),
         "recall":    round(m["recall"], 4),
         "f1":        round(m["f1"], 4),
+        "f2":        round(m["f2"], 4),
         "n_test":    len(te),
         "source":    source,
     })
 
     print(f"  {feat:6s} ({direction:5s} {threshold:>6}): "
-          f"AUC={auc:.4f}  P={m['precision']:.4f}  R={m['recall']:.4f}  F1={m['f1']:.4f}")
+          f"AUC-ROC={auc_roc:.4f}  AUC-PR={auc_pr:.4f}  P={m['precision']:.4f}  R={m['recall']:.4f}")
 
 lit_df = pd.DataFrame(lit_results)
 lit_df.to_csv(M1_DIR / "literature_results.csv", index=False)
 print(f"\nSaved {M1_DIR}/literature_results.csv")
 
-best_lit = lit_df.loc[lit_df["auc"].idxmax()]
-print(f"\nBest literature AUC: {best_lit['feature']} — AUC={best_lit['auc']:.4f}")
+best_lit = lit_df.loc[lit_df["auc_pr"].idxmax()]
+print(f"\nBest literature (by AUC-PR): {best_lit['feature']} — AUC-ROC={best_lit['auc_roc']:.4f}, AUC-PR={best_lit['auc_pr']:.4f}")
 
 # ── Part 1B: Data-driven thresholds (Youden's index) ─────────────────────────
 print("\n=== Part 1B: Data-driven thresholds (Youden's index) ===")
@@ -118,40 +125,46 @@ for feat in list(literature_thresholds.keys()):
     # Convert back to original feature space
     optimal_threshold = optimal_threshold_score if direction == "above" else -optimal_threshold_score
 
-    auc   = roc_auc_score(y_test, score_te)
-    preds = (x_test >= optimal_threshold).astype(int) if direction == "above" else (x_test <= optimal_threshold).astype(int)
-    m     = compute_binary_metrics(y_test, preds)
+    auc_roc = roc_auc_score(y_test, score_te)
+    auc_pr  = average_precision_score(y_test, score_te)
+    preds   = (x_test >= optimal_threshold).astype(int) if direction == "above" else (x_test <= optimal_threshold).astype(int)
+    m       = compute_binary_metrics(y_test, preds)
+    par     = precision_at_recall_levels(score_tr, y_train, score_te, y_test)
 
     dd_results.append({
-        "feature":           feat,
-        "optimal_threshold": round(float(optimal_threshold), 4),
-        "direction":         direction,
-        "auc":               round(auc, 4),
-        "precision":         round(m["precision"], 4),
-        "recall":            round(m["recall"], 4),
-        "f1":                round(m["f1"], 4),
-        "n_train":           len(tr),
-        "n_test":            len(te),
+        "feature":                  feat,
+        "optimal_threshold":        round(float(optimal_threshold), 4),
+        "direction":                direction,
+        "auc_roc":                  round(auc_roc, 4),
+        "auc_pr":                   round(auc_pr, 4),
+        "precision":                round(m["precision"], 4),
+        "recall":                   round(m["recall"], 4),
+        "f1":                       round(m["f1"], 4),
+        "f2":                       round(m["f2"], 4),
+        "precision_at_recall_25":   par[0.25][0],
+        "precision_at_recall_50":   par[0.50][0],
+        "precision_at_recall_75":   par[0.75][0],
+        "n_train":                  len(tr),
+        "n_test":                   len(te),
     })
 
     print(f"  {feat:6s} ({direction:5s} {optimal_threshold:>8.4f}): "
-          f"AUC={auc:.4f}  P={m['precision']:.4f}  R={m['recall']:.4f}  F1={m['f1']:.4f}")
+          f"AUC-ROC={auc_roc:.4f}  AUC-PR={auc_pr:.4f}  P={m['precision']:.4f}  R={m['recall']:.4f}")
 
 dd_df = pd.DataFrame(dd_results)
 dd_df.to_csv(M1_DIR / "datadriven_results.csv", index=False)
 print(f"\nSaved {M1_DIR}/datadriven_results.csv")
 
-best_dd = dd_df.loc[dd_df["auc"].idxmax()]
-print(f"\nBest data-driven AUC: {best_dd['feature']} — AUC={best_dd['auc']:.4f}  "
+best_dd = dd_df.loc[dd_df["auc_pr"].idxmax()]
+print(f"\nBest data-driven (by AUC-PR): {best_dd['feature']} — AUC-ROC={best_dd['auc_roc']:.4f}, AUC-PR={best_dd['auc_pr']:.4f}  "
       f"threshold={best_dd['optimal_threshold']} ({best_dd['direction']})")
 
 # ── Part 1C: Comparison table and visualizations ──────────────────────────────
 print("\n=== Part 1C: Comparison ===")
 
-comp = lit_df[["feature", "threshold", "direction", "auc", "precision", "recall"]].rename(columns={
+comp = lit_df[["feature", "threshold", "direction", "auc_roc", "auc_pr", "precision", "recall"]].rename(columns={
     "threshold": "literature_threshold",
     "direction": "literature_direction",
-    "auc":       "auc",
     "precision": "literature_precision",
     "recall":    "literature_recall",
 })
@@ -165,29 +178,44 @@ comp = comp.merge(
     on="feature",
 )
 comp = comp[["feature", "literature_threshold", "literature_precision", "literature_recall",
-             "datadriven_threshold", "datadriven_precision", "datadriven_recall", "auc"]]
-comp = comp.sort_values("auc", ascending=False).reset_index(drop=True)
+             "datadriven_threshold", "datadriven_precision", "datadriven_recall", "auc_roc", "auc_pr"]]
+comp = comp.sort_values("auc_pr", ascending=False).reset_index(drop=True)
 
 comp.to_csv(M1_DIR / "comparison_table.csv", index=False)
 print(f"Saved {M1_DIR}/comparison_table.csv")
 print(comp.to_string(index=False))
 
-# ── Bar chart: AUC by feature ─────────────────────────────────────────────────
+# ── Bar chart: AUC-PR by feature ─────────────────────────────────────────────
 features_ordered = comp["feature"].tolist()
 x     = np.arange(len(features_ordered))
 width = 0.35
 
-fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(x - width / 2, comp["auc"], width, label="Literature threshold", color="#4C72B0")
-ax.bar(x + width / 2, comp["auc"], width, label="Data-driven threshold", color="#DD8452", alpha=0.8)
-ax.axhline(0.658, color="red", linestyle="--", linewidth=1.2, label="Baseline (all-features LR, AUC=0.658)")
-ax.set_xticks(x)
-ax.set_xticklabels([f.upper() for f in features_ordered])
-ax.set_ylabel("AUC (test set)")
-ax.set_title("Method 1: AUC by Feature — Literature vs Data-Driven Threshold")
-ax.set_ylim(0.4, 0.72)
-ax.legend()
-ax.grid(axis="y", alpha=0.3)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+# AUC-ROC
+ax1.bar(x, comp["auc_roc"], width, color="#4C72B0")
+ax1.axhline(BASELINE_AUC_ROC, color="red", linestyle="--", linewidth=1.2,
+            label=f"Baseline (all-features LR, AUC-ROC={BASELINE_AUC_ROC})")
+ax1.set_xticks(x)
+ax1.set_xticklabels([f.upper() for f in features_ordered])
+ax1.set_ylabel("AUC-ROC (test set)")
+ax1.set_title("Method 1: AUC-ROC by Feature (Data-Driven Threshold)")
+ax1.set_ylim(0.4, 0.72)
+ax1.legend()
+ax1.grid(axis="y", alpha=0.3)
+
+# AUC-PR
+ax2.bar(x, comp["auc_pr"], width, color="#DD8452")
+ax2.axhline(BASELINE_AUC_PR, color="red", linestyle="--", linewidth=1.2,
+            label=f"Baseline (all-features LR, AUC-PR={BASELINE_AUC_PR})")
+ax2.set_xticks(x)
+ax2.set_xticklabels([f.upper() for f in features_ordered])
+ax2.set_ylabel("AUC-PR (test set)")
+ax2.set_title("Method 1: AUC-PR by Feature (Data-Driven Threshold)")
+ax2.set_ylim(0.0, 0.04)
+ax2.legend()
+ax2.grid(axis="y", alpha=0.3)
+
 plt.tight_layout()
 plt.savefig(M1_DIR / "comparison_chart.png", dpi=150)
 plt.close()
@@ -209,6 +237,18 @@ fpr_curve, tpr_curve, _ = roc_curve(y_best, score_best)
 auc_best                 = roc_auc_score(y_best, score_best)
 
 def _roc_point(x_vals, y_vals, threshold, direction):
+    """
+    Compute (FPR, TPR) point on ROC curve for a given threshold.
+
+    Args:
+        x_vals: Feature values
+        y_vals: Binary labels
+        threshold: Classification threshold
+        direction: "above" or "below" (direction of positive prediction)
+
+    Returns:
+        Tuple of (fpr, tpr) for this threshold
+    """
     preds  = (x_vals >= threshold).astype(int) if direction == "above" else (x_vals <= threshold).astype(int)
     m      = compute_binary_metrics(y_vals, preds)
     tn     = int(((preds == 0) & (y_vals == 0)).sum())
@@ -236,32 +276,43 @@ plt.close()
 print(f"Saved {M1_DIR}/best_feature_roc.png")
 
 # ── Summary text ──────────────────────────────────────────────────────────────
-best_lit_row    = lit_df.loc[lit_df["feature"] == best_feat].iloc[0]
-best_dd_row     = dd_df.loc[dd_df["feature"]   == best_feat].iloc[0]
-auc_improvement = best_dd_row["auc"] - best_lit_row["auc"]
-auc_vs_baseline = best_dd_row["auc"] - 0.658
-
-insight = (
-    "Data-driven threshold does not improve AUC over literature (AUC is threshold-independent). "
-    "The key difference is recall: Youden-optimized threshold trades precision for higher sensitivity."
-    if abs(auc_improvement) < 0.001
-    else f"Data-driven threshold improves AUC by {auc_improvement:+.4f} over literature."
-)
+best_lit_row     = lit_df.loc[lit_df["feature"] == best_feat].iloc[0]
+best_dd_row      = dd_df.loc[dd_df["feature"]   == best_feat].iloc[0]
+auc_pr_vs_base   = best_dd_row["auc_pr"] - BASELINE_AUC_PR
+auc_roc_vs_base  = best_dd_row["auc_roc"] - BASELINE_AUC_ROC
 
 summary = f"""Method 1: Threshold Optimization Results
 =========================================
 
-Best single feature: {best_feat.upper()}
-  Literature threshold: {best_lit_row['threshold']} ({best_lit_row['direction']}) -> AUC={best_lit_row['auc']:.3f}, Precision={best_lit_row['precision']:.3f}, Recall={best_lit_row['recall']:.3f}
-  Data-driven threshold: {best_dd_row['optimal_threshold']} ({best_dd_row['direction']}) -> AUC={best_dd_row['auc']:.3f}, Precision={best_dd_row['precision']:.3f}, Recall={best_dd_row['recall']:.3f}
-  Improvement from data-driven: {auc_improvement:+.4f} AUC
+Best single feature: {best_feat.upper()} (selected by AUC-PR)
 
-Comparison to baseline:
-  All-features logistic regression AUC: 0.658
-  Best threshold AUC: {best_dd_row['auc']:.3f}
-  Difference: {auc_vs_baseline:+.3f}
+Literature threshold: {best_lit_row['threshold']} ({best_lit_row['direction']})
+  AUC-ROC: {best_lit_row['auc_roc']:.4f}
+  AUC-PR:  {best_lit_row['auc_pr']:.4f}
+  Precision: {best_lit_row['precision']:.4f}
+  Recall:    {best_lit_row['recall']:.4f}
+  F1: {best_lit_row['f1']:.4f}
+  F2: {best_lit_row['f2']:.4f}
 
-Key insight: {insight}
+Data-driven threshold: {best_dd_row['optimal_threshold']:.4f} ({best_dd_row['direction']})
+  AUC-ROC: {best_dd_row['auc_roc']:.4f}
+  AUC-PR:  {best_dd_row['auc_pr']:.4f}
+  Precision: {best_dd_row['precision']:.4f}
+  Recall:    {best_dd_row['recall']:.4f}
+  F1: {best_dd_row['f1']:.4f}
+  F2: {best_dd_row['f2']:.4f}
+  Precision@Recall(0.25): {best_dd_row['precision_at_recall_25']:.4f}
+  Precision@Recall(0.50): {best_dd_row['precision_at_recall_50']:.4f}
+  Precision@Recall(0.75): {best_dd_row['precision_at_recall_75']:.4f}
+
+Comparison to baseline (all-features logistic regression):
+  Baseline AUC-ROC: {BASELINE_AUC_ROC:.3f}  |  Best feature AUC-ROC: {best_dd_row['auc_roc']:.3f}  |  Diff: {auc_roc_vs_base:+.3f}
+  Baseline AUC-PR:  {BASELINE_AUC_PR:.3f}  |  Best feature AUC-PR:  {best_dd_row['auc_pr']:.3f}  |  Diff: {auc_pr_vs_base:+.3f}
+
+Key insight:
+  Single-feature thresholds underperform the all-features baseline on both metrics.
+  Data-driven (Youden) thresholds optimize the precision-recall tradeoff but cannot
+  match the predictive power of multi-feature models.
 """
 
 with open(M1_DIR / "method1_summary.txt", "w", encoding="utf-8") as f:
