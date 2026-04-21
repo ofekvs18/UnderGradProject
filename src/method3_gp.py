@@ -12,6 +12,7 @@ outperform random search (Method 2, AUC-PR=0.0174) and logistic regression
 """
 
 # Standard library
+import argparse
 import sys
 import warnings
 
@@ -28,40 +29,36 @@ from gplearn.fitness import make_fitness
 # Local
 sys.path.insert(0, "src")
 from utils import (
-    load_data, get_splits, compute_binary_metrics, find_youden_threshold,
+    load_data_for, load_disease_config, get_splits, compute_binary_metrics, find_youden_threshold,
     precision_at_recall_levels, ensure_dir, RESULTS_DIR,
 )
-
-OUT_DIR = RESULTS_DIR / "method3_gp"
-ensure_dir(OUT_DIR)
 
 M2_BEST_AUC_PR = 0.0174   # Method 2 best random formula
 LR_AUC_PR      = 0.0170   # all-features logistic regression
 LR_AUC_ROC     = 0.6580
 SEED           = 42
 
-# ── GP configurations ─────────────────────────────────────────────────────────
 SMALL_CONFIG  = dict(population_size=100,  generations=20)
 MEDIUM_CONFIG = dict(population_size=300,  generations=50)
 LARGE_CONFIG  = dict(population_size=500,  generations=100)
 
-# ── Part A: Load data ─────────────────────────────────────────────────────────
-print("Loading data...")
-df, features = load_data()
-train_df, test_df = get_splits(df)
-tr_clean = train_df[features + ["is_case"]].dropna()
-te_clean = test_df[features + ["is_case"]].dropna()
+PHASE1_AUC_PR_THRESHOLD = 0.016   # minimum AUC-PR to proceed to Phase 2
 
-X_train = tr_clean[features].values.astype(float)
-y_train = tr_clean["is_case"].values
-X_test  = te_clean[features].values.astype(float)
-y_test  = te_clean["is_case"].values
+CONFIG_ATTEMPTS = [
+    # Attempt 0 — baseline (parsimony penalises complexity; used first)
+    dict(parsimony_coefficient=0.005,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
+    # Attempt 1 — near-zero parsimony: let GP explore complex programs freely
+    dict(parsimony_coefficient=0.0001,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
+    # Attempt 2 — no parsimony penalty, drop div to reduce trivial collapses
+    dict(parsimony_coefficient=0.0,
+         function_set=["add", "sub", "mul", "sqrt", "log", "abs"]),
+    # Attempt 3 — no parsimony, add neg/inv for richer search space
+    dict(parsimony_coefficient=0.0,
+         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv"]),
+]
 
-print(f"Train: {len(X_train):,} rows | Test: {len(X_test):,} rows")
-print(f"Features: {features}\n")
-
-
-# ── Part B: Custom fitness function ──────────────────────────────────────────
 
 def _combined_auc(y, y_pred, sample_weight):
     """
@@ -94,8 +91,6 @@ def _combined_auc(y, y_pred, sample_weight):
 
 combined_auc_fitness = make_fitness(function=_combined_auc, greater_is_better=True)
 
-
-# ── Part C: Evaluate a single GP program ─────────────────────────────────────
 
 def evaluate_program(program, X_train, y_train, X_test, y_test):
     """
@@ -152,27 +147,8 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
     }
 
 
-# ── Part D: GP runner ─────────────────────────────────────────────────────────
-PHASE1_AUC_PR_THRESHOLD = 0.016   # minimum AUC-PR to proceed to Phase 2
-
-# Config adjustment attempts (tried in order if Phase 1 fails)
-CONFIG_ATTEMPTS = [
-    # Attempt 0 — baseline (parsimony penalises complexity; used first)
-    dict(parsimony_coefficient=0.005,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
-    # Attempt 1 — near-zero parsimony: let GP explore complex programs freely
-    dict(parsimony_coefficient=0.0001,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
-    # Attempt 2 — no parsimony penalty, drop div to reduce trivial collapses
-    dict(parsimony_coefficient=0.0,
-         function_set=["add", "sub", "mul", "sqrt", "log", "abs"]),
-    # Attempt 3 — no parsimony, add neg/inv for richer search space
-    dict(parsimony_coefficient=0.0,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv"]),
-]
-
-
-def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_label):
+def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_label, features,
+                   X_train, y_train, X_test, y_test):
     """
     Fit SymbolicTransformer and return evaluated programs.
 
@@ -181,6 +157,8 @@ def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_lab
         parsimony_coefficient: Penalty for program complexity (0.0 = no penalty)
         function_set: List of function names for GP primitives
         attempt_label: Description for logging
+        features: List of feature names
+        X_train, y_train, X_test, y_test: Data arrays
 
     Returns:
         List of (program, metrics_dict) tuples sorted by AUC-PR descending
@@ -225,164 +203,193 @@ def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_lab
     return evaluated
 
 
-# ── Part E: Run with retry logic ──────────────────────────────────────────────
-evaluated = []
-used_attempt = None
+def main():
+    parser = argparse.ArgumentParser(description="Method 3: Genetic Programming")
+    parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+    args = parser.parse_args()
 
-for attempt_num, cfg in enumerate(CONFIG_ATTEMPTS):
-    label = (f"Phase 1 — LARGE config (attempt {attempt_num})"
-             if attempt_num > 0
-             else "Phase 1 — LARGE config (baseline attempt)")
-    evaluated = run_gp_attempt(LARGE_CONFIG, **cfg, attempt_label=label)
-    used_attempt = attempt_num
+    disease = load_disease_config(args.disease)
+    OUT_DIR = RESULTS_DIR / "method3_gp"
+    ensure_dir(OUT_DIR)
+
+    # ── Part A: Load data ─────────────────────────────────────────────────────────
+    print("Loading data...")
+    df, features = load_data_for(disease.name)
+    train_df, test_df = get_splits(df)
+    tr_clean = train_df[features + ["is_case"]].dropna()
+    te_clean = test_df[features + ["is_case"]].dropna()
+
+    X_train = tr_clean[features].values.astype(float)
+    y_train = tr_clean["is_case"].values
+    X_test  = te_clean[features].values.astype(float)
+    y_test  = te_clean["is_case"].values
+
+    print(f"Train: {len(X_train):,} rows | Test: {len(X_test):,} rows")
+    print(f"Features: {features}\n")
+
+    # ── Part B: Run with retry logic ──────────────────────────────────────────────
+    evaluated = []
+    used_attempt = None
+
+    for attempt_num, cfg in enumerate(CONFIG_ATTEMPTS):
+        label = (f"Phase 1 — LARGE config (attempt {attempt_num})"
+                 if attempt_num > 0
+                 else "Phase 1 — LARGE config (baseline attempt)")
+        evaluated = run_gp_attempt(
+            LARGE_CONFIG, **cfg, attempt_label=label,
+            features=features, X_train=X_train, y_train=y_train,
+            X_test=X_test, y_test=y_test,
+        )
+        used_attempt = attempt_num
+
+        if not evaluated:
+            print(f"  ->No valid programs. Trying next config.\n")
+            continue
+
+        best_auc_pr = evaluated[0][1]["auc_pr"]
+        if best_auc_pr >= PHASE1_AUC_PR_THRESHOLD:
+            print(f"\n  ->AUC-PR={best_auc_pr:.4f} >= {PHASE1_AUC_PR_THRESHOLD} threshold. "
+                  f"Phase 1 PASSED.\n")
+            break
+        elif attempt_num < len(CONFIG_ATTEMPTS) - 1:
+            print(f"\n  ->AUC-PR={best_auc_pr:.4f} < {PHASE1_AUC_PR_THRESHOLD} threshold. "
+                  f"Trying config adjustment {attempt_num + 1}.\n")
+        else:
+            print(f"\n  ->AUC-PR={best_auc_pr:.4f} after {attempt_num + 1} attempts. "
+                  f"Discontinuing scale-up.\n")
 
     if not evaluated:
-        print(f"  ->No valid programs. Trying next config.\n")
-        continue
+        print("No valid programs found after all attempts. Exiting.")
+        sys.exit(1)
 
-    best_auc_pr = evaluated[0][1]["auc_pr"]
-    if best_auc_pr >= PHASE1_AUC_PR_THRESHOLD:
-        print(f"\n  ->AUC-PR={best_auc_pr:.4f} >= {PHASE1_AUC_PR_THRESHOLD} threshold. "
-              f"Phase 1 PASSED.\n")
-        break
-    elif attempt_num < len(CONFIG_ATTEMPTS) - 1:
-        print(f"\n  ->AUC-PR={best_auc_pr:.4f} < {PHASE1_AUC_PR_THRESHOLD} threshold. "
-              f"Trying config adjustment {attempt_num + 1}.\n")
-    else:
-        print(f"\n  ->AUC-PR={best_auc_pr:.4f} after {attempt_num + 1} attempts. "
-              f"Discontinuing scale-up.\n")
+    best_prog, best_row = evaluated[0]
+    results_df = pd.DataFrame([row for _, row in evaluated])
 
-if not evaluated:
-    print("No valid programs found after all attempts. Exiting.")
-    sys.exit(1)
+    all_path = OUT_DIR / "all_programs.csv"
+    results_df.to_csv(all_path, index=False)
+    print(f"Saved {all_path}")
 
-best_prog, best_row = evaluated[0]
-results_df = pd.DataFrame([row for _, row in evaluated])
+    top_path = OUT_DIR / "top_formulas.csv"
+    results_df.head(10).to_csv(top_path, index=False)
+    print(f"Saved {top_path}\n")
 
-all_path = OUT_DIR / "all_programs.csv"
-results_df.to_csv(all_path, index=False)
-print(f"Saved {all_path}")
+    # Print top 10
+    print("=== Top 10 GP programs by AUC-PR ===")
+    print(f"{'Rank':<5} {'AUC-ROC':>8} {'AUC-PR':>8} {'P@R25':>7} {'P@R50':>7} "
+          f"{'P@R75':>7} {'F1':>6} {'F2':>6}  formula")
+    print("-" * 120)
+    for rank, (_, row) in enumerate(evaluated[:10], 1):
+        short = row["formula"][:60] + "..." if len(row["formula"]) > 60 else row["formula"]
+        print(f"{rank:<5} {row['auc_roc']:>8.4f} {row['auc_pr']:>8.4f} "
+              f"{row['precision_at_recall_25']:>7.4f} {row['precision_at_recall_50']:>7.4f} "
+              f"{row['precision_at_recall_75']:>7.4f} {row['f1']:>6.4f} {row['f2']:>6.4f}  {short}")
 
-top_path = OUT_DIR / "top_formulas.csv"
-results_df.head(10).to_csv(top_path, index=False)
-print(f"Saved {top_path}\n")
+    # ── Part C: Validation checks ─────────────────────────────────────────────────
+    print(f"\n=== Validation ===")
+    auc_roc_ok = 0.52 < best_row["auc_roc"] < 0.95
+    print(f"Best AUC-ROC: {best_row['auc_roc']:.4f}  (must be 0.52-0.95): "
+          f"{'PASS' if auc_roc_ok else 'FAIL'}")
+    if not auc_roc_ok:
+        if best_row["auc_roc"] <= 0.52:
+            print("  WARNING: GP did not beat random chance — try more generations.")
+        else:
+            print("  WARNING: AUC-ROC suspiciously high — check for data leakage.")
 
-# Print top 10
-print("=== Top 10 GP programs by AUC-PR ===")
-print(f"{'Rank':<5} {'AUC-ROC':>8} {'AUC-PR':>8} {'P@R25':>7} {'P@R50':>7} "
-      f"{'P@R75':>7} {'F1':>6} {'F2':>6}  formula")
-print("-" * 120)
-for rank, (_, row) in enumerate(evaluated[:10], 1):
-    short = row["formula"][:60] + "..." if len(row["formula"]) > 60 else row["formula"]
-    print(f"{rank:<5} {row['auc_roc']:>8.4f} {row['auc_pr']:>8.4f} "
-          f"{row['precision_at_recall_25']:>7.4f} {row['precision_at_recall_50']:>7.4f} "
-          f"{row['precision_at_recall_75']:>7.4f} {row['f1']:>6.4f} {row['f2']:>6.4f}  {short}")
+    # ── Part D: Compare vs baselines ──────────────────────────────────────────────
+    print(f"\n=== GP vs baselines ===")
+    print(f"Baseline (all-features LR)  : AUC-ROC={LR_AUC_ROC:.4f}  AUC-PR={LR_AUC_PR:.4f}")
+    print(f"Method 2 best random formula: AUC-PR={M2_BEST_AUC_PR:.4f}")
+    print(f"Method 3 GP best            : AUC-ROC={best_row['auc_roc']:.4f}  "
+          f"AUC-PR={best_row['auc_pr']:.4f}")
+    print(f"Beats Method 2 AUC-PR: {'YES' if best_row['auc_pr'] > M2_BEST_AUC_PR else 'NO'}")
+    print(f"Best formula: {best_row['formula']}")
 
+    # ── Part E: Plots ─────────────────────────────────────────────────────────────
+    print("\nGenerating plots...")
+    prevalence = y_test.mean()
 
-# ── Part F: Validation checks ─────────────────────────────────────────────────
-print(f"\n=== Validation ===")
-auc_roc_ok = 0.52 < best_row["auc_roc"] < 0.95
-print(f"Best AUC-ROC: {best_row['auc_roc']:.4f}  (must be 0.52-0.95): "
-      f"{'PASS' if auc_roc_ok else 'FAIL'}")
-if not auc_roc_ok:
-    if best_row["auc_roc"] <= 0.52:
-        print("  WARNING: GP did not beat random chance — try more generations.")
-    else:
-        print("  WARNING: AUC-ROC suspiciously high — check for data leakage.")
+    # PR curves for top 5
+    n_top = min(5, len(evaluated))
+    fig, axes = plt.subplots(1, n_top, figsize=(4 * n_top, 4), sharey=True)
+    if n_top == 1:
+        axes = [axes]
 
+    for i, (prog, row) in enumerate(evaluated[:n_top]):
+        ax = axes[i]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            score = np.asarray(prog.execute(X_test), dtype=float)
+        bad = ~np.isfinite(score)
+        if bad.any():
+            score[bad] = np.nanmedian(score[~bad]) if (~bad).any() else 0.0
+        if roc_auc_score(y_test, score) < 0.5:
+            score = -score
+        prec_c, rec_c, _ = precision_recall_curve(y_test, score)
+        ax.plot(rec_c, prec_c, color="#4C72B0", lw=1.5, label=f"AUC-PR={row['auc_pr']:.4f}")
+        ax.axhline(prevalence, color="gray", linestyle=":", lw=1, label=f"Prevalence ({prevalence:.4f})")
+        ax.set_xlim(0, 1)
+        ax.set_title(f"#{i+1}", fontsize=10)
+        ax.set_xlabel("Recall", fontsize=8)
+        if i == 0:
+            ax.set_ylabel("Precision", fontsize=8)
+        ax.legend(fontsize=6)
+        ax.grid(alpha=0.3)
 
-# ── Part G: Compare vs baselines ──────────────────────────────────────────────
-print(f"\n=== GP vs baselines ===")
-print(f"Baseline (all-features LR)  : AUC-ROC={LR_AUC_ROC:.4f}  AUC-PR={LR_AUC_PR:.4f}")
-print(f"Method 2 best random formula: AUC-PR={M2_BEST_AUC_PR:.4f}")
-print(f"Method 3 GP best            : AUC-ROC={best_row['auc_roc']:.4f}  "
-      f"AUC-PR={best_row['auc_pr']:.4f}")
-print(f"Beats Method 2 AUC-PR: {'YES' if best_row['auc_pr'] > M2_BEST_AUC_PR else 'NO'}")
-print(f"Best formula: {best_row['formula']}")
+    fig.suptitle("Method 3 (GP): PR Curves — Top 5 Programs", fontsize=12)
+    plt.tight_layout()
+    pr_path = OUT_DIR / "top_pr_curves.png"
+    plt.savefig(pr_path, dpi=150)
+    plt.close()
+    print(f"Saved {pr_path}")
 
-
-# ── Part H: Plots ─────────────────────────────────────────────────────────────
-print("\nGenerating plots...")
-prevalence = y_test.mean()
-
-# PR curves for top 5
-n_top = min(5, len(evaluated))
-fig, axes = plt.subplots(1, n_top, figsize=(4 * n_top, 4), sharey=True)
-if n_top == 1:
-    axes = [axes]
-
-for i, (prog, row) in enumerate(evaluated[:n_top]):
-    ax = axes[i]
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        score = np.asarray(prog.execute(X_test), dtype=float)
-    bad = ~np.isfinite(score)
-    if bad.any():
-        score[bad] = np.nanmedian(score[~bad]) if (~bad).any() else 0.0
-    if roc_auc_score(y_test, score) < 0.5:
-        score = -score
-    prec_c, rec_c, _ = precision_recall_curve(y_test, score)
-    ax.plot(rec_c, prec_c, color="#4C72B0", lw=1.5, label=f"AUC-PR={row['auc_pr']:.4f}")
-    ax.axhline(prevalence, color="gray", linestyle=":", lw=1, label=f"Prevalence ({prevalence:.4f})")
-    ax.set_xlim(0, 1)
-    ax.set_title(f"#{i+1}", fontsize=10)
-    ax.set_xlabel("Recall", fontsize=8)
-    if i == 0:
-        ax.set_ylabel("Precision", fontsize=8)
-    ax.legend(fontsize=6)
+    # AUC-PR histogram
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.hist(results_df["auc_pr"], bins=min(20, len(results_df)),
+            color="#4C72B0", alpha=0.75, edgecolor="white")
+    ax.axvline(LR_AUC_PR,      color="red",    linestyle="--", lw=1.5,
+               label=f"LR baseline ({LR_AUC_PR})")
+    ax.axvline(M2_BEST_AUC_PR, color="orange", linestyle="--", lw=1.5,
+               label=f"Method 2 best ({M2_BEST_AUC_PR})")
+    ax.axvline(best_row["auc_pr"], color="green", linestyle="--", lw=1.5,
+               label=f"GP best ({best_row['auc_pr']:.4f})")
+    ax.set_xlabel("AUC-PR")
+    ax.set_ylabel("Count")
+    ax.set_title(f"Method 3 (GP): AUC-PR Distribution ({len(results_df)} programs)")
+    ax.legend()
     ax.grid(alpha=0.3)
+    plt.tight_layout()
+    hist_path = OUT_DIR / "auc_pr_histogram.png"
+    plt.savefig(hist_path, dpi=150)
+    plt.close()
+    print(f"Saved {hist_path}")
 
-fig.suptitle("Method 3 (GP): PR Curves — Top 5 Programs", fontsize=12)
-plt.tight_layout()
-pr_path = OUT_DIR / "top_pr_curves.png"
-plt.savefig(pr_path, dpi=150)
-plt.close()
-print(f"Saved {pr_path}")
+    # Method comparison bar chart
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    method_labels = ["LR baseline", "Method 2\n(random)", "Method 3\n(GP)"]
+    pr_vals  = [LR_AUC_PR,  M2_BEST_AUC_PR,   best_row["auc_pr"]]
+    roc_vals = [LR_AUC_ROC, results_df["auc_roc"].max(), best_row["auc_roc"]]
+    colors   = ["#999999", "#4C72B0", "#DD8452"]
 
-# AUC-PR histogram
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.hist(results_df["auc_pr"], bins=min(20, len(results_df)),
-        color="#4C72B0", alpha=0.75, edgecolor="white")
-ax.axvline(LR_AUC_PR,      color="red",    linestyle="--", lw=1.5,
-           label=f"LR baseline ({LR_AUC_PR})")
-ax.axvline(M2_BEST_AUC_PR, color="orange", linestyle="--", lw=1.5,
-           label=f"Method 2 best ({M2_BEST_AUC_PR})")
-ax.axvline(best_row["auc_pr"], color="green", linestyle="--", lw=1.5,
-           label=f"GP best ({best_row['auc_pr']:.4f})")
-ax.set_xlabel("AUC-PR")
-ax.set_ylabel("Count")
-ax.set_title(f"Method 3 (GP): AUC-PR Distribution ({len(results_df)} programs)")
-ax.legend()
-ax.grid(alpha=0.3)
-plt.tight_layout()
-hist_path = OUT_DIR / "auc_pr_histogram.png"
-plt.savefig(hist_path, dpi=150)
-plt.close()
-print(f"Saved {hist_path}")
+    for ax, vals, ylabel in zip(axes, [pr_vals, roc_vals], ["AUC-PR", "AUC-ROC"]):
+        bars = ax.bar(method_labels, vals, color=colors, alpha=0.85)
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"{ylabel} Comparison")
+        ax.set_ylim(0, max(vals) * 1.30)
+        for bar, val in zip(bars, vals):
+            ax.text(bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + max(vals) * 0.02,
+                    f"{val:.4f}", ha="center", fontsize=9)
+        ax.grid(axis="y", alpha=0.3)
 
-# Method comparison bar chart
-fig, axes = plt.subplots(1, 2, figsize=(10, 4))
-method_labels = ["LR baseline", "Method 2\n(random)", "Method 3\n(GP)"]
-pr_vals  = [LR_AUC_PR,  M2_BEST_AUC_PR,   best_row["auc_pr"]]
-roc_vals = [LR_AUC_ROC, results_df["auc_roc"].max(), best_row["auc_roc"]]
-colors   = ["#999999", "#4C72B0", "#DD8452"]
+    fig.suptitle("Method 3 (GP) vs Baselines", fontsize=12)
+    plt.tight_layout()
+    comp_path = OUT_DIR / "comparison_chart.png"
+    plt.savefig(comp_path, dpi=150)
+    plt.close()
+    print(f"Saved {comp_path}")
 
-for ax, vals, ylabel in zip(axes, [pr_vals, roc_vals], ["AUC-PR", "AUC-ROC"]):
-    bars = ax.bar(method_labels, vals, color=colors, alpha=0.85)
-    ax.set_ylabel(ylabel)
-    ax.set_title(f"{ylabel} Comparison")
-    ax.set_ylim(0, max(vals) * 1.30)
-    for bar, val in zip(bars, vals):
-        ax.text(bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + max(vals) * 0.02,
-                f"{val:.4f}", ha="center", fontsize=9)
-    ax.grid(axis="y", alpha=0.3)
+    print("\nMethod 3 (GP) complete.")
 
-fig.suptitle("Method 3 (GP) vs Baselines", fontsize=12)
-plt.tight_layout()
-comp_path = OUT_DIR / "comparison_chart.png"
-plt.savefig(comp_path, dpi=150)
-plt.close()
-print(f"Saved {comp_path}")
 
-print("\nMethod 3 (GP) complete.")
+if __name__ == "__main__":
+    main()

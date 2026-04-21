@@ -11,6 +11,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from omegaconf import OmegaConf
 
 # ── Disease config (legacy constants — used by existing method scripts) ────────
 DISEASE      = "ra"
@@ -24,6 +25,18 @@ DATA_PATH   = DATA_DIR / "ra_modeling_data.csv"
 
 
 # ── Multi-disease helpers (used by run_pipeline.py and future method scripts) ──
+
+def load_disease_config(disease_slug):
+    """
+    Load disease config from conf/disease/{slug}.yaml using OmegaConf.
+
+    Returns a DictConfig with keys: name, full_name, icd_patterns, icd_version.
+    """
+    config_path = Path("conf") / "disease" / f"{disease_slug}.yaml"
+    if not config_path.exists():
+        raise FileNotFoundError(f"Disease config not found: {config_path}")
+    return OmegaConf.load(config_path)
+
 
 def make_disease_config(name, icd_patterns, icd_version, full_name=""):
     """

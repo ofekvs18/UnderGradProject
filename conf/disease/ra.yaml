@@ -1,0 +1,5 @@
+name: ra
+full_name: "Rheumatoid Arthritis"
+icd_patterns:
+  - "714%"
+icd_version: 9

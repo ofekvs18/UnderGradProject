@@ -6,6 +6,7 @@ Expected AUC range if clean: ~0.55–0.75 for single features.
 AUC > 0.95 on a single feature strongly suggests label or temporal leakage.
 """
 
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -15,15 +16,21 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, average_precision_score, precision_recall_curve
 
 from utils import (
-    load_data, get_splits, compute_binary_metrics, find_youden_threshold,
+    load_data_for, load_disease_config, get_splits, compute_binary_metrics, find_youden_threshold,
     precision_at_recall_levels, ensure_dir, RESULTS_DIR,
 )
+
+parser = argparse.ArgumentParser(description="Sanity check — logistic regression leakage test")
+parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+args = parser.parse_args()
+
+disease = load_disease_config(args.disease)
 
 ensure_dir(RESULTS_DIR)
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 print("Loading data...")
-df, features = load_data()
+df, features = load_data_for(disease.name)
 train_df, test_df = get_splits(df)
 
 print(f"Columns: {list(df.columns)}")
@@ -151,12 +158,12 @@ print(f"Saved {RESULTS_DIR}/sanity_check_results.csv")
 
 # ── ROC curves plot ───────────────────────────────────────────────────────────
 single_results = [r for r in results if r["model"] != "all_features"]
-top3           = sorted(single_results, key=lambda r: r["auc"], reverse=True)[:3]
+top3           = sorted(single_results, key=lambda r: r["auc_roc"], reverse=True)[:3]
 plot_models    = top3 + [res_all]
 
 fig, ax = plt.subplots(figsize=(7, 6))
 for r in plot_models:
-    ax.plot(r["fpr_arr"], r["tpr_arr"], label=f"{r['model']} (AUC={r['auc']:.3f})")
+    ax.plot(r["fpr_arr"], r["tpr_arr"], label=f"{r['model']} (AUC={r['auc_roc']:.3f})")
 ax.plot([0, 1], [0, 1], "k--", linewidth=0.8)
 ax.set_xlabel("False Positive Rate")
 ax.set_ylabel("True Positive Rate")

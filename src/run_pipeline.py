@@ -30,7 +30,6 @@ Usage:
 """
 
 # Standard library
-import argparse
 import re
 import sys
 from pathlib import Path
@@ -38,6 +37,8 @@ from pathlib import Path
 # Third-party
 import google.auth
 from google.cloud import bigquery
+import hydra
+from omegaconf import DictConfig
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SRC_DIR      = Path(__file__).parent
@@ -65,17 +66,17 @@ def build_icd_like(patterns, alias=None):
     return "(" + " OR ".join(clauses) + ")"
 
 
-def make_pipeline_config(args):
-    """Return a dict of all template substitution values."""
-    patterns = args.icd_patterns
+def make_pipeline_config(cfg):
+    """Return a dict of all template substitution values from Hydra config."""
+    patterns = cfg.disease.icd_patterns
     return {
-        "disease":              args.disease,
-        "disease_full":         args.disease_full or args.disease.upper(),
-        "icd_version":          args.icd_version,
+        "disease":              cfg.disease.name,
+        "disease_full":         cfg.disease.full_name,
+        "icd_version":          cfg.disease.icd_version,
         "icd_filter":           build_icd_like(patterns, alias=None),
         "icd_filter_d":         build_icd_like(patterns, alias="d"),
         "icd_patterns_display": ", ".join(patterns),
-        "bq_dataset":           args.bq_dataset,
+        "bq_dataset":           cfg.pipeline.bq_dataset,
     }
 
 
@@ -230,51 +231,10 @@ def extract_label(stmt):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
-def parse_args():
-    """Parse command-line arguments for the pipeline."""
-    p = argparse.ArgumentParser(
-        description="Run the parameterized cohort extraction pipeline on BigQuery."
-    )
-    p.add_argument(
-        "--disease", required=True,
-        help="Disease slug used for table names and output file (e.g. ra, t1d, crohns)."
-    )
-    p.add_argument(
-        "--disease-full", default="",
-        help="Human-readable disease name for logs (e.g. 'Rheumatoid Arthritis')."
-    )
-    p.add_argument(
-        "--icd-patterns", nargs="+", required=True,
-        help="One or more ICD LIKE patterns (e.g. '714%%' or '250.01%%' '250.03%%')."
-    )
-    p.add_argument(
-        "--icd-version", type=int, choices=[9, 10], required=True,
-        help="ICD version: 9 or 10."
-    )
-    p.add_argument(
-        "--key-file", default=None,
-        help="Path to BigQuery service account JSON key file. "
-             "Omit to use Application Default Credentials (gcloud auth application-default login)."
-    )
-    p.add_argument(
-        "--project", default=None,
-        help="GCP project ID. Inferred from key file or ADC if omitted."
-    )
-    p.add_argument(
-        "--bq-dataset", default=DEFAULT_BQ_DATASET,
-        help=f"BigQuery output dataset (default: {DEFAULT_BQ_DATASET})."
-    )
-    p.add_argument(
-        "--dry-run", action="store_true",
-        help="Print substituted SQL without executing anything."
-    )
-    return p.parse_args()
-
-
-def main():
+@hydra.main(config_path="../conf", config_name="config", version_base=None)
+def main(cfg: DictConfig):
     """Execute the cohort extraction pipeline with user-specified parameters."""
-    args = parse_args()
-    config = make_pipeline_config(args)
+    config = make_pipeline_config(cfg)
 
     print("=" * 70)
     print(f"Cohort Extraction Pipeline")
@@ -282,25 +242,25 @@ def main():
     print(f"  ICD      : version {config['icd_version']}, "
           f"pattern(s): {config['icd_patterns_display']}")
     print(f"  Dataset  : {config['bq_dataset']}")
-    print(f"  Auth     : {args.key_file or 'Application Default Credentials'}")
+    print(f"  Auth     : {cfg.pipeline.key_file or 'Application Default Credentials'}")
     print("=" * 70)
 
     sql = load_sql_template()
     sql = substitute_config(sql, config)
 
-    if args.dry_run:
+    if cfg.pipeline.dry_run:
         print("\n[DRY RUN] Substituted SQL:\n")
         print(sql)
         print("\n[DRY RUN] Checking BigQuery connectivity...")
         try:
-            client = make_bq_client(args.key_file, args.project)
+            client = make_bq_client(cfg.pipeline.key_file, cfg.pipeline.project)
             rows = list(client.query("SELECT 1 AS ok").result())
             print(f"  Connection OK — got {rows[0]['ok']} from SELECT 1.")
         except Exception as exc:
             print(f"  Connection FAILED: {exc}")
         return
 
-    client = make_bq_client(args.key_file, args.project)
+    client = make_bq_client(cfg.pipeline.key_file, cfg.pipeline.project)
 
     statements = split_statements(sql)
     print(f"\nFound {len(statements)} executable statement(s).\n")

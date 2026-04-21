@@ -45,6 +45,8 @@ from utils import (
     evaluate_formula_full,
     get_splits,
     load_data,
+    load_data_for,
+    load_disease_config,
     load_medgemma,
     load_prompts,
     medgemma_generate,
@@ -209,6 +211,8 @@ def generate_one(model, processor, prompt: str, temperature: float) -> tuple[str
 def run_inference(configs: list[dict], repeats: int) -> None:
     """Run LLM inference for all configs and save to raw_outputs.json."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     existing: list[dict] = []
     if RAW_FILE.exists():
@@ -436,7 +440,7 @@ def _write_report(lines: list[str]) -> None:
     print(text)
 
 
-def run_evaluate() -> None:
+def run_evaluate(disease_slug: str = "ra") -> None:
     """Parse, validate, deduplicate, and evaluate LLM formulas."""
     ensure_dir(OUT_DIR)
 
@@ -452,7 +456,8 @@ def run_evaluate() -> None:
     print(f"Loaded {len(raw_outputs)} raw entries  ({len(ok_outputs)} successful)\n")
 
     print("Loading data...")
-    df, features = load_data()
+    disease = load_disease_config(disease_slug)
+    df, features = load_data_for(disease.name)
     train_df, test_df = get_splits(df)
     print(f"Train: {len(train_df):,} | Test: {len(test_df):,}\n")
 
@@ -1052,6 +1057,11 @@ def main() -> None:
         default=DEFAULT_REPEATS,
         help=f"(generate only) Number of repeats per config (default: {DEFAULT_REPEATS}).",
     )
+    parser.add_argument(
+        "--disease",
+        default="ra",
+        help="Disease slug for data loading (e.g. ra, dm1). Default: ra.",
+    )
     args = parser.parse_args()
 
     if args.stage == "prompts":
@@ -1072,7 +1082,7 @@ def main() -> None:
         run_inference(configs, args.repeats)
 
     elif args.stage == "evaluate":
-        run_evaluate()
+        run_evaluate(args.disease)
 
     elif args.stage == "analyze":
         run_analyze()
@@ -1087,7 +1097,7 @@ def main() -> None:
         print("\n" + "=" * 70)
         print("STAGE 2: EVALUATE")
         print("=" * 70)
-        run_evaluate()
+        run_evaluate(args.disease)
 
         print("\n" + "=" * 70)
         print("STAGE 3: ANALYZE")
