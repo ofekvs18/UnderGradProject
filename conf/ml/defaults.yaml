@@ -1,0 +1,54 @@
+# ML parameters for all method scripts.
+# All hardcoded values that control experiment behaviour live here.
+
+seed: 42
+
+# Baseline metrics — update as better results are obtained
+baselines:
+  lr_auc_roc: 0.6580
+  lr_auc_pr: 0.0170
+  m2_best_auc_pr: 0.0174
+  gp_best_auc_roc: 0.6715
+  gp_best_auc_pr: 0.0179
+
+# Method 2: Random formula search
+method2:
+  n_formulas: 10000
+  bad_frac: 0.10  # skip formula if > this fraction of rows produce NaN/inf
+
+# Method 3: Genetic Programming
+method3:
+  phase1_auc_pr_threshold: 0.016
+  bad_frac: 0.10        # skip program if > this fraction of rows produce NaN/inf
+  hall_of_fame: 50      # number of best programs retained by gplearn
+  n_components: 50      # number of programs to extract from hall of fame
+  gp_configs:
+    small:
+      population_size: 100
+      generations: 20
+    medium:
+      population_size: 300
+      generations: 50
+    large:
+      population_size: 500
+      generations: 100
+  config_attempts:
+    - parsimony_coefficient: 0.005
+      function_set: [add, sub, mul, div, sqrt, log, abs]
+    - parsimony_coefficient: 0.0001
+      function_set: [add, sub, mul, div, sqrt, log, abs]
+    - parsimony_coefficient: 0.0
+      function_set: [add, sub, mul, sqrt, log, abs]
+    - parsimony_coefficient: 0.0
+      function_set: [add, sub, mul, div, sqrt, log, abs, neg, inv]
+
+# Method 4: LLM-based formula generation
+method4:
+  model_id: google/medgemma-4b-it
+  default_repeats: 4
+  max_new_tokens: 1024
+  do_sample: true
+  functional_corr: 0.999  # deduplication: drop formula if corr >= this with an existing one
+  n_formulas_per_call: 5
+  temperatures: [0.3, 0.7, 1.0]
+  cot_min_temperature: 0.7  # enable chain-of-thought for temperatures >= this value

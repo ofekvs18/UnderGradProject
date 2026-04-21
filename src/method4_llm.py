@@ -47,10 +47,13 @@ from utils import (
     load_data,
     load_data_for,
     load_disease_config,
+    load_ml_config,
     load_medgemma,
     load_prompts,
     medgemma_generate,
 )
+
+_ml = load_ml_config()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -66,23 +69,23 @@ RESULTS_FILE   = OUT_DIR / "method4_results.csv"
 SUMMARY_FILE   = OUT_DIR / "method4_summary.txt"
 
 # Model settings
-MODEL_ID         = "google/medgemma-4b-it"
-DEFAULT_REPEATS  = 4
-MAX_NEW_TOKENS   = 1024
-DO_SAMPLE        = True
+MODEL_ID         = _ml.method4.model_id
+DEFAULT_REPEATS  = _ml.method4.default_repeats
+MAX_NEW_TOKENS   = _ml.method4.max_new_tokens
+DO_SAMPLE        = _ml.method4.do_sample
 
 # Feature definitions
 FEATURE_VARS = {"hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc"}
 FEATURES     = ["hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc"]
 
 # Baselines
-BASELINE_LR_AUC_ROC  = 0.658
-BASELINE_LR_AUC_PR   = 0.017
-BASELINE_GP_AUC_ROC  = 0.6715
-BASELINE_GP_AUC_PR   = 0.0179
+BASELINE_LR_AUC_ROC  = _ml.baselines.lr_auc_roc
+BASELINE_LR_AUC_PR   = _ml.baselines.lr_auc_pr
+BASELINE_GP_AUC_ROC  = _ml.baselines.gp_best_auc_roc
+BASELINE_GP_AUC_PR   = _ml.baselines.gp_best_auc_pr
 
 # Deduplication threshold
-FUNCTIONAL_CORR = 0.999
+FUNCTIONAL_CORR = _ml.method4.functional_corr
 
 # Colour palette for plots
 C_M1     = "#5B8DB8"
@@ -151,9 +154,9 @@ def get_all_prompt_configs() -> list[dict]:
     configs = []
 
     for strategy, builder in [("blind", build_blind_prompt), ("seeded", build_seeded_prompt)]:
-        for temperature in [0.3, 0.7, 1.0]:
-            cot = temperature >= 0.7
-            n_formulas = 5
+        for temperature in _ml.method4.temperatures:
+            cot = temperature >= _ml.method4.cot_min_temperature
+            n_formulas = _ml.method4.n_formulas_per_call
             configs.append({
                 "name": f"{strategy}_temp{temperature}",
                 "strategy": strategy,

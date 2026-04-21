@@ -29,34 +29,30 @@ from gplearn.fitness import make_fitness
 # Local
 sys.path.insert(0, "src")
 from utils import (
-    load_data_for, load_disease_config, get_splits, compute_binary_metrics, find_youden_threshold,
-    precision_at_recall_levels, ensure_dir, RESULTS_DIR,
+    load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
+    find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
 )
 
-M2_BEST_AUC_PR = 0.0174   # Method 2 best random formula
-LR_AUC_PR      = 0.0170   # all-features logistic regression
-LR_AUC_ROC     = 0.6580
-SEED           = 42
+_ml = load_ml_config()
 
-SMALL_CONFIG  = dict(population_size=100,  generations=20)
-MEDIUM_CONFIG = dict(population_size=300,  generations=50)
-LARGE_CONFIG  = dict(population_size=500,  generations=100)
+M2_BEST_AUC_PR = _ml.baselines.m2_best_auc_pr
+LR_AUC_PR      = _ml.baselines.lr_auc_pr
+LR_AUC_ROC     = _ml.baselines.lr_auc_roc
+SEED           = _ml.seed
 
-PHASE1_AUC_PR_THRESHOLD = 0.016   # minimum AUC-PR to proceed to Phase 2
+SMALL_CONFIG  = dict(**_ml.method3.gp_configs.small)
+MEDIUM_CONFIG = dict(**_ml.method3.gp_configs.medium)
+LARGE_CONFIG  = dict(**_ml.method3.gp_configs.large)
+
+PHASE1_AUC_PR_THRESHOLD = _ml.method3.phase1_auc_pr_threshold
+BAD_FRAC                = _ml.method3.bad_frac
+HALL_OF_FAME            = _ml.method3.hall_of_fame
+N_COMPONENTS            = _ml.method3.n_components
 
 CONFIG_ATTEMPTS = [
-    # Attempt 0 — baseline (parsimony penalises complexity; used first)
-    dict(parsimony_coefficient=0.005,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
-    # Attempt 1 — near-zero parsimony: let GP explore complex programs freely
-    dict(parsimony_coefficient=0.0001,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs"]),
-    # Attempt 2 — no parsimony penalty, drop div to reduce trivial collapses
-    dict(parsimony_coefficient=0.0,
-         function_set=["add", "sub", "mul", "sqrt", "log", "abs"]),
-    # Attempt 3 — no parsimony, add neg/inv for richer search space
-    dict(parsimony_coefficient=0.0,
-         function_set=["add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv"]),
+    dict(parsimony_coefficient=a.parsimony_coefficient,
+         function_set=list(a.function_set))
+    for a in _ml.method3.config_attempts
 ]
 
 
@@ -69,7 +65,7 @@ def _combined_auc(y, y_pred, sample_weight):
     """
     y_pred = np.asarray(y_pred, dtype=float)
     bad = ~np.isfinite(y_pred)
-    if bad.mean() > 0.10:
+    if bad.mean() > BAD_FRAC:
         return 0.0
     if bad.any():
         y_pred = y_pred.copy()
@@ -104,7 +100,7 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
 
     for scores in (score_tr, score_te):
         bad = ~np.isfinite(scores)
-        if bad.mean() > 0.10:
+        if bad.mean() > BAD_FRAC:
             return None
         if bad.any():
             scores[bad] = np.nanmedian(scores[~bad]) if (~bad).any() else 0.0
@@ -170,8 +166,8 @@ def run_gp_attempt(size_config, parsimony_coefficient, function_set, attempt_lab
 
     gp = SymbolicTransformer(
         **size_config,
-        hall_of_fame=50,
-        n_components=50,
+        hall_of_fame=HALL_OF_FAME,
+        n_components=N_COMPONENTS,
         feature_names=features,
         function_set=function_set,
         metric=combined_auc_fitness,
