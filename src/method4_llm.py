@@ -60,13 +60,23 @@ _ml = load_ml_config()
 # CONSTANTS
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Paths
-OUT_DIR        = RESULTS_DIR / "method4_llm"
-RAW_FILE       = OUT_DIR / "raw_outputs.json"
-PARSED_FILE    = OUT_DIR / "parsed_formulas.json"
-REPORT_FILE    = OUT_DIR / "parsing_report.txt"
-RESULTS_FILE   = OUT_DIR / "method4_results.csv"
-SUMMARY_FILE   = OUT_DIR / "method4_summary.txt"
+# Paths — set at runtime by _init_paths(disease)
+OUT_DIR      = None
+RAW_FILE     = None
+PARSED_FILE  = None
+REPORT_FILE  = None
+RESULTS_FILE = None
+SUMMARY_FILE = None
+
+
+def _init_paths(disease: str) -> None:
+    global OUT_DIR, RAW_FILE, PARSED_FILE, REPORT_FILE, RESULTS_FILE, SUMMARY_FILE
+    OUT_DIR      = RESULTS_DIR / "method4_llm" / disease
+    RAW_FILE     = OUT_DIR / "raw_outputs.json"
+    PARSED_FILE  = OUT_DIR / "parsed_formulas.json"
+    REPORT_FILE  = OUT_DIR / "parsing_report.txt"
+    RESULTS_FILE = OUT_DIR / "method4_results.csv"
+    SUMMARY_FILE = OUT_DIR / "method4_summary.txt"
 
 # Model settings
 MODEL_ID         = _ml.method4.model_id
@@ -642,9 +652,10 @@ def run_evaluate(disease_slug: str = "ra") -> None:
 
 def load_all():
     """Load results for all four methods and return a dict of DataFrames."""
-    m1 = pd.read_csv(RESULTS_DIR / "method1_threshold" / "comparison_table_v2.csv")
-    m2 = pd.read_csv(RESULTS_DIR / "method2_random"    / "all_formulas.csv")
-    m3 = pd.read_csv(RESULTS_DIR / "method3_gp"        / "all_programs.csv")
+    disease = OUT_DIR.parent.name
+    m1 = pd.read_csv(RESULTS_DIR / "method1_threshold" / disease / "comparison_table_v2.csv")
+    m2 = pd.read_csv(RESULTS_DIR / "method2_random"    / disease / "all_formulas.csv")
+    m3 = pd.read_csv(RESULTS_DIR / "method3_gp"        / disease / "all_programs.csv")
     m4 = pd.read_csv(OUT_DIR / "method4_results.csv")
 
     with open(OUT_DIR / "parsed_formulas.json") as f:
@@ -1064,6 +1075,7 @@ def main() -> None:
         help="Disease slug for data loading (e.g. ra, dm1). Default: ra.",
     )
     args = parser.parse_args()
+    _init_paths(args.disease)
 
     if args.stage == "prompts":
         configs = get_all_prompt_configs()

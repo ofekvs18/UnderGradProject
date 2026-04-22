@@ -43,7 +43,7 @@ def main():
     BAD_FRAC        = ml.method2.bad_frac
     BASELINE_AUC_PR = ml.baselines.lr_auc_pr
 
-    OUT_DIR = RESULTS_DIR / "method2_random"
+    OUT_DIR = RESULTS_DIR / "method2_random" / disease.name
     ensure_dir(OUT_DIR)
 
     # ── Part A: Load data ─────────────────────────────────────────────────────────

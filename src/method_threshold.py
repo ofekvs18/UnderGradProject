@@ -38,7 +38,7 @@ def main():
     args = parser.parse_args()
 
     disease = load_disease_config(args.disease)
-    M1_DIR = RESULTS_DIR / "method1_threshold"
+    M1_DIR = RESULTS_DIR / "method1_threshold" / disease.name
     ensure_dir(M1_DIR)
 
     # ── Dry-run mode ──────────────────────────────────────────────────────────────

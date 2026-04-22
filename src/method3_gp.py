@@ -205,7 +205,7 @@ def main():
     args = parser.parse_args()
 
     disease = load_disease_config(args.disease)
-    OUT_DIR = RESULTS_DIR / "method3_gp"
+    OUT_DIR = RESULTS_DIR / "method3_gp" / disease.name
     ensure_dir(OUT_DIR)
 
     # ── Part A: Load data ─────────────────────────────────────────────────────────

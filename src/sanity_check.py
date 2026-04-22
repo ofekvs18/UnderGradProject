@@ -26,6 +26,7 @@ args = parser.parse_args()
 
 disease = load_disease_config(args.disease)
 
+RESULTS_DIR = RESULTS_DIR / "sanity_check" / disease.name
 ensure_dir(RESULTS_DIR)
 
 # ── Load ──────────────────────────────────────────────────────────────────────
