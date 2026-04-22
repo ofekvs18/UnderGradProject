@@ -14,6 +14,7 @@ venv/
 
 # Results (generated outputs)
 results/*
+cluster_results/*
 
 # Don't ignore experiment log (it's our tracking doc)
 !results/experiment_log.md
