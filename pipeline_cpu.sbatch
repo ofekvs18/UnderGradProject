@@ -9,8 +9,8 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 
-DISEASE=${1:?Usage: sbatch pipeline_cpu.sbatch <disease> [--skip-bq]}
-SKIP_BQ=${2:-""}
+: "${DISEASE:?DISEASE not set — use launch_pipeline.sh}"
+SKIP_BQ=${SKIP_BQ:-""}
 
 echo "SLURM_JOBID=$SLURM_JOBID"
 echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"

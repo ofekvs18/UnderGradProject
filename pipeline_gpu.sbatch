@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
 
-DISEASE=${1:?Usage: sbatch pipeline_gpu.sbatch <disease>}
+: "${DISEASE:?DISEASE not set — use launch_pipeline.sh}"
 
 echo "SLURM_JOBID=$SLURM_JOBID"
 echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"
