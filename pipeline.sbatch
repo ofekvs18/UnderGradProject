@@ -38,7 +38,7 @@ $PYTHON -u src/method2_random_formula.py --disease "$DISEASE"
 
 $PYTHON -u src/method3_gp.py --disease "$DISEASE"
 
-$PYTHON -u src/method4_llm.py --disease "$DISEASE"
+$PYTHON -u src/method4_llm.py all --disease "$DISEASE"
 
 echo "=========================================="
 echo "End: $(date)"
