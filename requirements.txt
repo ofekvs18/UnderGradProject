@@ -1,7 +1,7 @@
 pandas
 scikit-learn==1.2.2
 matplotlib
-numpy
+numpy<2.0
 gplearn
 transformers>=4.40.0
 torch>=2.1.0
