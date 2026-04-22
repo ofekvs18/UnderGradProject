@@ -18,8 +18,13 @@ echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "=========================================="
 
+
 module load anaconda
 source activate biomarkers
+
+which python
+python --version
+pip list | grep -E "google|omegaconf|gplearn"
 
 cd ~/UnderGradProject
 mkdir -p results
