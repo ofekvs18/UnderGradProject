@@ -213,8 +213,6 @@ def generate_one(model, processor, prompt: str, temperature: float) -> tuple[str
 
 def run_inference(configs: list[dict], repeats: int) -> None:
     """Run LLM inference for all configs and save to raw_outputs.json."""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     existing: list[dict] = []
