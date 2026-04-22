@@ -3,7 +3,7 @@ defaults:
   - ml: defaults
 
 pipeline:
-  key_file: /home/ofekvi/.secrets/bq_service_account.json
+  key_file: null
   project: null
   bq_dataset: biomarkers-478606.biomarkers
   dry_run: false
