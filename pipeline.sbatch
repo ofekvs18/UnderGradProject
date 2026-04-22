@@ -18,6 +18,8 @@ echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "=========================================="
 
+set -e  # exit immediately if any command fails
+
 cd ~/UnderGradProject
 mkdir -p results
 
