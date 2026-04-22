@@ -652,7 +652,7 @@ def run_evaluate(disease_slug: str = "ra") -> None:
 
 def load_all():
     """Load results for all four methods and return a dict of DataFrames."""
-    disease = OUT_DIR.parent.name
+    disease = OUT_DIR.name
     m1 = pd.read_csv(RESULTS_DIR / "method1_threshold" / disease / "comparison_table_v2.csv")
     m2 = pd.read_csv(RESULTS_DIR / "method2_random"    / disease / "all_formulas.csv")
     m3 = pd.read_csv(RESULTS_DIR / "method3_gp"        / disease / "all_programs.csv")
