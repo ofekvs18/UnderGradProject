@@ -1,0 +1,6 @@
+name: t2d
+full_name: "Type 2 Diabetes"
+icd_patterns:
+  - "250_0%"
+  - "250_2%"
+icd_version: 9

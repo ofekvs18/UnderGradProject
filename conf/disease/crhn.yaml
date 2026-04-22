@@ -1,0 +1,5 @@
+name: crhn
+full_name: "Crohn's Disease"
+icd_patterns:
+  - "555%"
+icd_version: 9

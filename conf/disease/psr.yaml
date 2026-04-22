@@ -1,0 +1,5 @@
+name: psr
+full_name: "Psoriasis"
+icd_patterns:
+  - "6961%"
+icd_version: 9
