@@ -25,15 +25,10 @@ from sklearn.metrics import roc_auc_score, precision_recall_curve
 # Local
 sys.path.insert(0, "src")
 from utils import (
-    load_data_for, load_disease_config, get_splits, compute_binary_metrics,
+    load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
     eval_formula_scores, evaluate_formula_full,
 )
-
-N_FORMULAS  = 10_000
-SEED        = 42
-BAD_FRAC    = 0.10   # skip formula if > 10% of rows produce NaN/inf
-BASELINE_AUC_PR = 0.0170
 
 
 def main():
@@ -42,6 +37,12 @@ def main():
     args = parser.parse_args()
 
     disease = load_disease_config(args.disease)
+    ml = load_ml_config()
+    N_FORMULAS      = ml.method2.n_formulas
+    SEED            = ml.seed
+    BAD_FRAC        = ml.method2.bad_frac
+    BASELINE_AUC_PR = ml.baselines.lr_auc_pr
+
     OUT_DIR = RESULTS_DIR / "method2_random"
     ensure_dir(OUT_DIR)
 

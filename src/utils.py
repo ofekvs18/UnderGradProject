@@ -26,6 +26,18 @@ DATA_PATH   = DATA_DIR / "ra_modeling_data.csv"
 
 # ── Multi-disease helpers (used by run_pipeline.py and future method scripts) ──
 
+def load_ml_config():
+    """
+    Load ML parameters from conf/ml/defaults.yaml using OmegaConf.
+
+    Returns a DictConfig with keys: seed, baselines, method2, method3, method4.
+    """
+    config_path = Path("conf") / "ml" / "defaults.yaml"
+    if not config_path.exists():
+        raise FileNotFoundError(f"ML config not found: {config_path}")
+    return OmegaConf.load(config_path)
+
+
 def load_disease_config(disease_slug):
     """
     Load disease config from conf/disease/{slug}.yaml using OmegaConf.

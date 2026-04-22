@@ -1,6 +1,6 @@
 -- ============================================================================
 -- BIOMARKER PIPELINE: PARAMETERIZED COHORT EXTRACTION
--- Disease: {disease_full} | 90-day lookback | MIMIC-IV v3.1
+-- Disease: {disease_full} | {lookback_days}-day lookback | MIMIC-IV v3.1
 -- ICD-{icd_version} patterns: {icd_patterns_display}
 -- ============================================================================
 -- This template is parameterized via run_pipeline.py
@@ -126,7 +126,7 @@ HAVING COUNT(*) > 1;
 -- ############################################################################
 -- CHECKPOINT 3: CBC FEATURE EXTRACTION WITH TEMPORAL GUARD
 -- ############################################################################
--- Sources: (a) prior admissions within 90-day lookback
+-- Sources: (a) prior admissions within {lookback_days}-day lookback
 --          (b) first 24h of index admission (routine admission panel)
 -- Aggregation: last value per test per patient
 
@@ -159,7 +159,7 @@ prior_cbc AS (
   JOIN index_admissions ia
     ON lab.subject_id = ia.subject_id
   WHERE lab.charttime < l.index_admittime
-    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL 90 DAY)
+    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL {lookback_days} DAY)
     AND lab.hadm_id != ia.index_hadm_id
     AND lab.valuenum IS NOT NULL
 ),
@@ -177,7 +177,7 @@ early_index_cbc AS (
     ON lab.subject_id = ia.subject_id
     AND lab.hadm_id = ia.index_hadm_id
   WHERE lab.charttime >= ia.index_admittime
-    AND lab.charttime < DATETIME_ADD(ia.index_admittime, INTERVAL 24 HOUR)
+    AND lab.charttime < DATETIME_ADD(ia.index_admittime, INTERVAL {index_window_hours} HOUR)
     AND lab.valuenum IS NOT NULL
 ),
 
@@ -208,7 +208,7 @@ control_prior_cbc AS (
     ON lab.subject_id = ci.subject_id
   WHERE l.is_case = 0
     AND lab.charttime < l.index_admittime
-    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL 90 DAY)
+    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL {lookback_days} DAY)
     AND lab.hadm_id != ci.index_hadm_id
     AND lab.valuenum IS NOT NULL
 ),
@@ -226,7 +226,7 @@ control_early_cbc AS (
     ON lab.subject_id = ci.subject_id
     AND lab.hadm_id = ci.index_hadm_id
   WHERE lab.charttime >= ci.index_admittime
-    AND lab.charttime < DATETIME_ADD(ci.index_admittime, INTERVAL 24 HOUR)
+    AND lab.charttime < DATETIME_ADD(ci.index_admittime, INTERVAL {index_window_hours} HOUR)
     AND lab.valuenum IS NOT NULL
 ),
 
@@ -298,7 +298,7 @@ WITH all_cbc_sources AS (
     ON l.subject_id = a.subject_id AND a.admittime = l.index_admittime
   WHERE l.is_case = 1
     AND lab.charttime < l.index_admittime
-    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL 90 DAY)
+    AND lab.charttime >= DATETIME_SUB(l.index_admittime, INTERVAL {lookback_days} DAY)
     AND lab.hadm_id != a.hadm_id
     AND lab.valuenum IS NOT NULL
 
@@ -315,7 +315,7 @@ WITH all_cbc_sources AS (
   WHERE l.is_case = 1
     AND lab.hadm_id = a.hadm_id
     AND lab.charttime >= a.admittime
-    AND lab.charttime < DATETIME_ADD(a.admittime, INTERVAL 24 HOUR)
+    AND lab.charttime < DATETIME_ADD(a.admittime, INTERVAL {index_window_hours} HOUR)
     AND lab.valuenum IS NOT NULL
 ),
 

@@ -1,8 +1,13 @@
 defaults:
   - disease: ra
+  - ml: defaults
 
 pipeline:
   key_file: null
   project: null
   bq_dataset: biomarkers-478606.biomarkers
   dry_run: false
+
+index_date:
+  index_window_hours: 24   # CBC from first N hours of index admission
+  lookback_days: 90        # CBC from prior N days (different admission)

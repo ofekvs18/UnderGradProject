@@ -75,8 +75,10 @@ def make_pipeline_config(cfg):
         "icd_version":          cfg.disease.icd_version,
         "icd_filter":           build_icd_like(patterns, alias=None),
         "icd_filter_d":         build_icd_like(patterns, alias="d"),
-        "icd_patterns_display": ", ".join(patterns),
-        "bq_dataset":           cfg.pipeline.bq_dataset,
+        "icd_patterns_display":  ", ".join(patterns),
+        "bq_dataset":            cfg.pipeline.bq_dataset,
+        "index_window_hours":    cfg.index_date.index_window_hours,
+        "lookback_days":         cfg.index_date.lookback_days,
     }
 
 
