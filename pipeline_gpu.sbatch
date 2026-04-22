@@ -17,12 +17,12 @@ echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "=========================================="
 
-module load anaconda
-source activate biomarkers
-
 cd ~/UnderGradProject
 
-python -u src/method4_llm.py --disease "$DISEASE"
+PYTHON=/home/ofekvi/.conda/envs/biomarkers/bin/python
+echo "Python: $($PYTHON --version)"
+
+$PYTHON -u src/method4_llm.py --disease "$DISEASE"
 
 echo "=========================================="
 echo "End: $(date)"
