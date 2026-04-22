@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --partition main
-#SBATCH --time 0-12:00:00
-#SBATCH --job-name bp_cpu
+#SBATCH --time 0-14:00:00
+#SBATCH --job-name biomarker
 #SBATCH --output results/pipeline_%x_%j.out
 #SBATCH --mail-user=ofekvi@post.bgu.ac.il
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --gpus=0
+#SBATCH --gpus=rtx_3090:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 
@@ -17,7 +17,6 @@ echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"
 echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "=========================================="
-
 
 cd ~/UnderGradProject
 mkdir -p results
@@ -38,6 +37,8 @@ $PYTHON -u src/method_threshold.py --disease "$DISEASE"
 $PYTHON -u src/method2_random_formula.py --disease "$DISEASE"
 
 $PYTHON -u src/method3_gp.py --disease "$DISEASE"
+
+$PYTHON -u src/method4_llm.py --disease "$DISEASE"
 
 echo "=========================================="
 echo "End: $(date)"
