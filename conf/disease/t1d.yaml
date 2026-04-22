@@ -1,6 +1,6 @@
 name: t1d
 full_name: "Type 1 Diabetes"
 icd_patterns:
-  - "250.01%"
-  - "250.03%"
+  - "250_1%"
+  - "250_3%"
 icd_version: 9
