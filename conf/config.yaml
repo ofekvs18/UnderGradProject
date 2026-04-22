@@ -4,7 +4,7 @@ defaults:
 
 pipeline:
   key_file: /home/ofekvi/.secrets/adc.json
-  project: null
+  project: biomarkers-478606
   bq_dataset: biomarkers-478606.biomarkers
   dry_run: false
 
