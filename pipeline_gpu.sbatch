@@ -18,7 +18,7 @@ echo "Start: $(date)"
 echo "=========================================="
 
 module load anaconda
-source activate medgemma
+source activate biomarkers
 
 cd ~/UnderGradProject
 

@@ -19,7 +19,7 @@ echo "Start: $(date)"
 echo "=========================================="
 
 module load anaconda
-source activate biomarkers-discovery-env
+source activate biomarkers
 
 cd ~/UnderGradProject
 mkdir -p results
