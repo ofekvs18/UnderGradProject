@@ -1,6 +1,7 @@
 # Data (large files, not tracked)
 data/
 
+
 # Service account keys — NEVER commit
 .secrets/
 
@@ -37,3 +38,4 @@ graphify-out/
 .claude/
 
 *.out
+.vscode/settings.json
