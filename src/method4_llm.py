@@ -494,7 +494,7 @@ def main():
         print("\n" + "="*60)
         print("PIPELINE COMPLETE")
         print(f"Consolidated results available in: {RESULTS_FILE}")
-        print(f"Master Formula Vault updated at: {MASTER_VAULT}")
+        print(f"Master Summary updated at: {MASTER_SUMMARY_CSV}")
 
 if __name__ == "__main__":
     main()
