@@ -284,13 +284,19 @@ def main():
         
         if MASTER_PATH.exists():
             master_df = pd.read_csv(MASTER_PATH)
-            master_df = master_df[master_df["Disease"] != disease.name]
+            
+            # FIX: Filter out only the specific Disease AND Tier combination
+            # This allows you to keep 'ra/small' while updating 'ra/huge'
+            mask = (master_df["Disease"] == disease.name) & (master_df["Config_Used"] == tier_name)
+            master_df = master_df[~mask]
+            
             master_df = pd.concat([master_df, pd.DataFrame([master_row])], ignore_index=True)
         else:
             master_df = pd.DataFrame([master_row])
 
-        master_df.sort_values("Disease").to_csv(MASTER_PATH, index=False)
-        print(f"Master summary updated for {disease.name} ({tier_name}).")
+        # Sort by Disease then Tier for a clean overview
+        master_df.sort_values(["Disease", "Config_Used"]).to_csv(MASTER_PATH, index=False)
+        print(f"Master summary updated: {disease.name} | Tier: {tier_name}")
 
 if __name__ == "__main__":
     main()
