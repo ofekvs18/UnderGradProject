@@ -209,11 +209,10 @@ def main():
     print(f"Saved {M1_DIR}/comparison_table.csv")
     print(comp.to_string(index=False))
 
-    # ── Part 1D: Master Summary Aggregation ───────────────────────────────────
+    # ── Part 1D: Master Summary Aggregation (Clean Version) ───────────────────
     best_lit = lit_df.loc[lit_df["auc_pr"].idxmax()]
     best_dd = dd_df.loc[dd_df["auc_pr"].idxmax()]
 
-    # Helper to format threshold formulas
     def fmt_formula(row, thresh_key):
         op = ">" if row["direction"] == "above" else "<"
         return f"{row['feature']} {op} {row[thresh_key]}"
@@ -227,23 +226,22 @@ def main():
         "Best_DD_Feature": best_dd["feature"],
         "Best_DD_Formula": fmt_formula(best_dd, "optimal_threshold"),
         "Best_DD_AUC_PR": best_dd["auc_pr"],
-        "Best_DD_AUC_ROC": best_dd["auc_roc"],
-        "Baseline_All_Feat_PR": BASELINE_AUC_PR,
-        "Diff_DD_vs_Baseline_PR": round(best_dd["auc_pr"] - BASELINE_AUC_PR, 4),
-        "DD_vs_Lit_PR_Gain": round(best_dd["auc_pr"] - best_lit["auc_pr"], 4)
+        "Best_DD_AUC_ROC": best_dd["auc_roc"]
     }
 
-    ensure_dir(BASE_M1_DIR)
+    M1_MASTER_PATH = RESULTS_DIR / "method1_threshold" / "master_m1_summary.csv"
+    ensure_dir(M1_MASTER_PATH.parent)
+
     if M1_MASTER_PATH.exists():
         m1_master = pd.read_csv(M1_MASTER_PATH)
-        m1_master = m1_master[m1_master["Disease"] != disease.name] # Avoid duplicates
+        m1_master = m1_master[m1_master["Disease"] != disease.name] # Update existing
         m1_master = pd.concat([m1_master, pd.DataFrame([new_m1_row])], ignore_index=True)
     else:
         m1_master = pd.DataFrame([new_m1_row])
 
     m1_master.sort_values("Disease").to_csv(M1_MASTER_PATH, index=False)
     print(f"Updated master Method 1 summary at: {M1_MASTER_PATH}")
-
+    
     # ── Bar chart: AUC-PR by feature ─────────────────────────────────────────────
     features_ordered = comp["feature"].tolist()
     x     = np.arange(len(features_ordered))
