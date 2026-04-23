@@ -69,13 +69,11 @@ BASelines = {
 }
 
 def _init_paths(disease: str) -> None:
-    """Initialize paths and load baselines for the specific disease."""
-    global OUT_DIR, RAW_FILE, PARSED_FILE, RESULTS_FILE, SUMMARY_FILE
-    OUT_DIR      = RESULTS_DIR / "method4_llm" / disease
-    RAW_FILE     = OUT_DIR / "raw_outputs.json"
-    PARSED_FILE  = OUT_DIR / "parsed_formulas.json"
+    global OUT_DIR, RESULTS_FILE, MASTER_SUMMARY_CSV
+    OUT_DIR = RESULTS_DIR / "method4_llm" / disease
     RESULTS_FILE = OUT_DIR / "method4_results.csv"
-    SUMMARY_FILE = OUT_DIR / "method4_summary.txt"
+    MASTER_SUMMARY_CSV = RESULTS_DIR / "method4_llm" / "method4_master_summary.csv"
+    
     ensure_dir(OUT_DIR)
     _load_baselines_from_sanity(disease)
 
@@ -267,7 +265,7 @@ def parse_formulas_from_text(raw_text: str) -> list[str]:
     return list(dict.fromkeys(refined))
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 3 — EVALUATION & VAULT CONSOLIDATION
+# SECTION 3 — EVALUATION & SUMMARY UPDATES
 # ══════════════════════════════════════════════════════════════════════════════
 
 def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[dict]:
@@ -284,16 +282,13 @@ def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[
     
     for item in formula_dicts:
         formula = item["formula"]
-        # Use utils to get the raw scores for this formula on the training set
         scores = eval_formula_scores(formula, df, list(FEATURE_VARS))
         
-        # Filter out formulas that fail to execute or return constants
         if scores is None or np.std(scores) < 1e-9:
             continue
             
         is_duplicate = False
         for prev_scores in seen_scores:
-            # Check for high correlation (mathematical equivalence)
             correlation = abs(np.corrcoef(scores, prev_scores)[0, 1])
             if correlation > FUNCTIONAL_CORR:
                 is_duplicate = True
@@ -305,91 +300,43 @@ def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[
             
     return unique_list
 
-def run_evaluate(disease_slug: str):
-    """Process raw LLM outputs, evaluate formulas, and update the Master Vault."""
-    if not RAW_FILE.exists():
-        print(f"[ERROR] No raw outputs found for {disease_slug}. Run generate first.")
+def _update_master_summary(results_df: pd.DataFrame, disease_slug: str):
+    """
+    Updates the global Master Summary with only the best-performing formula 
+    for this disease. Overwrites previous entries for the same disease.
+    """
+    if results_df.empty:
         return
 
-    print(f"--- Evaluating Method 4 for {disease_slug} ---")
-    with open(RAW_FILE) as f:
-        raw_entries = json.load(f)
+    best = results_df.iloc[0]
+    
+    new_entry = pd.DataFrame([{
+        "Disease": disease_slug,
+        "Best_LLM_AUC_PR": best["auc_pr"],
+        "Best_LLM_AUC_ROC": best["auc_roc"],
+        "Best_LLM_Formula": best["formula"],
+        "Winning_Strategy": best["strategy"],
+        "Winning_Temp": best["temperature"],
+        "Total_Yield": len(results_df)
+    }])
 
-    # Load data and splits using standard project utils
-    df, features = load_data_for(disease_slug)
-    train_df, test_df = get_splits(df)
-
-    # 1. Parse All Raw Responses
-    all_extracted = []
-    seen_strings = set()
-    for entry in [r for r in raw_entries if r["status"] == "ok"]:
-        raw_fs = parse_formulas_from_text(entry["raw_text"])
-        for f_str in raw_fs:
-            if f_str not in seen_strings:
-                all_extracted.append({
-                    "formula": f_str,
-                    "strategy": entry["strategy"],
-                    "temp": entry["temperature"],
-                    "disease": disease_slug,
-                    "timestamp": datetime.now().isoformat()
-                })
-                seen_strings.add(f_str)
-
-    print(f"Extracted {len(all_extracted)} distinct formula strings.")
-
-    # 2. Mathematical Deduplication
-    unique_formulas = functional_deduplicate(all_extracted, train_df)
-    print(f"Functional deduplication: {len(unique_formulas)} unique models remaining.")
-
-    # 3. Full Evaluation on Test Set
-    final_results = []
-    for i, item in enumerate(unique_formulas):
-        if i % 10 == 0: print(f"  Evaluating {i}/{len(unique_formulas)}...")
-        metrics = evaluate_formula_full(item["formula"], train_df, test_df, list(FEATURE_VARS))
-        if metrics:
-            metrics.update({
-                "strategy": item["strategy"],
-                "temperature": item["temp"],
-                "disease": item["disease"],
-                "timestamp": item["timestamp"]
-            })
-            final_results.append(metrics)
-
-    if not final_results:
-        print("[WARN] No valid formulas survived evaluation.")
-        return
-
-    # Sort by primary metric: AUC-PR
-    results_df = pd.DataFrame(final_results).sort_values("auc_pr", ascending=False)
-    results_df.to_csv(RESULTS_FILE, index=False)
-    print(f"Results saved to {RESULTS_FILE}")
-
-    # 4. Consolidate into the global Master Vault
-    _update_master_vault(results_df)
-
-    # 5. Generate Performance Summary relative to Sanity Check
-    _write_performance_summary(results_df, disease_slug)
-
-def _update_master_vault(new_results_df: pd.DataFrame):
-    """Append new results to the global master CSV, ensuring formula/disease uniqueness."""
-    if MASTER_VAULT.exists():
-        vault_df = pd.read_csv(MASTER_VAULT)
-        # Combine existing vault with new run data
-        combined = pd.concat([vault_df, new_results_df], ignore_index=True)
-        # Drop duplicates where the formula and disease are identical
-        combined = combined.drop_duplicates(subset=["formula", "disease"], keep="first")
+    if MASTER_SUMMARY_CSV.exists():
+        master_df = pd.read_csv(MASTER_SUMMARY_CSV)
+        master_df = master_df[master_df["Disease"].str.lower() != disease_slug.lower()]
+        master_df = pd.concat([master_df, new_entry], ignore_index=True)
     else:
-        ensure_dir(MASTER_VAULT.parent)
-        combined = new_results_df
+        ensure_dir(MASTER_SUMMARY_CSV.parent)
+        master_df = new_entry
 
-    combined.to_csv(MASTER_VAULT, index=False)
-    print(f"Master Vault updated: {len(combined)} total formulas tracked.")
+    master_df.to_csv(MASTER_SUMMARY_CSV, index=False)
+    print(f"Master Summary updated at: {MASTER_SUMMARY_CSV}")
 
 def _write_performance_summary(df: pd.DataFrame, disease: str):
-    """Writes a text summary comparing top LLM results to Master Sanity Check baselines."""
+    """
+    Writes a text summary comparing top LLM results to Sanity Check baselines.
+    """
     best = df.iloc[0]
     
-    # Direct comparison to baselines loaded from master_sanity_summary.csv
     beat_all_pr = "YES" if best['auc_pr'] > BASelines['all_feat_pr'] else "NO"
     beat_single_pr = "YES" if best['auc_pr'] > BASelines['single_feat_pr'] else "NO"
 
@@ -417,13 +364,72 @@ def _write_performance_summary(df: pd.DataFrame, disease: str):
         Beat All-Feature LR?   : {beat_all_pr}
         Strategy of Winner     : {best['strategy']} (Temp: {best['temperature']})
         
-        [Master Vault updated at {MASTER_VAULT}]
+        [Master Summary updated at {MASTER_SUMMARY_CSV}]
     """)
     
     SUMMARY_FILE.write_text(summary.strip())
     print(summary)
 
-    # ══════════════════════════════════════════════════════════════════════════════
+def run_evaluate(disease_slug: str):
+    """
+    Processes raw LLM outputs, evaluates all formulas locally, 
+    and exports the 'champion' to the global Master Summary.
+    """
+    if not RAW_FILE.exists():
+        print(f"[ERROR] No raw outputs found for {disease_slug}. Run generate first.")
+        return
+
+    print(f"--- Evaluating Method 4 for {disease_slug} ---")
+    with open(RAW_FILE) as f:
+        raw_entries = json.load(f)
+
+    df, features = load_data_for(disease_slug)
+    train_df, test_df = get_splits(df)
+
+    all_extracted = []
+    seen_strings = set()
+    for entry in [r for r in raw_entries if r["status"] == "ok"]:
+        raw_fs = parse_formulas_from_text(entry["raw_text"])
+        for f_str in raw_fs:
+            if f_str not in seen_strings:
+                all_extracted.append({
+                    "formula": f_str,
+                    "strategy": entry["strategy"],
+                    "temp": entry["temperature"],
+                    "disease": disease_slug,
+                    "timestamp": datetime.now().isoformat()
+                })
+                seen_strings.add(f_str)
+
+    print(f"Extracted {len(all_extracted)} distinct formula strings.")
+
+    unique_formulas = functional_deduplicate(all_extracted, train_df)
+    print(f"Functional deduplication: {len(unique_formulas)} unique models remaining.")
+
+    final_results = []
+    for i, item in enumerate(unique_formulas):
+        if i % 10 == 0: print(f"  Evaluating {i}/{len(unique_formulas)}...")
+        metrics = evaluate_formula_full(item["formula"], train_df, test_df, list(FEATURE_VARS))
+        if metrics:
+            metrics.update({
+                "strategy": item["strategy"],
+                "temperature": item["temp"],
+                "disease": item["disease"],
+                "timestamp": item["timestamp"]
+            })
+            final_results.append(metrics)
+
+    if not final_results:
+        print("[WARN] No valid formulas survived evaluation.")
+        return
+
+    results_df = pd.DataFrame(final_results).sort_values("auc_pr", ascending=False)
+    results_df.to_csv(RESULTS_FILE, index=False)
+    print(f"Detailed formula log saved to: {RESULTS_FILE}")
+
+    _update_master_summary(results_df, disease_slug)
+    _write_performance_summary(results_df, disease_slug)
+    
 # MAIN ENTRY POINT
 # ══════════════════════════════════════════════════════════════════════════════
 
