@@ -33,3 +33,9 @@ python src/run_pipeline.py
 | 4 | LLM-generated formulas | Planned | — | — |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
+
+
+read all on server 
+```bash
+squeue --me -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R"
+```
