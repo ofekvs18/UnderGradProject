@@ -8,19 +8,6 @@
 -- Source: physionet-data.mimiciv_3_1_hosp
 -- ============================================================================
 
-
--- ############################################################################
--- PREREQUISITE: ADD RDW TO REFERENCE TABLE
--- ############################################################################
--- RDW (Red Cell Distribution Width) was the top SHAP feature in earlier
--- analysis but was missing from the original ref_cbc_tests table.
-
-CREATE OR REPLACE TABLE `{bq_dataset}.ref_cbc_tests` AS
-SELECT * FROM `{bq_dataset}.ref_cbc_tests`
-UNION ALL
-SELECT 51277 AS itemid, 'Red Cell Distribution Width' AS test_name, 'RDW' AS test_abbrev;
-
-
 -- ############################################################################
 -- SETUP VALIDATION (run these first to confirm access)
 -- ############################################################################
