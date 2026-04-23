@@ -1,12 +1,3 @@
-"""
-Method 1 — Threshold Optimization (Literature + Data-Driven).
-
-Parts:
-  1A: Apply known clinical thresholds to the test set and evaluate.
-  1B: Find optimal threshold via Youden's index on train; evaluate on test.
-  1C: Comparison table, bar chart, ROC curve for best feature, summary text.
-"""
-
 import argparse
 import sys
 import numpy as np
@@ -23,8 +14,11 @@ from utils import (
 )
 
 # Baseline metrics from all-features logistic regression
-BASELINE_AUC_ROC = 0.658
-BASELINE_AUC_PR = 0.017
+BASELINE_AUC_ROC = 0.5  
+BASELINE_AUC_PR = 0.0
+BASE_M1_DIR = RESULTS_DIR / "method1_threshold"
+SANITY_MASTER_PATH = RESULTS_DIR / "sanity_check" / "master_sanity_summary.csv"
+M1_MASTER_PATH = BASE_M1_DIR / "master_m1_summary.csv"
 
 
 def main():
@@ -41,6 +35,19 @@ def main():
     M1_DIR = RESULTS_DIR / "method1_threshold" / disease.name
     ensure_dir(M1_DIR)
 
+    # ── Load Baseline from Sanity Check ───────────────────────────────────────
+    if SANITY_MASTER_PATH.exists():
+        sanity_df = pd.read_csv(SANITY_MASTER_PATH)
+        baseline_row = sanity_df[sanity_df["Disease"] == disease.name]
+        if not baseline_row.empty:
+            BASELINE_AUC_PR = baseline_row["All_Feat_AUC_PR"].values[0]
+            BASELINE_AUC_ROC = baseline_row["All_Feat_AUC_ROC"].values[0]
+            print(f"Loaded Baseline for {disease.name}: AUC-PR={BASELINE_AUC_PR}, AUC-ROC={BASELINE_AUC_ROC}")
+        else:
+            print(f"Warning: No baseline found for {disease.name} in sanity master.")
+    else:
+        print("Warning: master_sanity_summary.csv not found. Using default 0.0 baselines.")
+    
     # ── Dry-run mode ──────────────────────────────────────────────────────────────
     if args.dry_run:
         print("=" * 70)
@@ -201,6 +208,41 @@ def main():
     comp.to_csv(M1_DIR / "comparison_table.csv", index=False)
     print(f"Saved {M1_DIR}/comparison_table.csv")
     print(comp.to_string(index=False))
+
+    # ── Part 1D: Master Summary Aggregation ───────────────────────────────────
+    best_lit = lit_df.loc[lit_df["auc_pr"].idxmax()]
+    best_dd = dd_df.loc[dd_df["auc_pr"].idxmax()]
+
+    # Helper to format threshold formulas
+    def fmt_formula(row, thresh_key):
+        op = ">" if row["direction"] == "above" else "<"
+        return f"{row['feature']} {op} {row[thresh_key]}"
+
+    new_m1_row = {
+        "Disease": disease.name,
+        "Best_Lit_Feature": best_lit["feature"],
+        "Best_Lit_Formula": fmt_formula(best_lit, "threshold"),
+        "Best_Lit_AUC_PR": best_lit["auc_pr"],
+        "Best_Lit_AUC_ROC": best_lit["auc_roc"],
+        "Best_DD_Feature": best_dd["feature"],
+        "Best_DD_Formula": fmt_formula(best_dd, "optimal_threshold"),
+        "Best_DD_AUC_PR": best_dd["auc_pr"],
+        "Best_DD_AUC_ROC": best_dd["auc_roc"],
+        "Baseline_All_Feat_PR": BASELINE_AUC_PR,
+        "Diff_DD_vs_Baseline_PR": round(best_dd["auc_pr"] - BASE_AUC_PR, 4),
+        "DD_vs_Lit_PR_Gain": round(best_dd["auc_pr"] - best_lit["auc_pr"], 4)
+    }
+
+    ensure_dir(BASE_M1_DIR)
+    if M1_MASTER_PATH.exists():
+        m1_master = pd.read_csv(M1_MASTER_PATH)
+        m1_master = m1_master[m1_master["Disease"] != disease.name] # Avoid duplicates
+        m1_master = pd.concat([m1_master, pd.DataFrame([new_m1_row])], ignore_index=True)
+    else:
+        m1_master = pd.DataFrame([new_m1_row])
+
+    m1_master.sort_values("Disease").to_csv(M1_MASTER_PATH, index=False)
+    print(f"Updated master Method 1 summary at: {M1_MASTER_PATH}")
 
     # ── Bar chart: AUC-PR by feature ─────────────────────────────────────────────
     features_ordered = comp["feature"].tolist()
