@@ -222,8 +222,31 @@ def main():
     plt.close()
     print(f"Saved {hist_path}")
 
-    print("\nMethod 2 complete.")
+    
+    # ── Part F: Master Summary Aggregation ────────────────────────────────────
+    best = results_df.iloc[0]
+    
+    new_m2_row = {
+        "Disease": disease.name,
+        "Best_Random_Formula": best["formula"],
+        "Best_Random_AUC_PR": round(best["auc_pr"], 4),
+        "Best_Random_AUC_ROC": round(best["auc_roc"], 4),
+        "N_Formulas_Tested": len(results_df)
+    }
 
+    M2_MASTER_PATH = RESULTS_DIR / "method2_random" / "master_m2_summary.csv"
+    ensure_dir(M2_MASTER_PATH.parent)
+
+    if M2_MASTER_PATH.exists():
+        m2_master = pd.read_csv(M2_MASTER_PATH)
+        m2_master = m2_master[m2_master["Disease"] != disease.name] # Update existing
+        m2_master = pd.concat([m2_master, pd.DataFrame([new_m2_row])], ignore_index=True)
+    else:
+        m2_master = pd.DataFrame([new_m2_row])
+
+    m2_master.sort_values("Disease").to_csv(M2_MASTER_PATH, index=False)
+    print(f"Updated master Method 2 summary at: {M2_MASTER_PATH}")
+    print("\nMethod 2 complete.")
 
 if __name__ == "__main__":
     main()
