@@ -19,28 +19,39 @@ method2:
 # Method 3: Genetic Programming
 method3:
   phase1_auc_pr_threshold: 0.016
-  bad_frac: 0.10        # skip program if > this fraction of rows produce NaN/inf
-  hall_of_fame: 50      # number of best programs retained by gplearn
-  n_components: 50      # number of programs to extract from hall of fame
+  bad_frac: 0.10
+  hall_of_fame: 50
+  n_components: 50
+  fitness:
+    roc_weight: 0.5
+    pr_weight: 2.0
+  active_tiers: [small, medium, large, huge]
   gp_configs:
     small:
       population_size: 100
       generations: 20
+      patience: 5
+      parsimony_coefficient: 0.1  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs]
     medium:
       population_size: 300
       generations: 50
+      patience: 10
+      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs]
     large:
       population_size: 500
       generations: 100
-  config_attempts:
-    - parsimony_coefficient: 0.005
+      patience: 20
+      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
       function_set: [add, sub, mul, div, sqrt, log, abs]
-    - parsimony_coefficient: 0.0001
+    huge:
+      population_size: 20000
+      generations: 500
+      patience: 40
+      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
       function_set: [add, sub, mul, div, sqrt, log, abs]
-    - parsimony_coefficient: 0.0
-      function_set: [add, sub, mul, sqrt, log, abs]
-    - parsimony_coefficient: 0.0
-      function_set: [add, sub, mul, div, sqrt, log, abs, neg, inv]
+
 
 # Method 4: LLM-based formula generation
 method4:
