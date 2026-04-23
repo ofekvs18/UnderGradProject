@@ -1,5 +1,0 @@
-name: test
-full_name: "Test Disease"
-icd_patterns:
-  - "999%"
-icd_version: 9

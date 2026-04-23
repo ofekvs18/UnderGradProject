@@ -1,0 +1,6 @@
+name: lup
+full_name: "Lupus erythematosus (DLE, SLE)"
+icd_patterns:
+  - "6954%"
+  - "7100%"
+icd_version: 9
