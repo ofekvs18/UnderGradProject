@@ -229,7 +229,7 @@ def main():
         "Best_DD_AUC_PR": best_dd["auc_pr"],
         "Best_DD_AUC_ROC": best_dd["auc_roc"],
         "Baseline_All_Feat_PR": BASELINE_AUC_PR,
-        "Diff_DD_vs_Baseline_PR": round(best_dd["auc_pr"] - BASE_AUC_PR, 4),
+        "Diff_DD_vs_Baseline_PR": round(best_dd["auc_pr"] - BASELINE_AUC_PR, 4),
         "DD_vs_Lit_PR_Gain": round(best_dd["auc_pr"] - best_lit["auc_pr"], 4)
     }
 
