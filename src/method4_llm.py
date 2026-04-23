@@ -48,31 +48,32 @@ _ml = load_ml_config()
 # CONSTANTS & PATHS
 # ══════════════════════════════════════════════════════════════════════════════
 
-OUT_DIR          = None
-RAW_FILE         = None
-PARSED_FILE      = None
-RESULTS_FILE     = None
-SUMMARY_FILE     = None
+OUT_DIR            = None
+RAW_FILE           = None
+PARSED_FILE        = None
+RESULTS_FILE       = None
+SUMMARY_FILE       = None
 
-# Global paths for master outputs
-MASTER_VAULT     = RESULTS_DIR / "method4_llm" / "master_formula_vault.csv"
-SANITY_CHECK_CSV = RESULTS_DIR / "sanity_check" / "master_sanity_summary.csv"
+# Global master path (stays outside disease folders)
+MASTER_SUMMARY_CSV = RESULTS_DIR / "method4_llm" / "method4_master_summary.csv"
+SANITY_CHECK_CSV   = RESULTS_DIR / "sanity_check" / "master_sanity_summary.csv"
 
-# Baseline placeholders - updated dynamically from SANITY_CHECK_CSV
+# Baseline placeholders updated dynamically
 BASelines = {
-    "all_feat_pr": 0.0,
-    "all_feat_roc": 0.0,
-    "single_feat_pr": 0.0,
-    "single_feat_roc": 0.0,
-    "single_feat_name": "None",
-    "prevalence": 0.0
+    "all_feat_pr": 0.0, "all_feat_roc": 0.0,
+    "single_feat_pr": 0.0, "single_feat_roc": 0.0,
+    "single_feat_name": "None", "prevalence": 0.0
 }
 
 def _init_paths(disease: str) -> None:
-    global OUT_DIR, RESULTS_FILE, MASTER_SUMMARY_CSV
-    OUT_DIR = RESULTS_DIR / "method4_llm" / disease
+    """Initialize paths and load baselines. CRITICAL: uses global keyword."""
+    global OUT_DIR, RAW_FILE, PARSED_FILE, RESULTS_FILE, SUMMARY_FILE
+    
+    OUT_DIR      = RESULTS_DIR / "method4_llm" / disease
+    RAW_FILE     = OUT_DIR / "raw_outputs.json"
+    PARSED_FILE  = OUT_DIR / "parsed_formulas.json"
     RESULTS_FILE = OUT_DIR / "method4_results.csv"
-    MASTER_SUMMARY_CSV = RESULTS_DIR / "method4_llm" / "method4_master_summary.csv"
+    SUMMARY_FILE = OUT_DIR / "method4_summary.txt"
     
     ensure_dir(OUT_DIR)
     _load_baselines_from_sanity(disease)
@@ -429,7 +430,7 @@ def run_evaluate(disease_slug: str):
 
     _update_master_summary(results_df, disease_slug)
     _write_performance_summary(results_df, disease_slug)
-    
+
 # MAIN ENTRY POINT
 # ══════════════════════════════════════════════════════════════════════════════
 
