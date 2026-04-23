@@ -13,7 +13,8 @@ venv/
 *.egg-info/
 
 # Results (generated outputs)
-results/*
+results/
+outputs/
 cluster_results/*
 
 # Don't ignore experiment log (it's our tracking doc)
@@ -34,3 +35,5 @@ graphify-out/
 .graphify_uncached.txt
 
 .claude/
+
+*.out
