@@ -25,7 +25,7 @@ method3:
   fitness:
     roc_weight: 0.5
     pr_weight: 2.0
-  active_tiers: [small, medium, large, huge]
+  active_tiers: [small, medium, large]
   gp_configs:
     small:
       population_size: 100
