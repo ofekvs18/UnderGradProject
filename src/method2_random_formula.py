@@ -28,7 +28,7 @@ sys.path.insert(0, "src")
 from utils import (
     load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
-    eval_formula_scores, evaluate_formula_full,
+    eval_formula_scores, evaluate_formula_full, get_cv_folds, cv_summary,
 )
 
 
@@ -132,7 +132,7 @@ def main():
     results_df.to_csv(all_path, index=False)
     print(f"Saved {all_path}")
 
-    # Save top 10 by AUC-PR
+    # Save top 10 by frozen AUC-PR (unchanged)
     top10 = results_df.head(10)
     top_path = OUT_DIR / "top_formulas.csv"
     top10.to_csv(top_path, index=False)
@@ -225,6 +225,87 @@ def main():
     print(f"Saved {hist_path}")
 
     
+    # ── Part E2: CV-based winner selection ───────────────────────────────────────
+    print("\n=== CV-based winner selection (top-50 by train AUC-PR) ===")
+    tr_clean = train_df[features + ["is_case"]].dropna()
+    te_clean = test_df[features + ["is_case"]].dropna()
+
+    # Rank all formulas by train AUC-PR (single pass, no frozen test used)
+    from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
+    train_scores_list = []
+    for formula in formulas:
+        sc = eval_formula_scores(formula, tr_clean, features)
+        if sc is None or not np.isfinite(sc).any():
+            continue
+        y_tr_cv = tr_clean["is_case"].values
+        if y_tr_cv.sum() < 5:
+            continue
+        try:
+            auc_roc_tr = float(_roc(y_tr_cv, sc))
+            if auc_roc_tr < 0.5:
+                sc = -sc
+            train_scores_list.append({"formula": formula, "train_auc_pr": float(_aps(y_tr_cv, sc))})
+        except Exception:
+            pass
+
+    train_rank_df = pd.DataFrame(train_scores_list).sort_values("train_auc_pr", ascending=False)
+    top50_formulas = train_rank_df.head(50)["formula"].tolist()
+    print(f"  Top-50 pool size: {len(top50_formulas)}")
+
+    # CV on the top-50 pool
+    cv_folds = get_cv_folds(train_df)
+    cv_rows = []
+    for i, formula in enumerate(top50_formulas):
+        fold_prs = []
+        for fold_train_df, fold_val_df in cv_folds:
+            ft = fold_train_df[features + ["is_case"]].dropna()
+            fv = fold_val_df[features + ["is_case"]].dropna()
+            if ft["is_case"].sum() < 5 or fv["is_case"].sum() < 5:
+                continue
+            sc_ft = eval_formula_scores(formula, ft, features)
+            sc_fv = eval_formula_scores(formula, fv, features)
+            if sc_ft is None or sc_fv is None:
+                continue
+            try:
+                auc_roc_ft = float(_roc(ft["is_case"].values, sc_ft))
+                if auc_roc_ft < 0.5:
+                    sc_fv = -sc_fv
+                fold_prs.append(float(_aps(fv["is_case"].values, sc_fv)))
+            except Exception:
+                pass
+
+        if len(fold_prs) < 3:
+            print(f"  Formula {i}: fewer than 3 valid CV folds — skipped")
+            continue
+
+        s = cv_summary(fold_prs)
+        train_auc_pr = train_rank_df.loc[train_rank_df["formula"] == formula, "train_auc_pr"].values[0]
+        cv_rows.append({
+            "formula": formula,
+            "train_auc_pr": train_auc_pr,
+            "cv_auc_pr_mean": s["mean"],
+            "cv_auc_pr_std": s["std"],
+            "cv_auc_pr_ci95_low": s["ci95_low"],
+            "cv_auc_pr_ci95_high": s["ci95_high"],
+            "frozen_test_auc_pr_final": None,
+        })
+
+    if not cv_rows:
+        print("  [WARN] No valid CV results — falling back to frozen test winner")
+        cv_winner_formula = results_df.iloc[0]["formula"]
+        cv_winner_frozen  = results_df.iloc[0]["auc_pr"]
+    else:
+        cv_df = pd.DataFrame(cv_rows).sort_values("cv_auc_pr_mean", ascending=False).reset_index(drop=True)
+        cv_winner_formula = cv_df.iloc[0]["formula"]
+        # Evaluate CV winner on frozen test exactly once
+        cv_winner_metrics = evaluate_formula_full(cv_winner_formula, train_df, test_df, features)
+        cv_winner_frozen  = cv_winner_metrics["auc_pr"] if cv_winner_metrics else float("nan")
+        cv_df.loc[cv_df["formula"] == cv_winner_formula, "frozen_test_auc_pr_final"] = cv_winner_frozen
+        cv_df.to_csv(OUT_DIR / "top_formulas_cv.csv", index=False)
+        print(f"  CV winner: {cv_winner_formula}")
+        print(f"  CV AUC-PR mean: {cv_df.iloc[0]['cv_auc_pr_mean']:.4f}  Frozen test: {cv_winner_frozen:.4f}")
+        print(f"  Saved {OUT_DIR}/top_formulas_cv.csv")
+
     # ── Part F: Master Summary Aggregation ────────────────────────────────────
     best = results_df.iloc[0]
     
@@ -235,7 +316,9 @@ def main():
         "Best_Random_Formula": best["formula"],
         "Best_Random_AUC_PR": round(best["auc_pr"], 4),
         "Best_Random_AUC_ROC": round(best["auc_roc"], 4),
-        "N_Formulas_Tested": len(results_df)
+        "N_Formulas_Tested": len(results_df),
+        "CV_Winner_Formula": cv_winner_formula,
+        "CV_Winner_Frozen_Test_AUC_PR": round(cv_winner_frozen, 4) if np.isfinite(cv_winner_frozen) else None,
     }
 
     M2_MASTER_PATH = RESULTS_DIR / "method2_random" / "master_m2_summary.csv"
