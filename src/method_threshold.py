@@ -12,6 +12,7 @@ from utils import (
     load_data_for, load_disease_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
     get_literature_thresholds, build_threshold_prompt, THRESHOLDS_CACHE_DIR,
+    get_cv_folds, cv_summary,
 )
 
 # Baseline metrics from all-features logistic regression
@@ -119,10 +120,11 @@ def main():
     best_lit = lit_df.loc[lit_df["auc_pr"].idxmax()]
     print(f"\nBest literature (by AUC-PR): {best_lit['feature']} — AUC-ROC={best_lit['auc_roc']:.4f}, AUC-PR={best_lit['auc_pr']:.4f}")
 
-    # ── Part 1B: Data-driven thresholds (Youden's index) ─────────────────────────
-    print("\n=== Part 1B: Data-driven thresholds (Youden's index) ===")
+    # ── Part 1B: Data-driven thresholds (Youden's index) + CV selection ──────────
+    print("\n=== Part 1B: Data-driven thresholds (Youden's index) + CV ===")
 
     dd_results = []
+    cv_folds = get_cv_folds(train_df)
 
     for feat in list(literature_thresholds.keys()):
         tr = train_df[[feat, "is_case"]].dropna()
@@ -157,6 +159,30 @@ def main():
         m       = compute_binary_metrics(y_test, preds)
         par     = precision_at_recall_levels(score_tr, y_train, score_te, y_test)
 
+        # ── CV AUC-PR for this feature (threshold fit on fold_train, scored on fold_val)
+        fold_pr_scores = []
+        for fold_train_df, fold_val_df in cv_folds:
+            ft = fold_train_df[[feat, "is_case"]].dropna()
+            fv = fold_val_df[[feat, "is_case"]].dropna()
+            if ft["is_case"].sum() < 5 or fv["is_case"].sum() < 5:
+                continue
+            yt_f, xf_f = ft["is_case"].values, ft[feat].values
+            yv_f, xv_f = fv["is_case"].values, fv[feat].values
+            auc_f = roc_auc_score(yt_f, xf_f)
+            sf_tr = xf_f if auc_f >= 0.5 else -xf_f
+            sf_va = xv_f if auc_f >= 0.5 else -xv_f
+            try:
+                fold_pr_scores.append(float(average_precision_score(yv_f, sf_va)))
+            except Exception:
+                pass
+
+        if len(fold_pr_scores) >= 3:
+            cv_s = cv_summary(fold_pr_scores)
+        else:
+            print(f"  {feat:6s}: [WARN] fewer than 3 valid CV folds — using train AUC-PR fallback")
+            cv_s = {"mean": float(average_precision_score(y_train, score_tr)),
+                    "std": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
+
         dd_results.append({
             "feature":                  feat,
             "optimal_threshold":        round(float(optimal_threshold), 4),
@@ -172,17 +198,34 @@ def main():
             "precision_at_recall_75":   par[0.75][0],
             "n_train":                  len(tr),
             "n_test":                   len(te),
+            "cv_auc_pr_mean":           cv_s["mean"],
+            "cv_auc_pr_std":            cv_s["std"],
+            "cv_auc_pr_ci95_low":       cv_s["ci95_low"],
+            "cv_auc_pr_ci95_high":      cv_s["ci95_high"],
         })
 
         print(f"  {feat:6s} ({direction:5s} {optimal_threshold:>8.4f}): "
-              f"AUC-ROC={auc_roc:.4f}  AUC-PR={auc_pr:.4f}  P={m['precision']:.4f}  R={m['recall']:.4f}")
+              f"AUC-ROC={auc_roc:.4f}  AUC-PR={auc_pr:.4f}  "
+              f"CV-AUC-PR={cv_s['mean']:.4f}±{cv_s['std']:.4f}")
 
     dd_df = pd.DataFrame(dd_results)
     dd_df.to_csv(M1_DIR / "datadriven_results.csv", index=False)
     print(f"\nSaved {M1_DIR}/datadriven_results.csv")
 
+    # CV selects the winning feature (not frozen test)
+    cv_winner_idx = dd_df["cv_auc_pr_mean"].idxmax()
+    cv_winner = dd_df.loc[cv_winner_idx]
+    print(f"\nCV-selected feature: {cv_winner['feature']} "
+          f"(cv_auc_pr_mean={cv_winner['cv_auc_pr_mean']:.4f})")
+
+    # Frozen test evaluation of CV-selected winner (evaluated exactly once)
+    cv_feat = cv_winner["feature"]
+    cv_feat_row = dd_df.loc[dd_df["feature"] == cv_feat].iloc[0]
+    frozen_test_auc_pr = cv_feat_row["auc_pr"]
+    print(f"Frozen test AUC-PR for CV winner ({cv_feat}): {frozen_test_auc_pr:.4f}")
+
     best_dd = dd_df.loc[dd_df["auc_pr"].idxmax()]
-    print(f"\nBest data-driven (by AUC-PR): {best_dd['feature']} — AUC-ROC={best_dd['auc_roc']:.4f}, AUC-PR={best_dd['auc_pr']:.4f}  "
+    print(f"\nBest data-driven (by frozen AUC-PR): {best_dd['feature']} — AUC-ROC={best_dd['auc_roc']:.4f}, AUC-PR={best_dd['auc_pr']:.4f}  "
           f"threshold={best_dd['optimal_threshold']} ({best_dd['direction']})")
 
     # ── Part 1C: Comparison table and visualizations ──────────────────────────────
@@ -230,7 +273,13 @@ def main():
         "Best_DD_Feature": best_dd["feature"],
         "Best_DD_Formula": fmt_formula(best_dd, "optimal_threshold"),
         "Best_DD_AUC_PR": best_dd["auc_pr"],
-        "Best_DD_AUC_ROC": best_dd["auc_roc"]
+        "Best_DD_AUC_ROC": best_dd["auc_roc"],
+        "CV_Selected_Feature": cv_winner["feature"],
+        "CV_AUC_PR_Mean": cv_winner["cv_auc_pr_mean"],
+        "CV_AUC_PR_Std": cv_winner["cv_auc_pr_std"],
+        "CV_AUC_PR_CI95_Low": cv_winner["cv_auc_pr_ci95_low"],
+        "CV_AUC_PR_CI95_High": cv_winner["cv_auc_pr_ci95_high"],
+        "Frozen_Test_AUC_PR": frozen_test_auc_pr,
     }
 
     M1_MASTER_PATH = RESULTS_DIR / "method1_threshold" / "master_m1_summary.csv"
@@ -403,7 +452,12 @@ def main():
     summary = f"""Method 1: Threshold Optimization Results
     =========================================
 
-    Best single feature: {best_feat.upper()} (selected by AUC-PR)
+    CV-Selected Feature: {cv_winner['feature'].upper()}
+      CV_AUC_PR_Mean: {cv_winner['cv_auc_pr_mean']:.4f}  Std: {cv_winner['cv_auc_pr_std']:.4f}
+      CV_AUC_PR_CI95: [{cv_winner['cv_auc_pr_ci95_low']:.4f}, {cv_winner['cv_auc_pr_ci95_high']:.4f}]
+      Frozen_Test_AUC_PR: {frozen_test_auc_pr:.4f}
+
+    Best single feature: {best_feat.upper()} (selected by frozen AUC-PR)
 
     Literature threshold: {best_lit_row['threshold']} ({best_lit_row['direction']})
       AUC-ROC: {best_lit_row['auc_roc']:.4f}
