@@ -34,6 +34,7 @@ sys.path.insert(0, "src")
 from utils import (
     load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
+    get_cv_folds, cv_summary,
 )
 
 _ml = load_ml_config()
@@ -180,10 +181,13 @@ def main():
 
     # 5. Run Tiers Specified in YAML
     # This allows you to queue multiple runs (e.g. small then huge) without code changes
+    cv_folds = get_cv_folds(train_df)
+    tier_results = []  # accumulates per-tier dicts including CV scores and program objects
+
     for tier_name in ml.method3.active_tiers:
         tier_cfg = ml.method3.gp_configs[tier_name]
         patience = tier_cfg.get("patience", 10)
-        
+
         TIER_DIR = OUT_DIR_BASE / tier_name
         ensure_dir(TIER_DIR)
 
@@ -191,9 +195,6 @@ def main():
         print(f"STARTING TIER: {tier_name.upper()} | Target AUC-PR: >{baseline_auc_pr:.4f}")
         print(f"{'='*60}")
 
-        # Use the first configuration attempt for primitives/parsimony
-        tier_cfg = ml.method3.gp_configs[tier_name]
-        patience = tier_cfg.get("patience", 10)
         prevalence = float(y_train.mean())
         def _fitness(x1, x2, w):
             return _combined_auc(x1, x2, w, prevalence=prevalence)
@@ -204,7 +205,6 @@ def main():
             )
         print(f"  Fitness: roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
               f"pr_w={_ml.method3.fitness.pr_weight} * (AUC-PR / prevalence={prevalence:.4f})")
-        # Pull parameters directly from the tier config instead of a separate list
         gp = SymbolicTransformer(
             population_size=tier_cfg.population_size,
             generations=1,
@@ -223,6 +223,7 @@ def main():
 
         best_overall_auc_pr = -1.0
         winning_formula = ""
+        winning_program = None  # keep program object alive for CV
         winning_gen = 0
         best_overall_roc = 0.0
         patience_counter = 0
@@ -230,15 +231,13 @@ def main():
 
         # Iterative Generation Loop
         for gen in range(tier_cfg.generations):
-            # FIX: Increment generations target to satisfy warm_start check
             gp.set_params(generations=gen + 1)
-            
             gp.fit(X_train, y_train)
-            
-            # Evaluate Hall of Fame to find the best formula of the current state
+
             current_gen_best_pr = -1.0
             current_gen_best_formula = ""
             current_gen_best_roc = 0.0
+            current_gen_best_prog = None
 
             for prog in gp._best_programs:
                 if prog is None: continue
@@ -247,20 +246,20 @@ def main():
                     current_gen_best_pr = res["auc_pr"]
                     current_gen_best_formula = res["formula"]
                     current_gen_best_roc = res["auc_roc"]
+                    current_gen_best_prog = prog
 
-            # Update the global best tracker
             improved = False
             if current_gen_best_pr > best_overall_auc_pr:
                 best_overall_auc_pr = current_gen_best_pr
                 best_overall_roc = current_gen_best_roc
                 winning_formula = current_gen_best_formula
+                winning_program = current_gen_best_prog  # keep reference alive
                 winning_gen = gen
                 patience_counter = 0
                 improved = True
             else:
                 patience_counter += 1
 
-            # Log Progress Locally (inside results/method3_gp/{disease}/{tier}/)
             if gen % args.log_every == 0 or improved:
                 progress_rows.append({
                     "Generation": gen,
@@ -271,35 +270,117 @@ def main():
                 })
                 pd.DataFrame(progress_rows).to_csv(TIER_DIR / "progress_log.csv", index=False)
 
-            # Plateau Stop Logic
             if patience_counter >= patience:
                 print(f"\n--- STOP: Plateau detected at gen {gen} (no improvement for {patience} gens) ---")
                 break
 
-        # 6. Final Aggregate Master Logging (Additive)
-        master_row = {
+        # ── CV on this tier's winning program (after evolution, not during) ────────
+        print(f"\n  Running CV for tier {tier_name}...")
+        fold_prs = []
+        if winning_program is not None:
+            for fold_train_df, fold_val_df in cv_folds:
+                ft = fold_train_df[features + ["is_case"]].dropna()
+                fv = fold_val_df[features + ["is_case"]].dropna()
+                if ft["is_case"].sum() < 5 or fv["is_case"].sum() < 5:
+                    print(f"    Fold skipped (too few positives)")
+                    continue
+                X_ft = ft[features].values
+                X_fv = fv[features].values
+                y_ft = ft["is_case"].values
+                y_fv = fv["is_case"].values
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    sc_ft = np.asarray(winning_program.execute(X_ft), dtype=float)
+                    sc_fv = np.asarray(winning_program.execute(X_fv), dtype=float)
+                bad_ft = ~np.isfinite(sc_ft)
+                bad_fv = ~np.isfinite(sc_fv)
+                if bad_ft.mean() > BAD_FRAC or bad_fv.mean() > BAD_FRAC:
+                    continue
+                sc_ft[bad_ft] = np.nanmedian(sc_ft[~bad_ft]) if (~bad_ft).any() else 0.0
+                sc_fv[bad_fv] = np.nanmedian(sc_fv[~bad_fv]) if (~bad_fv).any() else 0.0
+                try:
+                    from sklearn.metrics import roc_auc_score as _roc, average_precision_score as _aps
+                    auc_roc_ft = float(_roc(y_ft, sc_ft))
+                    if auc_roc_ft < 0.5:
+                        sc_fv = -sc_fv
+                    fold_prs.append(float(_aps(y_fv, sc_fv)))
+                except Exception:
+                    pass
+
+        if len(fold_prs) >= 3:
+            tier_cv = cv_summary(fold_prs)
+        else:
+            print(f"  [WARN] {tier_name}: fewer than 3 valid CV folds — using train AUC-PR fallback")
+            tier_cv = {"mean": best_overall_auc_pr, "std": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
+
+        print(f"  Tier {tier_name} CV AUC-PR: mean={tier_cv['mean']:.4f}  std={tier_cv['std']:.4f}")
+
+        tier_results.append({
+            "tier_name": tier_name,
+            "winning_formula": winning_formula,
+            "winning_program": winning_program,
+            "best_overall_auc_pr": best_overall_auc_pr,
+            "best_overall_roc": best_overall_roc,
+            "winning_gen": winning_gen,
+            "total_gen": gen,
+            "cv_auc_pr_mean": tier_cv["mean"],
+            "cv_auc_pr_std": tier_cv["std"],
+            "cv_auc_pr_ci95_low": tier_cv["ci95_low"],
+            "cv_auc_pr_ci95_high": tier_cv["ci95_high"],
+        })
+
+    # ── 6. Pick CV winner across tiers and evaluate on frozen test once ───────────
+    if not tier_results:
+        print("[WARN] No tier results to summarize.")
+        return
+
+    best_tier = max(tier_results, key=lambda r: r["cv_auc_pr_mean"])
+    print(f"\nCV-selected tier: {best_tier['tier_name']}  (cv_auc_pr_mean={best_tier['cv_auc_pr_mean']:.4f})")
+
+    # Evaluate CV-selected tier on frozen test exactly once
+    if best_tier["winning_program"] is not None:
+        frozen_res = evaluate_program(
+            best_tier["winning_program"], X_train, y_train, X_test, y_test
+        )
+        frozen_test_auc_pr_final = frozen_res["auc_pr"] if frozen_res else float("nan")
+    else:
+        frozen_test_auc_pr_final = float("nan")
+    print(f"Frozen test AUC-PR for CV winner: {frozen_test_auc_pr_final:.4f}")
+
+    # 7. Final Aggregate Master Logging (one row per tier)
+    MASTER_PATH = RESULTS_DIR / "method3_gp" / "master_gp_summary.csv"
+    ensure_dir(MASTER_PATH.parent)
+
+    new_rows = []
+    for r in tier_results:
+        is_cv_selected = r["tier_name"] == best_tier["tier_name"]
+        new_rows.append({
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Disease": disease.name,
             "Split_Salt": args.split_salt,
-            "Config_Used": tier_name,
-            "Best_GP_Formula": winning_formula,
-            "Best_GP_AUC_PR": round(best_overall_auc_pr, 4),
-            "Best_GP_AUC_ROC": round(best_overall_roc, 4),
-            "Winning_Generation": winning_gen,
-            "Total_Generations": gen,
-            "Beats_Baseline": best_overall_auc_pr > baseline_auc_pr
-        }
+            "Config_Used": r["tier_name"],
+            "Best_GP_Formula": r["winning_formula"],
+            "Best_GP_AUC_PR": round(r["best_overall_auc_pr"], 4),
+            "Best_GP_AUC_ROC": round(r["best_overall_roc"], 4),
+            "Winning_Generation": r["winning_gen"],
+            "Total_Generations": r["total_gen"],
+            "Beats_Baseline": r["best_overall_auc_pr"] > baseline_auc_pr,
+            "CV_AUC_PR_Mean": r["cv_auc_pr_mean"],
+            "CV_AUC_PR_Std": r["cv_auc_pr_std"],
+            "CV_AUC_PR_CI95_Low": r["cv_auc_pr_ci95_low"],
+            "CV_AUC_PR_CI95_High": r["cv_auc_pr_ci95_high"],
+            "CV_Selected": is_cv_selected,
+            "Frozen_Test_AUC_PR_Final": round(frozen_test_auc_pr_final, 4) if is_cv_selected else None,
+        })
 
-        MASTER_PATH = RESULTS_DIR / "method3_gp" / "master_gp_summary.csv"
-        ensure_dir(MASTER_PATH.parent)
+    new_df = pd.DataFrame(new_rows)
+    if MASTER_PATH.exists():
+        master_df = pd.concat([pd.read_csv(MASTER_PATH), new_df], ignore_index=True)
+    else:
+        master_df = new_df
 
-        if MASTER_PATH.exists():
-            master_df = pd.concat([pd.read_csv(MASTER_PATH), pd.DataFrame([master_row])], ignore_index=True)
-        else:
-            master_df = pd.DataFrame([master_row])
-
-        master_df.to_csv(MASTER_PATH, index=False)
-        print(f"Master summary updated: {disease.name} | Tier: {tier_name}")
+    master_df.to_csv(MASTER_PATH, index=False)
+    print(f"Master summary updated: {disease.name} | CV winner: {best_tier['tier_name']}")
 
 if __name__ == "__main__":
     main()
