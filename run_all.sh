@@ -18,7 +18,7 @@ do
 
     echo "Submitting: $disease_slug (START_FROM=$START_FROM, END_AT=$END_AT, SPLIT_SALT=${SPLIT_SALT:-(default)})"
 
-    sbatch --job-name="biomarker_${disease_slug}" \
+    sbatch --job-name="biomarker_${disease_slug}_${SPLIT_SALT:-(default)}" \
            --export=DISEASE="$disease_slug",START_FROM="$START_FROM",END_AT="$END_AT",SPLIT_SALT="$SPLIT_SALT" \
            pipeline.sbatch
 done
