@@ -2,8 +2,9 @@
 Issue #17 / Method 3: Genetic Programming with gplearn.
 
 Uses SymbolicTransformer to evolve formula-based biomarkers from CBC data.
-Custom fitness combines AUC-ROC + 2*AUC-PR (AUC-PR gets 2x weight as primary
-metric). Hall-of-fame programs are evaluated via program.execute(X) directly —
+Custom fitness = 0.5*AUC-ROC + 2.0*(AUC-PR/prevalence). The AUC-PR/prevalence
+term is a lift score (random baseline = 1.0), making cross-disease fitness comparable.
+Hall-of-fame programs are evaluated via program.execute(X) directly —
 no formula string parsing.
 
 Research question: can evolutionary search discover CBC combinations that
@@ -50,12 +51,13 @@ HALL_OF_FAME            = _ml.method3.hall_of_fame
 N_COMPONENTS            = _ml.method3.n_components
 
 
-def _combined_auc(y, y_pred, sample_weight):
+def _combined_auc(y, y_pred, sample_weight, prevalence=None):
     """
-    Fitness = (roc_w * AUC-ROC) + (pr_w * AUC-PR).
-    Weights are pulled directly from the YAML config.
+    Fitness = roc_w * AUC-ROC + pr_w * (AUC-PR / prevalence).
+    AUC-PR / prevalence is a lift score (1.0 = random baseline), making
+    cross-disease fitness values directly comparable.
+    Use partial() to bind prevalence before passing to make_fitness.
     """
-    # Pull weights from the globally loaded _ml config
     roc_w = _ml.method3.fitness.roc_weight
     pr_w  = _ml.method3.fitness.pr_weight
 
@@ -76,9 +78,9 @@ def _combined_auc(y, y_pred, sample_weight):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 auc_pr = average_precision_score(y, -y_pred)
-        
-        # Apply the YAML weights
-        return float((roc_w * auc_roc) + (pr_w * auc_pr))
+
+        prev = prevalence if prevalence is not None else float(np.mean(y))
+        return float(roc_w * auc_roc + pr_w * (auc_pr / prev))
     except Exception:
         return 0.0
 
@@ -190,11 +192,13 @@ def main():
         # Use the first configuration attempt for primitives/parsimony
         tier_cfg = ml.method3.gp_configs[tier_name]
         patience = tier_cfg.get("patience", 10)
-        f_cfg = ml.method3.fitness
+        prevalence = float(y_train.mean())
         combined_auc_fitness = make_fitness(
-                function=_combined_auc, 
+                function=partial(_combined_auc, prevalence=prevalence),
                 greater_is_better=True
-            )     
+            )
+        print(f"  Fitness: roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
+              f"pr_w={_ml.method3.fitness.pr_weight} * (AUC-PR / prevalence={prevalence:.4f})")
         # Pull parameters directly from the tier config instead of a separate list
         gp = SymbolicTransformer(
             population_size=tier_cfg.population_size,

@@ -31,26 +31,26 @@ method3:
       population_size: 100
       generations: 20
       patience: 5
-      parsimony_coefficient: 0.1  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs]
+      parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
     medium:
       population_size: 300
       generations: 50
       patience: 10
-      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs]
+      parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
     large:
       population_size: 500
       generations: 100
       patience: 20
-      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs]
+      parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
     huge:
       population_size: 20000
       generations: 500
       patience: 40
-      parsimony_coefficient: 0.01  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs]
+      parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
+      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
 
 
 # Method 4: LLM-based formula generation
