@@ -236,6 +236,33 @@ def evaluate_formula_full(formula, train_df, test_df, features):
     }
 
 
+# ── Cross-validation helpers ──────────────────────────────────────────────────
+def get_cv_folds(df, n_splits=5, seed=42):
+    """
+    Return n_splits (fold_train_df, fold_val_df) tuples, stratified on is_case.
+    Always pass train_df only — frozen test rows must never appear in any fold.
+    """
+    from sklearn.model_selection import StratifiedKFold
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    folds = []
+    for train_idx, val_idx in skf.split(df, df["is_case"]):
+        folds.append((df.iloc[train_idx].copy(), df.iloc[val_idx].copy()))
+    return folds
+
+
+def cv_summary(scores):
+    """Return {mean, std, ci95_low, ci95_high} for a list of per-fold scores."""
+    arr = np.array(scores, dtype=float)
+    mean = float(np.mean(arr))
+    std  = float(np.std(arr, ddof=1)) if len(arr) > 1 else 0.0
+    return {
+        "mean":      round(mean, 6),
+        "std":       round(std, 6),
+        "ci95_low":  round(mean - 1.96 * std, 6),
+        "ci95_high": round(mean + 1.96 * std, 6),
+    }
+
+
 # ── Output helpers ────────────────────────────────────────────────────────────
 def ensure_dir(path):
     """Create directory (and parents) if it doesn't exist."""
