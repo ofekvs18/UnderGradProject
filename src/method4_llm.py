@@ -40,6 +40,8 @@ from utils import (
     load_medgemma,
     load_prompts,
     medgemma_generate,
+    get_cv_folds,
+    cv_summary,
 )
 
 _ml = load_ml_config()
@@ -333,42 +335,54 @@ def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_sa
     master_df.to_csv(MASTER_SUMMARY_CSV, index=False)
     print(f"Master Summary updated at: {MASTER_SUMMARY_CSV}")
 
-def _write_performance_summary(df: pd.DataFrame, disease: str):
+def _write_performance_summary(df: pd.DataFrame, disease: str, cv_winner=None, frozen_test_auc_pr_final=None):
     """
     Writes a text summary comparing top LLM results to Sanity Check baselines.
     """
     best = df.iloc[0]
-    
+
     beat_all_pr = "YES" if best['auc_pr'] > BASelines['all_feat_pr'] else "NO"
     beat_single_pr = "YES" if best['auc_pr'] > BASelines['single_feat_pr'] else "NO"
+
+    cv_section = ""
+    if cv_winner is not None:
+        cv_beat = "YES" if (frozen_test_auc_pr_final or 0) > BASelines['all_feat_pr'] else "NO"
+        cv_section = textwrap.dedent(f"""
+        CV WINNER (selected by 5-fold CV on train_df)
+        ---------------------------------------
+        CV_AUC_PR_Mean    : {cv_winner['cv_auc_pr_mean']:.4f}
+        CV_AUC_PR_CI95    : [{cv_winner['cv_auc_pr_ci95_low']:.4f}, {cv_winner['cv_auc_pr_ci95_high']:.4f}]
+        Frozen_Test_AUC_PR: {frozen_test_auc_pr_final:.4f} (Beat All-Feat LR: {cv_beat})
+        CV Winner Formula : {cv_winner['formula']}
+        """)
 
     summary = textwrap.dedent(f"""
         METHOD 4 PERFORMANCE SUMMARY: {disease.upper()}
         {"="*50}
         Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        
+
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
         Cohort Prevalence : {BASelines['prevalence']:.4f}
         Best Single Feat  : {BASelines['single_feat_name']} (AUC-PR: {BASelines['single_feat_pr']:.4f})
         All-Feature LR    : AUC-PR: {BASelines['all_feat_pr']:.4f} | AUC-ROC: {BASelines['all_feat_roc']:.4f}
-        
+
         LLM PERFORMANCE (Method 4)
         ---------------------------------------
         Total Evaluated   : {len(df)}
         Winner Formula    : {best['formula']}
         Winner AUC-PR     : {best['auc_pr']:.4f} (Beat All-Feat LR: {beat_all_pr})
         Winner AUC-ROC    : {best['auc_roc']:.4f}
-        
+
         HEAD-TO-HEAD
         ---------------------------------------
         Beat Best Single Feat? : {beat_single_pr}
         Beat All-Feature LR?   : {beat_all_pr}
         Strategy of Winner     : {best['strategy']} (Temp: {best['temperature']})
-        
+        {cv_section}
         [Master Summary updated at {MASTER_SUMMARY_CSV}]
     """)
-    
+
     SUMMARY_FILE.write_text(summary.strip())
     print(summary)
 
@@ -429,8 +443,101 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
     results_df.to_csv(RESULTS_FILE, index=False)
     print(f"Detailed formula log saved to: {RESULTS_FILE}")
 
+    # ── CV-based winner selection (evaluate stage only) ────────────────────────
+    print("\n=== CV-based winner selection (top-20 by train AUC-PR) ===")
+    from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
+
+    tr_clean = train_df[list(FEATURE_VARS) + ["is_case"]].dropna()
+
+    # Rank valid formulas by train AUC-PR (single pass, frozen test never used here)
+    train_scores = []
+    for item in unique_formulas:
+        formula = item["formula"]
+        sc = eval_formula_scores(formula, tr_clean, list(FEATURE_VARS))
+        if sc is None:
+            continue
+        y_tr_cv = tr_clean["is_case"].values
+        if y_tr_cv.sum() < 5:
+            continue
+        try:
+            auc_roc_tr = float(_roc(y_tr_cv, sc))
+            if auc_roc_tr < 0.5:
+                sc = -sc
+            train_scores.append({"formula": formula, "train_auc_pr": float(_aps(y_tr_cv, sc)),
+                                  "strategy": item["strategy"], "temp": item["temp"]})
+        except Exception:
+            pass
+
+    if not train_scores:
+        print("[WARN] No train scores available for CV selection — skipping CV block")
+        _update_master_summary(results_df, disease_slug, split_salt)
+        _write_performance_summary(results_df, disease_slug)
+        return
+
+    train_rank = sorted(train_scores, key=lambda x: x["train_auc_pr"], reverse=True)[:20]
+    print(f"  Top-20 pool size: {len(train_rank)}")
+
+    cv_folds = get_cv_folds(train_df)
+    cv_rows = []
+    for item in train_rank:
+        formula = item["formula"]
+        fold_prs = []
+        for fold_train_df, fold_val_df in cv_folds:
+            ft = fold_train_df[list(FEATURE_VARS) + ["is_case"]].dropna()
+            fv = fold_val_df[list(FEATURE_VARS) + ["is_case"]].dropna()
+            if ft["is_case"].sum() < 5 or fv["is_case"].sum() < 5:
+                continue
+            sc_ft = eval_formula_scores(formula, ft, list(FEATURE_VARS))
+            sc_fv = eval_formula_scores(formula, fv, list(FEATURE_VARS))
+            if sc_ft is None or sc_fv is None:
+                continue
+            try:
+                auc_roc_ft = float(_roc(ft["is_case"].values, sc_ft))
+                if auc_roc_ft < 0.5:
+                    sc_fv = -sc_fv
+                fold_prs.append(float(_aps(fv["is_case"].values, sc_fv)))
+            except Exception:
+                pass
+
+        if len(fold_prs) < 3:
+            print(f"  Formula '{formula[:40]}...': fewer than 3 valid CV folds — skipped")
+            continue
+
+        s = cv_summary(fold_prs)
+        cv_rows.append({
+            "formula": formula,
+            "strategy": item["strategy"],
+            "temperature": item["temp"],
+            "train_auc_pr": item["train_auc_pr"],
+            "cv_auc_pr_mean": s["mean"],
+            "cv_auc_pr_std": s["std"],
+            "cv_auc_pr_ci95_low": s["ci95_low"],
+            "cv_auc_pr_ci95_high": s["ci95_high"],
+            "frozen_test_auc_pr_final": None,
+        })
+
+    if not cv_rows:
+        print("[WARN] No valid CV results — falling back to frozen test winner")
+        _update_master_summary(results_df, disease_slug, split_salt)
+        _write_performance_summary(results_df, disease_slug)
+        return
+
+    cv_df = pd.DataFrame(cv_rows).sort_values("cv_auc_pr_mean", ascending=False).reset_index(drop=True)
+    cv_winner = cv_df.iloc[0]
+
+    # Evaluate CV winner on frozen test exactly once
+    cv_winner_metrics = evaluate_formula_full(cv_winner["formula"], train_df, test_df, list(FEATURE_VARS))
+    frozen_test_auc_pr_final = cv_winner_metrics["auc_pr"] if cv_winner_metrics else float("nan")
+    cv_df.loc[0, "frozen_test_auc_pr_final"] = frozen_test_auc_pr_final
+
+    top_cv_path = OUT_DIR / "method4_top_cv.csv"
+    cv_df.to_csv(top_cv_path, index=False)
+    print(f"  CV winner: {cv_winner['formula'][:60]}...")
+    print(f"  CV AUC-PR mean: {cv_winner['cv_auc_pr_mean']:.4f}  Frozen test: {frozen_test_auc_pr_final:.4f}")
+    print(f"  Saved {top_cv_path}")
+
     _update_master_summary(results_df, disease_slug, split_salt)
-    _write_performance_summary(results_df, disease_slug)
+    _write_performance_summary(results_df, disease_slug, cv_winner, frozen_test_auc_pr_final)
 
 # MAIN ENTRY POINT
 # ══════════════════════════════════════════════════════════════════════════════
