@@ -46,7 +46,7 @@ method3:
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
       function_set: [add, sub, mul, div, sqrt, log, neg]
       max_samples: 0.5
-      max_depth: 8
+
     huge:
       population_size: 20000
       generations: 500
@@ -54,7 +54,7 @@ method3:
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
       function_set: [add, sub, mul, div, sqrt, log, neg]
       max_samples: 0.5
-      max_depth: 8
+
 
 
 # Method 4: LLM-based formula generation

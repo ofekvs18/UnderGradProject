@@ -213,7 +213,6 @@ def main():
             function_set=list(tier_cfg.function_set),
             parsimony_coefficient=tier_cfg.parsimony_coefficient,
             max_samples=tier_cfg.get("max_samples", 1.0),
-            max_depth=tier_cfg.get("max_depth", None),
             metric=combined_auc_fitness,
             random_state=ml.seed,
             n_jobs=1,
