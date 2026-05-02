@@ -11,13 +11,15 @@
 
 : "${DISEASE:?DISEASE not set — use launch_pipeline.sh}"
 SKIP_BQ=${SKIP_BQ:-""}
-START_FROM=${START_FROM:-"bq"}  # bq | sanity | method1 | method2 | method3 | method4
+START_FROM=${START_FROM:-"bq"}   # bq | sanity | method1 | method2 | method3 | method4
+END_AT=${END_AT:-"method4"}      # bq | sanity | method1 | method2 | method3 | method4
 
 echo "SLURM_JOBID=$SLURM_JOBID"
 echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"
 echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "START_FROM: $START_FROM"
+echo "END_AT:     $END_AT"
 echo "=========================================="
 
 set -e
@@ -45,6 +47,8 @@ REACHED=0
 for s in "${STEPS[@]}"; do
     [[ "$s" == "$START_FROM" ]] && REACHED=1
     [[ "$REACHED" == "0" ]] && continue
+    [[ "$REACHED" == "2" ]] && break
+    [[ "$s" == "$END_AT" ]] && REACHED=2
 
     case "$s" in
         bq)
