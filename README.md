@@ -24,15 +24,21 @@ python src/run_pipeline.py
 
 ## Methods
 
-| # | Method | Status | AUC-ROC | AUC-PR |
-|---|--------|--------|---------|--------|
-| — | All-features logistic regression (baseline) | ✓ | 0.658 | 0.017 |
-| 1 | Threshold optimization | ✓ | 0.617 | 0.0141 |
-| 2 | Random formula generation | Planned | — | — |
-| 3 | Genetic programming | Planned | — | — |
-| 4 | LLM-generated formulas | Planned | — | — |
+| # | Script | Method | Status |
+|---|--------|--------|--------|
+| — | `sanity_check.py` | All-features logistic regression (baseline) | ✓ |
+| 1 | `method_threshold.py` | Threshold optimization (literature + data-driven) | ✓ |
+| 2 | `method2_random_formula.py` | Random formula generation | ✓ |
+| 3 | `method3_gp.py` | Genetic programming (gplearn) | ✓ |
+| 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B) | ✓ |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
+
+To compare all methods across diseases and split variants:
+```bash
+python src/compare_methods.py
+# → results/methods_comparison.csv
+```
 
 
 read all on server 
