@@ -10,7 +10,6 @@
 #SBATCH --mem=32G
 
 : "${DISEASE:?DISEASE not set — use launch_pipeline.sh}"
-SKIP_BQ=${SKIP_BQ:-""}
 START_FROM=${START_FROM:-"bq"}   # bq | sanity | method1 | method2 | method3 | method4
 END_AT=${END_AT:-"method4"}      # bq | sanity | method1 | method2 | method3 | method4
 SPLIT_SALT=${SPLIT_SALT:-""}     # e.g. _seed2 — labels the split table and CSV
@@ -54,11 +53,7 @@ for s in "${STEPS[@]}"; do
 
     case "$s" in
         bq)
-            if [ "$SKIP_BQ" != "--skip-bq" ]; then
-                run_step "BQ extraction" $PYTHON -u src/run_pipeline.py disease="$DISEASE" split_salt="$SPLIT_SALT"
-            else
-                echo "Skipping BigQuery extraction."
-            fi
+            run_step "BQ extraction" $PYTHON -u src/run_pipeline.py disease="$DISEASE" split_salt="$SPLIT_SALT"
             ;;
         sanity)  run_step "sanity check"      $PYTHON -u src/sanity_check.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
         method1) run_step "method1 threshold" $PYTHON -u src/method_threshold.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
