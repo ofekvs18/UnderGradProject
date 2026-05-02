@@ -193,8 +193,11 @@ def main():
         tier_cfg = ml.method3.gp_configs[tier_name]
         patience = tier_cfg.get("patience", 10)
         prevalence = float(y_train.mean())
+        def _fitness(x1, x2, w):
+            return _combined_auc(x1, x2, w, prevalence=prevalence)
+
         combined_auc_fitness = make_fitness(
-                function=partial(_combined_auc, prevalence=prevalence),
+                function=_fitness,
                 greater_is_better=True
             )
         print(f"  Fitness: roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
@@ -207,9 +210,10 @@ def main():
             hall_of_fame=ml.method3.hall_of_fame,
             n_components=ml.method3.n_components,
             feature_names=features,
-            # Read from tier_cfg now
             function_set=list(tier_cfg.function_set),
             parsimony_coefficient=tier_cfg.parsimony_coefficient,
+            max_samples=tier_cfg.get("max_samples", 1.0),
+            max_depth=tier_cfg.get("max_depth", None),
             metric=combined_auc_fitness,
             random_state=ml.seed,
             n_jobs=1,

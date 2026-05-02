@@ -19,7 +19,7 @@ method2:
 # Method 3: Genetic Programming
 method3:
   phase1_auc_pr_threshold: 0.016
-  bad_frac: 0.10
+  bad_frac: 0.01
   hall_of_fame: 50
   n_components: 50
   fitness:
@@ -32,25 +32,29 @@ method3:
       generations: 20
       patience: 5
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
+      function_set: [add, sub, mul, div, sqrt, log, neg]
     medium:
       population_size: 300
       generations: 50
       patience: 10
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
+      function_set: [add, sub, mul, div, sqrt, log, neg]
     large:
       population_size: 500
       generations: 100
       patience: 20
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
+      function_set: [add, sub, mul, div, sqrt, log, neg]
+      max_samples: 0.5
+      max_depth: 8
     huge:
       population_size: 20000
       generations: 500
       patience: 40
       parsimony_coefficient: 0.001  # HIGHER: Stronger penalty for long formulas
-      function_set: [add, sub, mul, div, sqrt, log, abs, neg]
+      function_set: [add, sub, mul, div, sqrt, log, neg]
+      max_samples: 0.5
+      max_depth: 8
 
 
 # Method 4: LLM-based formula generation
