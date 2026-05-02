@@ -79,6 +79,7 @@ def make_pipeline_config(cfg):
         "bq_dataset":            cfg.pipeline.bq_dataset,
         "index_window_hours":    cfg.index_date.index_window_hours,
         "lookback_days":         cfg.index_date.lookback_days,
+        "split_salt":            cfg.get("split_salt", ""),
     }
 
 
@@ -188,7 +189,7 @@ def run_verify(client, stmt, label):
     print(f"  ({len(rows)} row(s))")
 
 
-def run_export(client, stmt, disease, bq_dataset):
+def run_export(client, stmt, disease, bq_dataset, split_salt=""):
     """
     Execute the CP5 export SELECT, download as DataFrame, save to data/.
     Returns the output path.
@@ -204,7 +205,7 @@ def run_export(client, stmt, disease, bq_dataset):
     print(f"  Downloaded {len(df):,} rows × {len(df.columns)} columns.")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = DATA_DIR / f"{disease}_modeling_data.csv"
+    out_path = DATA_DIR / f"{disease}_modeling_data{split_salt}.csv"
     df.to_csv(out_path, index=False)
     print(f"  Saved to {out_path}")
     return out_path
@@ -275,7 +276,7 @@ def main(cfg: DictConfig):
         if kind == "ddl":
             run_ddl(client, stmt, label)
         elif kind == "export":
-            export_path = run_export(client, stmt, config["disease"], config["bq_dataset"])
+            export_path = run_export(client, stmt, config["disease"], config["bq_dataset"], config["split_salt"])
         elif kind == "select":
             run_verify(client, stmt, label)
         else:

@@ -371,7 +371,7 @@ def _write_performance_summary(df: pd.DataFrame, disease: str):
     SUMMARY_FILE.write_text(summary.strip())
     print(summary)
 
-def run_evaluate(disease_slug: str):
+def run_evaluate(disease_slug: str, split_salt: str = ""):
     """
     Processes raw LLM outputs, evaluates all formulas locally, 
     and exports the 'champion' to the global Master Summary.
@@ -384,7 +384,7 @@ def run_evaluate(disease_slug: str):
     with open(RAW_FILE) as f:
         raw_entries = json.load(f)
 
-    df, features = load_data_for(disease_slug)
+    df, features = load_data_for(disease_slug, split_salt)
     train_df, test_df = get_splits(df)
 
     all_extracted = []
@@ -452,8 +452,9 @@ def main():
         help="Which processing stage to execute"
     )
     
+    parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
     parser.add_argument(
-        "--disease", 
+        "--disease",
         default="ra", 
         help="Disease slug for data loading and baseline lookup (default: ra)"
     )
@@ -477,7 +478,7 @@ def main():
 
     elif args.stage == "evaluate":
         print(f"--- Starting Evaluation Stage [{args.disease.upper()}] ---")
-        run_evaluate(args.disease)
+        run_evaluate(args.disease, args.split_salt)
 
     elif args.stage == "all":
         print(f"--- Starting Full Pipeline [{args.disease.upper()}] ---")
@@ -489,7 +490,7 @@ def main():
         print("\n" + "="*60)
         
         # Step 2: Evaluation and Vault Update
-        run_evaluate(args.disease)
+        run_evaluate(args.disease, args.split_salt)
         
         print("\n" + "="*60)
         print("PIPELINE COMPLETE")

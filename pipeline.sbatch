@@ -13,6 +13,7 @@
 SKIP_BQ=${SKIP_BQ:-""}
 START_FROM=${START_FROM:-"bq"}   # bq | sanity | method1 | method2 | method3 | method4
 END_AT=${END_AT:-"method4"}      # bq | sanity | method1 | method2 | method3 | method4
+SPLIT_SALT=${SPLIT_SALT:-""}     # e.g. _seed2 — labels the split table and CSV
 
 echo "SLURM_JOBID=$SLURM_JOBID"
 echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"
@@ -20,6 +21,7 @@ echo "Disease: $DISEASE"
 echo "Start: $(date)"
 echo "START_FROM: $START_FROM"
 echo "END_AT:     $END_AT"
+echo "SPLIT_SALT: ${SPLIT_SALT:-(default)}"
 echo "=========================================="
 
 set -e
@@ -53,16 +55,16 @@ for s in "${STEPS[@]}"; do
     case "$s" in
         bq)
             if [ "$SKIP_BQ" != "--skip-bq" ]; then
-                run_step "BQ extraction" $PYTHON -u src/run_pipeline.py disease="$DISEASE"
+                run_step "BQ extraction" $PYTHON -u src/run_pipeline.py disease="$DISEASE" split_salt="$SPLIT_SALT"
             else
                 echo "Skipping BigQuery extraction."
             fi
             ;;
-        sanity)  run_step "sanity check"      $PYTHON -u src/sanity_check.py --disease "$DISEASE" ;;
-        method1) run_step "method1 threshold" $PYTHON -u src/method_threshold.py --disease "$DISEASE" ;;
-        method2) run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" ;;
-        method3) run_step "method3 GP"        $PYTHON -u src/method3_gp.py --disease "$DISEASE" ;;
-        method4) run_step "method4 LLM"       $PYTHON -u src/method4_llm.py all --disease "$DISEASE" ;;
+        sanity)  run_step "sanity check"      $PYTHON -u src/sanity_check.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
+        method1) run_step "method1 threshold" $PYTHON -u src/method_threshold.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
+        method2) run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
+        method3) run_step "method3 GP"        $PYTHON -u src/method3_gp.py --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
+        method4) run_step "method4 LLM"       $PYTHON -u src/method4_llm.py all --disease "$DISEASE" --split-salt "$SPLIT_SALT" ;;
     esac
 done
 

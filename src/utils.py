@@ -73,14 +73,14 @@ def make_disease_config(name, icd_patterns, icd_version, full_name=""):
     }
 
 
-def data_path(disease):
-    """Return the modeling CSV path for a given disease slug."""
-    return DATA_DIR / f"{disease}_modeling_data.csv"
+def data_path(disease, split_salt=""):
+    """Return the modeling CSV path for a given disease slug and optional split salt."""
+    return DATA_DIR / f"{disease}_modeling_data{split_salt}.csv"
 
 
-def load_data_for(disease):
+def load_data_for(disease, split_salt=""):
     """Load the modeling CSV for a given disease slug. Returns (df, feature_names)."""
-    return load_data(data_path(disease))
+    return load_data(data_path(disease, split_salt))
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 META_COLS    = {"subject_id", "is_case", "split"}

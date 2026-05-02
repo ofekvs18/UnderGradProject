@@ -12,6 +12,7 @@ from utils import (
 
 parser = argparse.ArgumentParser(description="Sanity check — LR performance and formulas")
 parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
 args = parser.parse_args()
 
 # ── Setup Directories ────────────────────────────────────────────────────────
@@ -57,7 +58,7 @@ def fit_evaluate(X_train, y_train, X_test, y_test, label, feature_names):
     }
 
 # ── Execution ────────────────────────────────────────────────────────────────
-df, features = load_data_for(disease.name)
+df, features = load_data_for(disease.name, args.split_salt)
 
 # Calculate Prevalence and Case Count from the ENTIRE dataset before splitting
 total_cases = int(df["is_case"].sum())

@@ -34,6 +34,7 @@ from utils import (
 def main():
     parser = argparse.ArgumentParser(description="Method 2: Random formula generation")
     parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+    parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
     args = parser.parse_args()
 
     disease = load_disease_config(args.disease)
@@ -48,7 +49,7 @@ def main():
 
     # ── Part A: Load data ─────────────────────────────────────────────────────────
     print("Loading data...")
-    df, features = load_data_for(disease.name)
+    df, features = load_data_for(disease.name, args.split_salt)
     train_df, test_df = get_splits(df)
     print(f"Train: {len(train_df):,} rows | Test: {len(test_df):,} rows")
     print(f"Features: {features}\n")

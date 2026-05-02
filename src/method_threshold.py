@@ -25,6 +25,7 @@ def main():
     # ── CLI Arguments ─────────────────────────────────────────────────────────────
     parser = argparse.ArgumentParser(description="Method 1 — Threshold Optimization")
     parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+    parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print LLM prompt without loading model")
     parser.add_argument("--force-refresh", action="store_true",
@@ -62,7 +63,7 @@ def main():
 
     # ── Load ──────────────────────────────────────────────────────────────────────
     print("Loading data...")
-    df, _ = load_data_for(disease.name)
+    df, _ = load_data_for(disease.name, args.split_salt)
     train_df, test_df = get_splits(df)
     print(f"Train: {len(train_df):,} rows  |  Test: {len(test_df):,} rows\n")
 

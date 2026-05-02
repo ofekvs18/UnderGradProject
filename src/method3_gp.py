@@ -143,6 +143,7 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
 def main():
     parser = argparse.ArgumentParser(description="Method 3: GP (Iterative Search)")
     parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
+    parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
     parser.add_argument("--log-every", type=int, default=5, help="Track progress every X gens")
     args = parser.parse_args()
 
@@ -169,7 +170,7 @@ def main():
 
     # 4. Load Data
     print("Loading data...")
-    df, features = load_data_for(disease.name)
+    df, features = load_data_for(disease.name, args.split_salt)
     train_df, test_df = get_splits(df)
     tr_clean = train_df[features + ["is_case"]].dropna()
     te_clean = test_df[features + ["is_case"]].dropna()

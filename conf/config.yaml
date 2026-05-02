@@ -8,6 +8,8 @@ pipeline:
   bq_dataset: biomarkers-478606.biomarkers
   dry_run: false
 
+split_salt: ""  # set to e.g. "_seed2" to produce a labelled alternate split
+
 index_date:
   index_window_hours: 24   # CBC from first N hours of index admission
   lookback_days: 90        # CBC from prior N days (different admission)

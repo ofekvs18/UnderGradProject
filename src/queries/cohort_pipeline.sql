@@ -330,12 +330,12 @@ LIMIT 20;
 -- 80/20 deterministic split. Only patients with CBC data.
 -- This table is IMMUTABLE after creation.
 
-CREATE OR REPLACE TABLE `{bq_dataset}.{disease}_splits` AS
+CREATE OR REPLACE TABLE `{bq_dataset}.{disease}_splits{split_salt}` AS
 SELECT
   subject_id,
   is_case,
   CASE
-    WHEN MOD(ABS(FARM_FINGERPRINT(CAST(subject_id AS STRING))), 5) = 0
+    WHEN MOD(ABS(FARM_FINGERPRINT(CONCAT(CAST(subject_id AS STRING), '{split_salt}'))), 5) = 0
     THEN 'test'
     ELSE 'train'
   END AS split
@@ -350,7 +350,7 @@ SELECT
   split,
   is_case,
   COUNT(*) AS n
-FROM `{bq_dataset}.{disease}_splits`
+FROM `{bq_dataset}.{disease}_splits{split_salt}`
 GROUP BY split, is_case
 ORDER BY split, is_case;
 
@@ -359,7 +359,7 @@ ORDER BY split, is_case;
 -- CHECKPOINT 5: EXPORT FOR MODELING
 -- ############################################################################
 -- [EXPORT]
--- This query will be downloaded as {disease}_modeling_data.csv
+-- This query will be downloaded as {disease}_modeling_data{split_salt}.csv
 
 SELECT
   f.subject_id,
@@ -367,6 +367,6 @@ SELECT
   s.split,
   f.hct, f.hgb, f.mch, f.mchc, f.mcv, f.plt, f.rbc, f.rdw, f.wbc
 FROM `{bq_dataset}.{disease}_cbc_features` f
-JOIN `{bq_dataset}.{disease}_splits` s
+JOIN `{bq_dataset}.{disease}_splits{split_salt}` s
   ON f.subject_id = s.subject_id
 WHERE f.hgb IS NOT NULL;
