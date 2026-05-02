@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import sys
 import numpy as np
 import pandas as pd
@@ -219,7 +220,9 @@ def main():
         return f"{row['feature']} {op} {row[thresh_key]}"
 
     new_m1_row = {
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Disease": disease.name,
+        "Split_Salt": args.split_salt,
         "Best_Lit_Feature": best_lit["feature"],
         "Best_Lit_Formula": fmt_formula(best_lit, "threshold"),
         "Best_Lit_AUC_PR": best_lit["auc_pr"],
@@ -234,13 +237,11 @@ def main():
     ensure_dir(M1_MASTER_PATH.parent)
 
     if M1_MASTER_PATH.exists():
-        m1_master = pd.read_csv(M1_MASTER_PATH)
-        m1_master = m1_master[m1_master["Disease"] != disease.name] # Update existing
-        m1_master = pd.concat([m1_master, pd.DataFrame([new_m1_row])], ignore_index=True)
+        m1_master = pd.concat([pd.read_csv(M1_MASTER_PATH), pd.DataFrame([new_m1_row])], ignore_index=True)
     else:
         m1_master = pd.DataFrame([new_m1_row])
 
-    m1_master.sort_values("Disease").to_csv(M1_MASTER_PATH, index=False)
+    m1_master.to_csv(M1_MASTER_PATH, index=False)
     print(f"Updated master Method 1 summary at: {M1_MASTER_PATH}")
     
     # ── Bar chart: AUC-PR by feature ─────────────────────────────────────────────

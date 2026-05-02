@@ -14,6 +14,7 @@ outperform random search (Method 2, AUC-PR=0.0174) and logistic regression
 
 # Standard library
 import argparse
+from datetime import datetime
 import sys
 import warnings
 
@@ -277,7 +278,9 @@ def main():
 
         # 6. Final Aggregate Master Logging (Additive)
         master_row = {
+            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Disease": disease.name,
+            "Split_Salt": args.split_salt,
             "Config_Used": tier_name,
             "Best_GP_Formula": winning_formula,
             "Best_GP_AUC_PR": round(best_overall_auc_pr, 4),
@@ -289,21 +292,13 @@ def main():
 
         MASTER_PATH = RESULTS_DIR / "method3_gp" / "master_gp_summary.csv"
         ensure_dir(MASTER_PATH.parent)
-        
+
         if MASTER_PATH.exists():
-            master_df = pd.read_csv(MASTER_PATH)
-            
-            # FIX: Filter out only the specific Disease AND Tier combination
-            # This allows you to keep 'ra/small' while updating 'ra/huge'
-            mask = (master_df["Disease"] == disease.name) & (master_df["Config_Used"] == tier_name)
-            master_df = master_df[~mask]
-            
-            master_df = pd.concat([master_df, pd.DataFrame([master_row])], ignore_index=True)
+            master_df = pd.concat([pd.read_csv(MASTER_PATH), pd.DataFrame([master_row])], ignore_index=True)
         else:
             master_df = pd.DataFrame([master_row])
 
-        # Sort by Disease then Tier for a clean overview
-        master_df.sort_values(["Disease", "Config_Used"]).to_csv(MASTER_PATH, index=False)
+        master_df.to_csv(MASTER_PATH, index=False)
         print(f"Master summary updated: {disease.name} | Tier: {tier_name}")
 
 if __name__ == "__main__":

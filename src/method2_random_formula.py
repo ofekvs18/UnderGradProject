@@ -11,6 +11,7 @@ Research question: can random CBC combinations beat single-feature thresholds
 
 # Standard library
 import argparse
+from datetime import datetime
 import sys
 import warnings
 
@@ -228,7 +229,9 @@ def main():
     best = results_df.iloc[0]
     
     new_m2_row = {
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Disease": disease.name,
+        "Split_Salt": args.split_salt,
         "Best_Random_Formula": best["formula"],
         "Best_Random_AUC_PR": round(best["auc_pr"], 4),
         "Best_Random_AUC_ROC": round(best["auc_roc"], 4),
@@ -239,13 +242,11 @@ def main():
     ensure_dir(M2_MASTER_PATH.parent)
 
     if M2_MASTER_PATH.exists():
-        m2_master = pd.read_csv(M2_MASTER_PATH)
-        m2_master = m2_master[m2_master["Disease"] != disease.name] # Update existing
-        m2_master = pd.concat([m2_master, pd.DataFrame([new_m2_row])], ignore_index=True)
+        m2_master = pd.concat([pd.read_csv(M2_MASTER_PATH), pd.DataFrame([new_m2_row])], ignore_index=True)
     else:
         m2_master = pd.DataFrame([new_m2_row])
 
-    m2_master.sort_values("Disease").to_csv(M2_MASTER_PATH, index=False)
+    m2_master.to_csv(M2_MASTER_PATH, index=False)
     print(f"Updated master Method 2 summary at: {M2_MASTER_PATH}")
     print("\nMethod 2 complete.")
 

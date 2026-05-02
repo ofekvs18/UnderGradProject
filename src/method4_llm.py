@@ -301,18 +301,21 @@ def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[
             
     return unique_list
 
-def _update_master_summary(results_df: pd.DataFrame, disease_slug: str):
+def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_salt: str = ""):
     """
-    Updates the global Master Summary with only the best-performing formula 
-    for this disease. Overwrites previous entries for the same disease.
+    Updates the global Master Summary by appending the best-performing formula
+    for this run (timestamp-stamped; previous entries are never removed).
     """
     if results_df.empty:
         return
 
+    from datetime import datetime
     best = results_df.iloc[0]
-    
+
     new_entry = pd.DataFrame([{
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Disease": disease_slug,
+        "Split_Salt": split_salt,
         "Best_LLM_AUC_PR": best["auc_pr"],
         "Best_LLM_AUC_ROC": best["auc_roc"],
         "Best_LLM_Formula": best["formula"],
@@ -322,9 +325,7 @@ def _update_master_summary(results_df: pd.DataFrame, disease_slug: str):
     }])
 
     if MASTER_SUMMARY_CSV.exists():
-        master_df = pd.read_csv(MASTER_SUMMARY_CSV)
-        master_df = master_df[master_df["Disease"].str.lower() != disease_slug.lower()]
-        master_df = pd.concat([master_df, new_entry], ignore_index=True)
+        master_df = pd.concat([pd.read_csv(MASTER_SUMMARY_CSV), new_entry], ignore_index=True)
     else:
         ensure_dir(MASTER_SUMMARY_CSV.parent)
         master_df = new_entry
@@ -428,7 +429,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
     results_df.to_csv(RESULTS_FILE, index=False)
     print(f"Detailed formula log saved to: {RESULTS_FILE}")
 
-    _update_master_summary(results_df, disease_slug)
+    _update_master_summary(results_df, disease_slug, split_salt)
     _write_performance_summary(results_df, disease_slug)
 
 # MAIN ENTRY POINT

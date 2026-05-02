@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
@@ -91,7 +92,9 @@ res_all = fit_evaluate(tr_all[features].values, tr_all["is_case"].values,
 best_res_single = max(single_results, key=lambda x: x["auc_pr"])
 
 new_row = {
+    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     "Disease": disease.name,
+    "Split_Salt": args.split_salt,
     "Total_Case_Count": total_cases,
     "Total_Prevalence": total_prevalence,
     "Best_Single_Feat": best_res_single["model"],
@@ -106,15 +109,10 @@ new_row = {
 master_csv_path = BASE_SANITY_DIR / "master_sanity_summary.csv"
 
 if master_csv_path.exists():
-    master_df = pd.read_csv(master_csv_path)
-    # Update row if disease exists, otherwise append
-    master_df = master_df[master_df["Disease"] != disease.name]
-    master_df = pd.concat([master_df, pd.DataFrame([new_row])], ignore_index=True)
+    master_df = pd.concat([pd.read_csv(master_csv_path), pd.DataFrame([new_row])], ignore_index=True)
 else:
     master_df = pd.DataFrame([new_row])
 
-# Keep master summary sorted alphabetically
-master_df = master_df.sort_values("Disease")
 master_df.to_csv(master_csv_path, index=False)
 
 print(f"Updated master summary for {disease.name} at: {master_csv_path}")
