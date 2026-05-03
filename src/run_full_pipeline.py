@@ -104,6 +104,13 @@ def main():
         dry_run=dry_run,
     )
 
+    # Step 7: Cross-method correlation
+    run_step(
+        "Cross-method score vector correlation",
+        [PYTHON, str(SRC_DIR / "cross_method_correlation.py"), "--disease", disease],
+        dry_run=dry_run,
+    )
+
     print()
     print("=" * 70)
     print(f"All steps complete for disease: {disease}")
