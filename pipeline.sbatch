@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --partition main
-#SBATCH --time 0-14:00:00
+#SBATCH --time 0-4:00:00
 #SBATCH --job-name biomarker
 #SBATCH --output results/pipeline_%x_%j.out
 #SBATCH --mail-user=ofekvi@post.bgu.ac.il
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --gpus=rtx_3090:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
 
 : "${DISEASE:?DISEASE not set — use launch_pipeline.sh}"
 START_FROM=${START_FROM:-"bq"}   # bq | sanity | method1 | method2 | method3 | method4
