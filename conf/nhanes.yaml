@@ -1,0 +1,91 @@
+# NHANES dataset configuration
+#
+# NHANES data is organized in component files per survey cycle.
+# Each cycle has a letter suffix: G=2011-2012, H=2013-2014, I=2015-2016, J=2017-2018.
+# Files are SAS XPT format, readable via pandas.read_sas().
+#
+# File layout accepted (both are auto-detected):
+#   Flat   : <nhanes_dir>/CBC_H.XPT
+#   Subdir : <nhanes_dir>/H/CBC_H.XPT
+#
+# IMPORTANT: Verify variable names and response codes against the NHANES
+# codebooks for your target cycles before running extraction.
+# Codebooks: https://wwwn.cdc.gov/nchs/nhanes/
+
+# CBC laboratory variable names (consistent across cycles G–J).
+# NHANES stores CBC in component files named CBC_<cycle>.XPT.
+cbc_vars:
+  wbc:  LBXWBCSI   # Leukocytes [1000 cells/µL]
+  rbc:  LBXRBCSI   # Erythrocytes [million cells/µL]
+  hgb:  LBXHGB     # Hemoglobin [g/dL]
+  hct:  LBXHCT     # Hematocrit [%]
+  mcv:  LBXMCVSI   # Mean Cell Volume [fL]
+  mch:  LBXMCHSI   # Mean Cell Hemoglobin [pg]
+  mchc: LBXMC      # Mean Cell Hemoglobin Concentration [g/dL]
+  plt:  LBXPLTSI   # Platelets [1000 cells/µL]
+  rdw:  LBXRDW     # Red Cell Distribution Width [%]
+
+# Survey cycles included by default (cycle letter → year range label).
+cycles:
+  G: "2011-2012"
+  H: "2013-2014"
+  I: "2015-2016"
+  J: "2017-2018"
+
+# Component file name templates (format with cycle letter, e.g. "CBC_H.XPT")
+cbc_file:  "CBC_{}.XPT"
+demo_file: "DEMO_{}.XPT"   # demographics file (for SEQN list only)
+
+# Disease case definitions.
+# Each disease entry is a list of conditions (all must be met — AND logic).
+# Each condition specifies which questionnaire file and which variable/values
+# identify a positive case for that condition.
+#
+# Supported disease slugs: ra, lup, crhn, t2d, t1d, psr
+# (must match conf/disease/<slug>.yaml slugs)
+#
+# IMPORTANT: response code meanings differ by cycle. Verify against codebooks.
+disease_case_defs:
+  ra:
+    - file: "MCQ_{}.XPT"   # Medical Conditions Questionnaire
+      variable: "MCQ160a"  # "Doctor told you have arthritis?" 1=Yes
+      values: [1]
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ195"   # "What kind of arthritis?" 2=Rheumatoid (cycles G-J)
+      values: [2]
+
+  lup:
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ160B"  # "Doctor told lupus?" 1=Yes
+      values: [1]
+
+  crhn:
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ160L"  # "Doctor told Crohn's disease?" 1=Yes (cycles H+)
+      values: [1]
+
+  t2d:
+    - file: "DIQ_{}.XPT"   # Diabetes Questionnaire
+      variable: "DIQ010"   # "Doctor told you have diabetes?" 1=Yes
+      values: [1]
+
+  t1d:
+    # NHANES does not cleanly distinguish T1D from T2D in all cycles.
+    # Use DIQ010 (diagnosed diabetes) as a proxy; verify with DIQ175D if
+    # available (risk factor: type 1 diabetes, cycles I+).
+    - file: "DIQ_{}.XPT"
+      variable: "DIQ010"
+      values: [1]
+
+  psr:
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ160PA" # "Doctor told psoriatic arthritis?" (cycles I+)
+      values: [1]
+    # Note: MCQ160PA was introduced in cycle I (2015-2016).
+    # Earlier cycles (G, H) will produce zero psoriatic arthritis cases.
+
+# Random seed for patient-level train/test split
+seed: 42
+
+# Fraction of patients held out for test
+test_frac: 0.20

@@ -60,6 +60,38 @@ Same as TODO 2, only a different dataset
 3. Which NHANES cycles/years should be included by default (e.g., 1999–2018)?
 4. NHANES CBC variables use different naming conventions (e.g., LBXWBCSI for WBC) — should the mapping be hardcoded in utils.py or in a per-dataset config file?
 
+### Implementation Summary
+
+**Decisions made (based on unanswered questions):**
+1. **Interface**: Identical CLI pattern to EHRSHOT — `--nhanes-dir`, `--disease`, `--output` — so both scripts are interchangeable.
+2. **Survey weights**: Not applied; each participant treated equally (matches MIMIC-IV pipeline for comparability across datasets).
+3. **Cycles**: Default cycles G–J (2011–2018). Script accepts `--cycles G H I J` to override. Earlier cycles were excluded because NHANES CBC variable names are consistent from cycle G onward; pre-2011 data uses some different variable names requiring extra mapping.
+4. **Variable mapping**: Stored in `conf/nhanes.yaml` (per-dataset config, same pattern as EHRSHOT). Disease case definitions (questionnaire variables and response codes) are also in that file with one entry per disease slug.
+
+**Key NHANES-specific design decisions:**
+- NHANES uses SEQN as patient identifier (renamed to `subject_id` in output).
+- CBC data comes from SAS XPT files (`CBC_<cycle>.XPT`). Both flat (`nhanes_dir/CBC_H.XPT`) and cycle-subdirectory (`nhanes_dir/H/CBC_H.XPT`) layouts are auto-detected.
+- Disease labels come from questionnaire XPT files (MCQ, DIQ), not ICD codes. Case definitions are AND-ed conditions per disease (e.g., RA requires MCQ160a==1 AND MCQ195==2).
+- Participants appearing in multiple cycles retain the CBC row with fewest missing values; later cycle is tiebreaker.
+- Output CSV format is identical to MIMIC-IV and EHRSHOT: `subject_id, is_case, split, <features>`.
+
+**Files created:**
+- `conf/nhanes.yaml` — NHANES config: CBC variable names (LBXWBCSI etc.), survey cycles, questionnaire-based disease case definitions per disease slug
+- `src/nhanes_data.py` — Extracts modeling CSV from NHANES XPT files; auto-detects flat/subdir layout; assigns case labels from questionnaire variables; outputs `data/{disease}_nhanes_data.csv`
+- `src/nhanes_sanity.py` — Descriptive stats: overview, per-feature coverage, feature stats, case-vs-control means; outputs to `results/nhanes/`
+- `src/nhanes_evaluate.py` — Evaluates formulas from all four method master summaries on NHANES; handles all formula formats; outputs per-method and combined CSV to `results/nhanes/`
+
+**Usage:**
+```bash
+python src/nhanes_data.py --nhanes-dir /path/to/nhanes --disease ra
+python src/nhanes_sanity.py --disease ra
+python src/nhanes_evaluate.py --disease ra            # all methods
+python src/nhanes_evaluate.py --disease ra --method m2  # single method
+```
+
+**Commits:**
+- `feat(#3): add NHANES data extraction, sanity check, and evaluation scripts`
+
 ## TODO 4: results visualization
 this is only a planning todo, nothing to implement yet.
 i need the results in a convenient format, where all formulas are of the same style and format no matter which method has created them. i need to be able to visualize the results and filtering it based on disease, methods, feature count. I think I'm imagining some sort of dashboard to do it so i could also screenshot it for the article. 
