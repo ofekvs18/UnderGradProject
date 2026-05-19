@@ -25,6 +25,32 @@ Goals for this task:
 4. Should the evaluation results be stored alongside the existing `results/` method subdirectories, or in a separate `results/ehrshot/` hierarchy?
 5. Is the disease parameterization via ICD codes, SNOMED codes, or some EHRSHOT-specific label format?
 
+### Implementation Summary
+
+**Decisions made (based on unanswered questions):**
+1. **EHRSHOT access**: Script accepts `--ehrshot-dir` pointing to the local EHRSHOT dataset. No download logic; run extraction once you have the data locally.
+2. **Column mapping**: Same 9 CBC features as MIMIC-IV. EHRSHOT uses OMOP/LOINC concept codes — a mapping config was added (`conf/ehrshot.yaml`). OMOP concept IDs need verification against your local EHRSHOT vocabulary before first run.
+3. **Metrics**: Full metric set identical to MIMIC pipeline (AUC-ROC, AUC-PR, F2, precision@recall 0.25/0.50/0.75). Threshold fitted on EHRSHOT train split via Youden's index, applied to test split.
+4. **Storage**: `results/ehrshot/` hierarchy.
+5. **Disease parameterization**: ICD codes from `conf/disease/{slug}.yaml` (same configs as MIMIC pipeline), mapped to EHRSHOT's `ICD9CM/` or `ICD10CM/` MEDS code format.
+
+**Files created:**
+- `conf/ehrshot.yaml` — EHRSHOT config: CBC concept codes (OMOP + LOINC), ICD prefix format, lookback window, split seed
+- `src/ehrshot_data.py` — Extracts modeling CSV from EHRSHOT MEDS parquet format; auto-detects parquet layout; assigns case/control labels from ICD codes; outputs `data/{disease}_ehrshot_data.csv`
+- `src/ehrshot_sanity.py` — Descriptive stats on the extracted data: overview, per-feature coverage, feature stats, case-vs-control means; outputs to `results/ehrshot/`
+- `src/ehrshot_evaluate.py` — Evaluates formulas from all four method master summaries on EHRSHOT; handles all formula formats (infix, GP prefix notation, threshold comparisons); outputs per-method and combined CSV to `results/ehrshot/`
+
+**Usage:**
+```bash
+python src/ehrshot_data.py --ehrshot-dir /path/to/ehrshot --disease ra
+python src/ehrshot_sanity.py --disease ra
+python src/ehrshot_evaluate.py --disease ra            # all methods
+python src/ehrshot_evaluate.py --disease ra --method m2  # single method
+```
+
+**Commits:**
+- `feat(#2): add EHRSHOT data extraction, sanity check, and evaluation scripts`
+
 ## TODO 3: NHANES comparison
 Same as TODO 2, only a different dataset
 

@@ -1,0 +1,34 @@
+# EHRSHOT dataset configuration
+#
+# CBC concept codes in the MEDS event timeline (the "code" column).
+# Each feature maps to a list of accepted code strings; the first matching
+# code found for a patient is used. Add OMOP or LOINC prefixes used by your
+# local EHRSHOT instance (e.g. "OMOP/3000963" or "LOINC/6690-2").
+#
+# IMPORTANT: Verify these concept IDs against your local EHRSHOT vocabulary
+# (ehrshot_dir/metadata/concept.csv or similar) before running extraction.
+
+cbc_codes:
+  wbc:  ["OMOP/3000963", "LOINC/6690-2"]   # Leukocytes [#/volume] in Blood
+  rbc:  ["OMOP/3000905", "LOINC/789-8"]    # Erythrocytes [#/volume] in Blood
+  hgb:  ["OMOP/3024731", "LOINC/718-7"]    # Hemoglobin [Mass/volume] in Blood
+  hct:  ["OMOP/3009542", "LOINC/4544-3"]   # Hematocrit [Volume Fraction]
+  mcv:  ["OMOP/3015182", "LOINC/787-2"]    # MCV [Entitic volume]
+  mch:  ["OMOP/3012030", "LOINC/785-6"]    # MCH [Entitic mass]
+  mchc: ["OMOP/3010813", "LOINC/786-4"]    # MCHC [Mass/volume]
+  plt:  ["OMOP/3007461", "LOINC/777-3"]    # Platelets [#/volume] in Blood
+  rdw:  ["OMOP/3014111", "LOINC/788-0"]    # Erythrocyte distribution width
+
+# ICD code format used in EHRSHOT MEDS events (prefix + raw ICD code)
+icd_prefixes:
+  9:  "ICD9CM/"
+  10: "ICD10CM/"
+
+# How far back before the index date to look for a CBC measurement (days)
+cbc_lookback_days: 365
+
+# Random seed for control index-date sampling and patient-level split
+seed: 42
+
+# Fraction of patients held out for test
+test_frac: 0.20
