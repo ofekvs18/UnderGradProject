@@ -82,6 +82,7 @@ per_k_new = pd.DataFrame([
         "Split_Salt":      args.split_salt,
         "K":               k,
         "Best_Features":   ",".join(v["features"]),
+        "Formula":         v["formula"],
         "Baseline_AUC_PR": v["auc_pr"],
         "Baseline_AUC_ROC": v["auc_roc"],
     }

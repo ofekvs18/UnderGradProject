@@ -271,8 +271,15 @@ def lr_per_k_baselines(train_df, test_df, features, seed=42):
         clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
         clf.fit(tr[best_subset].values, y_tr)
         proba_te = clf.predict_proba(te[best_subset].values)[:, 1]
+        intercept = clf.intercept_[0]
+        parts = [f"{intercept:.4f}"]
+        for coef, name in zip(clf.coef_[0], best_subset):
+            sign = "+" if coef >= 0 else "-"
+            parts.append(f"{sign} ({abs(coef):.4f} * {name})")
+        formula_str = "logit(p) = " + " ".join(parts)
         baselines[k] = {
             "features": best_subset,
+            "formula":  formula_str,
             "auc_pr":   round(float(average_precision_score(y_te, proba_te)), 4),
             "auc_roc":  round(float(roc_auc_score(y_te, proba_te)), 4),
         }
@@ -299,6 +306,7 @@ def load_per_k_baselines(disease: str, split_salt: str = "") -> dict:
             "auc_pr":   float(row["Baseline_AUC_PR"]),
             "auc_roc":  float(row["Baseline_AUC_ROC"]),
             "features": str(row["Best_Features"]).split(","),
+            "formula":  str(row["Formula"]) if "Formula" in row and pd.notna(row["Formula"]) else "",
         }
         for _, row in sub.iterrows()
     }
