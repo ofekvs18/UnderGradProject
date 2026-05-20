@@ -41,7 +41,7 @@ def main():
     ensure_dir(out_dir)
 
     print("=" * 70)
-    print(f"NHANES Sanity Check — {disease.full_name} ({disease.name})")
+    print(f"NHANES Sanity Check - {disease.full_name} ({disease.name})")
     print("=" * 70)
 
     df = pd.read_csv(data_path)
@@ -135,7 +135,7 @@ def main():
             "Control_Mean": ctrl_mean,
             "Delta":        delta,
         })
-        print(f"  {feat:6s}: cases={case_mean:.3f}  controls={ctrl_mean:.3f}  Δ={delta:+.3f}")
+        print(f"  {feat:6s}: cases={case_mean:.3f}  controls={ctrl_mean:.3f}  d={delta:+.3f}")
 
     # ── Save outputs ─────────────────────────────────────────────────────────
     def append_csv(path, new_df):
@@ -145,19 +145,19 @@ def main():
 
     overview_path = out_dir / "nhanes_overview.csv"
     append_csv(overview_path, pd.DataFrame([overview_row]))
-    print(f"\nSaved overview      → {overview_path}")
+    print(f"\nSaved overview      -> {overview_path}")
 
     coverage_path = out_dir / f"{args.disease}_cbc_coverage.csv"
     append_csv(coverage_path, pd.DataFrame(coverage_rows))
-    print(f"Saved CBC coverage  → {coverage_path}")
+    print(f"Saved CBC coverage  -> {coverage_path}")
 
     stats_path = out_dir / f"{args.disease}_feature_stats.csv"
     append_csv(stats_path, pd.DataFrame(stat_rows))
-    print(f"Saved feature stats → {stats_path}")
+    print(f"Saved feature stats -> {stats_path}")
 
     comp_path = out_dir / f"{args.disease}_case_ctrl_comparison.csv"
     append_csv(comp_path, pd.DataFrame(comp_rows))
-    print(f"Saved case/ctrl     → {comp_path}")
+    print(f"Saved case/ctrl     -> {comp_path}")
 
 
 if __name__ == "__main__":
