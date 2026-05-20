@@ -288,6 +288,20 @@ def main():
                     "Beats_Baseline": best_overall_auc_pr > baseline_auc_pr
                 })
                 pd.DataFrame(progress_rows).to_csv(TIER_DIR / "progress_log.csv", index=False)
+                if per_k_best:
+                    _tmp_rows = [
+                        {
+                            "K":                 k,
+                            "Best_Formula":      kdata["formula"],
+                            "AUC_PR":            kdata["auc_pr"],
+                            "AUC_ROC":           kdata["auc_roc"],
+                            "Baseline_AUC_PR":   per_k_bl.get(k, {}).get("auc_pr"),
+                            "Delta_vs_Baseline": round(kdata["auc_pr"] - per_k_bl.get(k, {}).get("auc_pr"), 4)
+                                if per_k_bl.get(k, {}).get("auc_pr") is not None else None,
+                        }
+                        for k, kdata in sorted(per_k_best.items())
+                    ]
+                    pd.DataFrame(_tmp_rows).to_csv(TIER_DIR / "per_k_best.csv", index=False)
 
             if patience_counter >= patience:
                 print(f"\n--- STOP: Plateau detected at gen {gen} (no improvement for {patience} gens) ---")
