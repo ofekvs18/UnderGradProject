@@ -64,6 +64,62 @@ METHOD_SPECS = {
 
 # ── Formula evaluation ────────────────────────────────────────────────────────
 
+def gp_prefix_to_infix(formula):
+    """Convert gplearn S-expression to readable infix notation."""
+    import re
+
+    BINARY_OPS = {"mul": "*", "div": "/", "add": "+", "sub": "-"}
+    UNARY_OPS = {"sqrt", "log", "abs", "neg"}
+
+    def split_top_args(s):
+        depth, args, cur = 0, [], []
+        for c in s:
+            if c == "(":
+                depth += 1; cur.append(c)
+            elif c == ")":
+                depth -= 1; cur.append(c)
+            elif c == "," and depth == 0:
+                args.append("".join(cur).strip()); cur = []
+            else:
+                cur.append(c)
+        if cur:
+            args.append("".join(cur).strip())
+        return args
+
+    def parse(s):
+        s = s.strip()
+        m = re.match(r'^(\w+)\(', s)
+        if not m:
+            return s
+        name = m.group(1)
+        i, depth = m.end() - 1, 0
+        while i < len(s):
+            if s[i] == "(": depth += 1
+            elif s[i] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        inner = s[m.end():i]
+        if name in BINARY_OPS:
+            a, b = split_top_args(inner)
+            return f"({parse(a)} {BINARY_OPS[name]} {parse(b)})"
+        elif name == "neg":
+            return f"(-{parse(inner)})"
+        elif name in UNARY_OPS:
+            return f"{name}({parse(inner)})"
+        return s
+
+    try:
+        result = parse(formula.strip())
+        # Unwrap single outer parens if present
+        if result.startswith("(") and result.endswith(")"):
+            result = result[1:-1]
+        return result
+    except Exception:
+        return formula
+
+
 def eval_formula_scores_extended(formula, df, features, bad_frac=0.10):
     """
     Evaluate a formula string against a DataFrame. Supports:
@@ -223,11 +279,17 @@ def main():
                     print(f"  [{variant}] FAIL: {formula[:70]}")
                     continue
 
+                formula_display = (
+                    gp_prefix_to_infix(formula)
+                    if variant == "gp"
+                    else formula
+                )
                 out_row = {
-                    "Timestamp": timestamp,
-                    "Disease":   args.disease,
-                    "Method":    method_key,
-                    "Variant":   variant,
+                    "Timestamp":       timestamp,
+                    "Disease":         args.disease,
+                    "method":          method_key,
+                    "Variant":         variant,
+                    "formula_display": formula_display,
                     **result,
                 }
                 for extra in ("Config_Used", "Winning_Strategy", "Winning_Temp",
@@ -248,7 +310,7 @@ def main():
             if out_path.exists():
                 method_df = pd.concat([pd.read_csv(out_path), method_df], ignore_index=True)
             method_df.to_csv(out_path, index=False)
-            print(f"  Saved {len(method_results)} results → {out_path}\n")
+            print(f"  Saved {len(method_results)} results -> {out_path}\n")
         else:
             print()
 
@@ -258,16 +320,16 @@ def main():
         return
 
     combined_df = pd.DataFrame(all_results)
-    combined_path = out_dir / f"{args.disease}_all_methods_eval.csv"
+    combined_path = out_dir / f"{args.disease}_evaluation.csv"
     if combined_path.exists():
         combined_df = pd.concat([pd.read_csv(combined_path), combined_df], ignore_index=True)
     combined_df.to_csv(combined_path, index=False)
 
     print("=" * 70)
-    print(f"Combined results ({len(all_results)} rows) → {combined_path}")
+    print(f"Combined results ({len(all_results)} rows) -> {combined_path}")
 
     best = combined_df.sort_values("auc_pr", ascending=False).iloc[0]
-    print(f"Best on NHANES: [{best['Method']}/{best['Variant']}]  "
+    print(f"Best on NHANES: [{best['method']}/{best['Variant']}]  "
           f"AUC-PR={best['auc_pr']:.4f}  AUC-ROC={best['auc_roc']:.4f}")
     print(f"  Formula: {str(best['formula'])[:80]}")
     print("=" * 70)
