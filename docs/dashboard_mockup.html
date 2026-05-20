@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biomarker Formula Dashboard — Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: white; padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header h1 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.5px; }
+  .header .subtitle { font-size: 0.78rem; color: #a0aec0; margin-top: 2px; }
+  .header-right { display: flex; gap: 10px; align-items: center; }
+  .badge { background: #e53e3e; color: white; border-radius: 12px; padding: 3px 10px; font-size: 0.72rem; font-weight: 600; }
+  .badge.green { background: #38a169; }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 240px 1fr; gap: 0; min-height: calc(100vh - 60px); }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: #ffffff; border-right: 1px solid #e2e8f0;
+    padding: 20px 16px; display: flex; flex-direction: column; gap: 20px;
+  }
+  .filter-section h3 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #718096; margin-bottom: 10px; }
+  .filter-chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1.5px solid #cbd5e0; border-radius: 20px; padding: 4px 12px;
+    font-size: 0.78rem; cursor: pointer; transition: all 0.15s;
+    background: white; color: #4a5568;
+  }
+  .chip.active { background: #0f3460; border-color: #0f3460; color: white; font-weight: 600; }
+  .chip:hover:not(.active) { border-color: #0f3460; color: #0f3460; }
+
+  .range-slider { width: 100%; margin-top: 6px; }
+  .range-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #718096; margin-top: 4px; }
+  input[type=range] { width: 100%; accent-color: #0f3460; }
+
+  .metric-select { width: 100%; padding: 7px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; font-size: 0.82rem; color: #4a5568; background: white; }
+
+  .reset-btn {
+    width: 100%; padding: 8px; border: 1.5px solid #e53e3e; border-radius: 8px;
+    background: white; color: #e53e3e; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; margin-top: auto;
+  }
+  .reset-btn:hover { background: #e53e3e; color: white; }
+
+  /* ── Main content ── */
+  .main { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
+
+  /* ── Summary cards ── */
+  .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .card {
+    background: white; border-radius: 12px; padding: 14px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;
+  }
+  .card-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #718096; }
+  .card-value { font-size: 1.6rem; font-weight: 700; color: #0f3460; margin-top: 4px; }
+  .card-sub { font-size: 0.75rem; color: #a0aec0; margin-top: 2px; }
+  .card-delta { font-size: 0.78rem; font-weight: 600; }
+  .card-delta.up { color: #38a169; }
+  .card-delta.down { color: #e53e3e; }
+
+  /* ── Charts row ── */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .chart-box {
+    background: white; border-radius: 12px; padding: 16px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;
+  }
+  .chart-box h2 { font-size: 0.85rem; font-weight: 700; color: #2d3748; margin-bottom: 14px; }
+
+  /* ── Bar chart SVG simulation ── */
+  .bar-chart { position: relative; height: 160px; }
+  .bar-chart-inner { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-bottom: 20px; }
+  .bar-group { display: flex; gap: 2px; align-items: flex-end; flex: 1; position: relative; }
+  .bar { border-radius: 4px 4px 0 0; min-width: 12px; }
+  .m1 { background: #4299e1; }
+  .m2 { background: #48bb78; }
+  .m3 { background: #ed8936; }
+  .m4 { background: #9f7aea; }
+  .bar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 0.65rem; color: #718096; white-space: nowrap; }
+  .chart-legend { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.73rem; color: #4a5568; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* ── PR curve area ── */
+  .pr-area { height: 160px; position: relative; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+  .pr-area svg { width: 100%; height: 100%; }
+  .pr-axis-label { font-size: 0.65rem; fill: #a0aec0; }
+
+  /* ── Formula table ── */
+  .table-box {
+    background: white; border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; overflow: hidden;
+  }
+  .table-header {
+    padding: 14px 20px; border-bottom: 1px solid #e2e8f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-header h2 { font-size: 0.85rem; font-weight: 700; color: #2d3748; }
+  .table-controls { display: flex; gap: 8px; align-items: center; }
+  .table-search {
+    padding: 5px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    font-size: 0.78rem; width: 180px;
+  }
+  .export-btn {
+    padding: 5px 14px; background: #0f3460; color: white; border-radius: 8px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  thead tr { background: #f7fafc; }
+  th { padding: 10px 16px; text-align: left; font-weight: 600; font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.6px; color: #718096;
+    border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  th .sort-icon { color: #cbd5e0; margin-left: 4px; }
+  th.sorted { color: #0f3460; }
+  td { padding: 11px 16px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7fafc; }
+
+  .method-pill {
+    border-radius: 12px; padding: 2px 10px; font-size: 0.71rem; font-weight: 700;
+    display: inline-block; white-space: nowrap;
+  }
+  .m1-pill { background: #ebf8ff; color: #2b6cb0; }
+  .m2-pill { background: #f0fff4; color: #276749; }
+  .m3-pill { background: #fffaf0; color: #c05621; }
+  .m4-pill { background: #faf5ff; color: #6b46c1; }
+
+  .disease-pill {
+    border-radius: 6px; padding: 2px 8px; font-size: 0.71rem; font-weight: 600;
+    background: #edf2f7; color: #4a5568;
+  }
+
+  .formula-cell {
+    font-family: 'Courier New', monospace; font-size: 0.75rem;
+    max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: #2d3748; background: #f7fafc; padding: 4px 8px; border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .metric-val { font-weight: 700; color: #0f3460; }
+  .metric-val.best { color: #276749; }
+  .metric-val.low { color: #c53030; }
+
+  .feature-badge {
+    background: #e2e8f0; color: #4a5568; border-radius: 12px;
+    padding: 2px 8px; font-size: 0.71rem; font-weight: 600; display: inline-block;
+  }
+
+  .beats-baseline { font-size: 0.72rem; font-weight: 700; }
+  .beats-baseline.yes { color: #38a169; }
+  .beats-baseline.no { color: #e53e3e; }
+
+  /* ── Row highlight for selected ── */
+  tr.selected td { background: #ebf8ff !important; }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    background: white; border-radius: 12px; padding: 16px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;
+    border-left: 4px solid #0f3460;
+  }
+  .detail-panel h2 { font-size: 0.85rem; font-weight: 700; color: #2d3748; margin-bottom: 12px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .detail-metric { padding: 10px 14px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .detail-metric .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #718096; }
+  .detail-metric .value { font-size: 1.15rem; font-weight: 700; color: #0f3460; margin-top: 3px; }
+  .detail-metric .vs { font-size: 0.72rem; color: #718096; margin-top: 2px; }
+  .detail-metric .vs span { font-weight: 600; }
+  .detail-metric .vs .up { color: #38a169; }
+  .detail-metric .vs .down { color: #e53e3e; }
+  .formula-display {
+    margin-top: 14px; padding: 12px 16px; background: #1a1a2e; border-radius: 8px;
+    font-family: 'Courier New', monospace; font-size: 0.85rem; color: #81e6d9;
+    word-break: break-all; line-height: 1.6;
+  }
+  .formula-display .keyword { color: #f6ad55; }
+  .formula-display .feature { color: #90cdf4; font-weight: 700; }
+  .formula-display .op { color: #fc8181; }
+  .formula-display .num { color: #b794f4; }
+  .feature-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .feature-tag { background: #0f3460; color: #bee3f8; border-radius: 6px;
+    padding: 3px 10px; font-size: 0.73rem; font-weight: 600; }
+
+  /* ── Annotation ── */
+  .mockup-note {
+    position: fixed; bottom: 16px; right: 16px; background: #1a1a2e; color: #a0aec0;
+    padding: 8px 14px; border-radius: 8px; font-size: 0.72rem; border: 1px solid #2d3748;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="h1" style="font-size:1.3rem;font-weight:700;letter-spacing:0.5px;">
+      Biomarker Formula Dashboard
+    </div>
+    <div class="subtitle">CBC-based RA & co-morbidity biomarker analysis · MIMIC-IV</div>
+  </div>
+  <div class="header-right">
+    <span class="badge green">6 diseases</span>
+    <span class="badge">4 methods</span>
+    <span style="color:#a0aec0;font-size:0.78rem;">Last run: 2026-05-20</span>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="filter-section">
+      <h3>Disease</h3>
+      <div class="filter-chip-group">
+        <div class="chip active">All</div>
+        <div class="chip">RA</div>
+        <div class="chip">CRHN</div>
+        <div class="chip">LUP</div>
+        <div class="chip">PSR</div>
+        <div class="chip">T1D</div>
+        <div class="chip">T2D</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Method</h3>
+      <div class="filter-chip-group">
+        <div class="chip active">All</div>
+        <div class="chip active m1-pill" style="border-color:#2b6cb0;">M1 Threshold</div>
+        <div class="chip active m2-pill" style="border-color:#276749;">M2 Random</div>
+        <div class="chip active m3-pill" style="border-color:#c05621;">M3 GP</div>
+        <div class="chip active m4-pill" style="border-color:#6b46c1;">M4 LLM</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Feature Count (k)</h3>
+      <input type="range" class="range-slider" min="1" max="9" value="9">
+      <div class="range-label"><span>1 feature</span><span>All 9</span></div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Primary Metric</h3>
+      <select class="metric-select">
+        <option selected>AUC-PR (Primary)</option>
+        <option>AUC-ROC</option>
+        <option>F2 Score</option>
+        <option>Precision@Recall=0.50</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <h3>Formula Style</h3>
+      <div class="filter-chip-group">
+        <div class="chip active">Normalized</div>
+        <div class="chip">Raw</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Beats Baseline Only</h3>
+      <div class="filter-chip-group">
+        <div class="chip">Yes</div>
+        <div class="chip active">Show All</div>
+      </div>
+    </div>
+
+    <button class="reset-btn">↺ Reset Filters</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Summary cards -->
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-label">Total Formulas</div>
+        <div class="card-value">24</div>
+        <div class="card-sub">6 diseases × 4 methods</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Best AUC-PR</div>
+        <div class="card-value">0.175</div>
+        <div class="card-sub">T2D · M2 Random</div>
+        <div class="card-delta up">▲ +15.5% vs baseline</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Beats Baseline</div>
+        <div class="card-value">14</div>
+        <div class="card-sub">of 24 formulas (58%)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Avg Improvement</div>
+        <div class="card-value">+8.3%</div>
+        <div class="card-sub">AUC-PR vs LR baseline</div>
+        <div class="card-delta up">↑ above chance</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="charts-row">
+      <!-- Bar chart -->
+      <div class="chart-box">
+        <h2>AUC-PR by Disease &amp; Method</h2>
+        <div class="bar-chart">
+          <div class="bar-chart-inner">
+            <!-- RA -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:75px" title="M1: 0.014"></div>
+              <div class="bar m2" style="height:92px" title="M2: 0.017"></div>
+              <div class="bar m3" style="height:98px" title="M3: 0.019"></div>
+              <div class="bar m4" style="height:86px" title="M4: 0.017"></div>
+              <div class="bar-label">RA</div>
+            </div>
+            <!-- CRHN -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:52px"></div>
+              <div class="bar m2" style="height:66px"></div>
+              <div class="bar m3" style="height:60px"></div>
+              <div class="bar m4" style="height:72px"></div>
+              <div class="bar-label">CRHN</div>
+            </div>
+            <!-- LUP -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:43px"></div>
+              <div class="bar m2" style="height:92px"></div>
+              <div class="bar m3" style="height:51px"></div>
+              <div class="bar m4" style="height:83px"></div>
+              <div class="bar-label">LUP</div>
+            </div>
+            <!-- PSR -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:73px"></div>
+              <div class="bar m2" style="height:83px"></div>
+              <div class="bar m3" style="height:75px"></div>
+              <div class="bar m4" style="height:51px"></div>
+              <div class="bar-label">PSR</div>
+            </div>
+            <!-- T1D -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:84px"></div>
+              <div class="bar m2" style="height:110px"></div>
+              <div class="bar m3" style="height:103px"></div>
+              <div class="bar m4" style="height:93px"></div>
+              <div class="bar-label">T1D</div>
+            </div>
+            <!-- T2D -->
+            <div class="bar-group">
+              <div class="bar m1" style="height:96px"></div>
+              <div class="bar m2" style="height:138px"></div>
+              <div class="bar m3" style="height:130px"></div>
+              <div class="bar m4" style="height:118px"></div>
+              <div class="bar-label">T2D</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot m1"></div>M1 Threshold</div>
+          <div class="legend-item"><div class="legend-dot m2"></div>M2 Random</div>
+          <div class="legend-item"><div class="legend-dot m3"></div>M3 GP</div>
+          <div class="legend-item"><div class="legend-dot m4"></div>M4 LLM</div>
+        </div>
+      </div>
+
+      <!-- PR curve -->
+      <div class="chart-box">
+        <h2>Precision-Recall Curves · RA (Best formula per method)</h2>
+        <div class="pr-area">
+          <svg viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- Axes -->
+            <line x1="30" y1="10" x2="30" y2="140" stroke="#e2e8f0" stroke-width="1.5"/>
+            <line x1="30" y1="140" x2="290" y2="140" stroke="#e2e8f0" stroke-width="1.5"/>
+            <!-- Y ticks -->
+            <text x="25" y="14" text-anchor="end" class="pr-axis-label" font-size="7">1.0</text>
+            <text x="25" y="75" text-anchor="end" class="pr-axis-label" font-size="7">0.5</text>
+            <text x="25" y="140" text-anchor="end" class="pr-axis-label" font-size="7">0.0</text>
+            <!-- X ticks -->
+            <text x="30" y="152" text-anchor="middle" class="pr-axis-label" font-size="7">0.0</text>
+            <text x="160" y="152" text-anchor="middle" class="pr-axis-label" font-size="7">0.5</text>
+            <text x="290" y="152" text-anchor="middle" class="pr-axis-label" font-size="7">1.0</text>
+            <!-- Axis labels -->
+            <text x="160" y="160" text-anchor="middle" font-size="7" fill="#718096">Recall</text>
+            <text x="8" y="80" text-anchor="middle" font-size="7" fill="#718096" transform="rotate(-90,8,80)">Precision</text>
+            <!-- Baseline (random) -->
+            <line x1="30" y1="138" x2="290" y2="138" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+            <!-- M1 curve -->
+            <polyline points="30,30 60,34 100,42 140,58 180,82 220,105 260,125 290,138"
+              stroke="#4299e1" stroke-width="2" fill="none"/>
+            <!-- M2 curve -->
+            <polyline points="30,25 60,29 100,36 140,50 180,72 220,95 260,118 290,136"
+              stroke="#48bb78" stroke-width="2" fill="none"/>
+            <!-- M3 curve (best) -->
+            <polyline points="30,20 55,23 90,30 130,44 170,66 210,88 255,112 290,134"
+              stroke="#ed8936" stroke-width="2.5" fill="none" stroke-dasharray="none"/>
+            <!-- M4 curve -->
+            <polyline points="30,28 60,32 100,40 140,55 180,78 220,100 260,122 290,137"
+              stroke="#9f7aea" stroke-width="2" fill="none"/>
+            <!-- Legend inside chart -->
+            <rect x="195" y="14" width="90" height="52" rx="4" fill="white" stroke="#e2e8f0"/>
+            <line x1="199" y1="24" x2="211" y2="24" stroke="#4299e1" stroke-width="2"/>
+            <text x="214" y="27" font-size="7" fill="#4a5568">M1 Threshold</text>
+            <line x1="199" y1="34" x2="211" y2="34" stroke="#48bb78" stroke-width="2"/>
+            <text x="214" y="37" font-size="7" fill="#4a5568">M2 Random</text>
+            <line x1="199" y1="44" x2="211" y2="44" stroke="#ed8936" stroke-width="2.5"/>
+            <text x="214" y="47" font-size="7" fill="#4a5568">M3 GP ★</text>
+            <line x1="199" y1="54" x2="211" y2="54" stroke="#9f7aea" stroke-width="2"/>
+            <text x="214" y="57" font-size="7" fill="#4a5568">M4 LLM</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formula table -->
+    <div class="table-box">
+      <div class="table-header">
+        <h2>Formula Results Table</h2>
+        <div class="table-controls">
+          <input class="table-search" type="text" placeholder="Search formula or feature…">
+          <button class="export-btn">⬇ Export CSV</button>
+          <button class="export-btn" style="background:#38a169;">📷 Screenshot</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Disease</th>
+            <th>Method</th>
+            <th class="sorted">AUC-PR ▼ <span class="sort-icon"></span></th>
+            <th>AUC-ROC</th>
+            <th>F2</th>
+            <th>Features (k)</th>
+            <th>Beats Baseline</th>
+            <th style="width:340px">Formula (normalized)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="selected">
+            <td><span class="disease-pill">T2D</span></td>
+            <td><span class="method-pill m2-pill">M2 Random</span></td>
+            <td><span class="metric-val best">0.1753</span></td>
+            <td><span class="metric-val">0.6052</span></td>
+            <td><span class="metric-val">0.312</span></td>
+            <td><span class="feature-badge">3</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+15.5%)</span></td>
+            <td><div class="formula-cell">log(rdw) / mcv × mchc²</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">T2D</span></td>
+            <td><span class="method-pill m3-pill">M3 GP</span></td>
+            <td><span class="metric-val">0.1682</span></td>
+            <td><span class="metric-val">0.6143</span></td>
+            <td><span class="metric-val">0.298</span></td>
+            <td><span class="feature-badge">3</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+10.9%)</span></td>
+            <td><div class="formula-cell">√rdw × mchc²</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">T2D</span></td>
+            <td><span class="method-pill m1-pill">M1 Threshold</span></td>
+            <td><span class="metric-val">0.1516</span></td>
+            <td><span class="metric-val">0.561</span></td>
+            <td><span class="metric-val">0.271</span></td>
+            <td><span class="feature-badge">1</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+1.6%)</span></td>
+            <td><div class="formula-cell">mchc &gt; 33.4</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">T1D</span></td>
+            <td><span class="method-pill m2-pill">M2 Random</span></td>
+            <td><span class="metric-val">0.0202</span></td>
+            <td><span class="metric-val">0.631</span></td>
+            <td><span class="metric-val">0.094</span></td>
+            <td><span class="feature-badge">3</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+31.2%)</span></td>
+            <td><div class="formula-cell">log(rdw) / log(plt) / mchc</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">RA</span></td>
+            <td><span class="method-pill m3-pill">M3 GP</span></td>
+            <td><span class="metric-val">0.0189</span></td>
+            <td><span class="metric-val">0.5968</span></td>
+            <td><span class="metric-val">0.081</span></td>
+            <td><span class="feature-badge">7</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+34.0%)</span></td>
+            <td><div class="formula-cell">(hgb+mchc) × log(rbc/(hct+mcv)) × …</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">RA</span></td>
+            <td><span class="method-pill m2-pill">M2 Random</span></td>
+            <td><span class="metric-val">0.0174</span></td>
+            <td><span class="metric-val">0.5797</span></td>
+            <td><span class="metric-val">0.073</span></td>
+            <td><span class="feature-badge">2</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+23.4%)</span></td>
+            <td><div class="formula-cell">rbc² / hct</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">CRHN</span></td>
+            <td><span class="method-pill m4-pill">M4 LLM</span></td>
+            <td><span class="metric-val">0.0268</span></td>
+            <td><span class="metric-val">0.6417</span></td>
+            <td><span class="metric-val">0.102</span></td>
+            <td><span class="feature-badge">4</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+65.4%)</span></td>
+            <td><div class="formula-cell">(hgb−hct) × (mchc−mcv) / (plt+0.01)</div></td>
+          </tr>
+          <tr>
+            <td><span class="disease-pill">LUP</span></td>
+            <td><span class="method-pill m2-pill">M2 Random</span></td>
+            <td><span class="metric-val">0.0170</span></td>
+            <td><span class="metric-val">0.6179</span></td>
+            <td><span class="metric-val">0.068</span></td>
+            <td><span class="feature-badge">3</span></td>
+            <td><span class="beats-baseline yes">✓ Yes (+115.2%)</span></td>
+            <td><div class="formula-cell">(mchc × log(rdw) − wbc) / log(mch)</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Selected formula detail panel -->
+    <div class="detail-panel">
+      <h2>Selected Formula Details · T2D · M2 Random (Best Overall)</h2>
+      <div class="detail-grid">
+        <div class="detail-metric">
+          <div class="label">AUC-PR</div>
+          <div class="value">0.1753</div>
+          <div class="vs">vs baseline 0.1516 <span class="up">▲ +15.5%</span></div>
+        </div>
+        <div class="detail-metric">
+          <div class="label">AUC-ROC</div>
+          <div class="value">0.6052</div>
+          <div class="vs">vs baseline 0.561 <span class="up">▲ +7.9%</span></div>
+        </div>
+        <div class="detail-metric">
+          <div class="label">F2 Score</div>
+          <div class="value">0.312</div>
+          <div class="vs">vs baseline 0.271 <span class="up">▲ +15.1%</span></div>
+        </div>
+        <div class="detail-metric">
+          <div class="label">Prec@Recall=0.25</div>
+          <div class="value">0.428</div>
+          <div class="vs">baseline 0.381 <span class="up">▲ +12.3%</span></div>
+        </div>
+        <div class="detail-metric">
+          <div class="label">Prec@Recall=0.50</div>
+          <div class="value">0.267</div>
+          <div class="vs">baseline 0.241 <span class="up">▲ +10.8%</span></div>
+        </div>
+        <div class="detail-metric">
+          <div class="label">Feature Count k</div>
+          <div class="value">3</div>
+          <div class="vs">rdw, mcv, mchc</div>
+        </div>
+      </div>
+      <div class="formula-display">
+        <span class="keyword">score</span> =
+        <span class="keyword">log</span>(<span class="feature">rdw</span>)
+        <span class="op">/</span>
+        <span class="feature">mcv</span>
+        <span class="op">×</span>
+        <span class="feature">mchc</span><span class="op">²</span>
+        &nbsp;&nbsp;&nbsp;
+        <span style="color:#a0aec0;font-size:0.75em;">
+          [raw: ((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2))]
+        </span>
+      </div>
+      <div class="feature-tags">
+        <span style="color:#718096;font-size:0.75rem;align-self:center;">Features used:</span>
+        <span class="feature-tag">rdw</span>
+        <span class="feature-tag">mcv</span>
+        <span class="feature-tag">mchc</span>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div>
+
+<div class="mockup-note">
+  📐 UI Mockup — not interactive · biomarker-pipeline TODO 4
+</div>
+
+</body>
+</html>

@@ -103,6 +103,21 @@ create a mockup for this, and a step by step implementation guide with concrete 
 3. Should the formula display normalize notation across methods (e.g., always show as `a*feature1 + b*feature2 > threshold`), and if so, is there a preferred canonical form?
 4. Do you need the dashboard to also display external validation results (EHRSHOT, NHANES) alongside MIMIC-IV results once those are done?
 
+### Implementation Summary
+
+**Decisions made (answering open questions):**
+1. **Stack**: Local **Streamlit + Plotly** app (`streamlit run src/dashboard.py`). Chosen over static HTML because filter interactivity requires state; Plotly's `fig.write_image()` + kaleido gives 300 DPI static PNG export for the article without needing a browser — best of both.
+2. **Metrics**: Multi-metric view. AUC-PR is primary (sorted by default), AUC-ROC, F2, and precision@recall(0.25/0.50/0.75) are all shown in the detail panel and summary cards. Bar charts and PR curves use the user-selected primary metric.
+3. **Formula normalization**: Two fields per formula: `formula_display` (clean human-readable infix — strips safety epsilons, converts `**` to superscripts, converts GP S-expression prefix to infix) and `formula_raw` (original, preserved exactly). Dashboard shows `formula_display` in the table, exposes `formula_raw` in a collapsible detail panel.
+4. **External validation**: Built-in opt-in toggle. `build_dashboard_data.py --include-external` merges EHRSHOT/NHANES rows with a `dataset` column. Dashboard sidebar shows a Dataset filter only when external rows are present — degrades gracefully when external data is absent.
+
+**Files created:**
+- `docs/dashboard_mockup.html` — Full-fidelity HTML mockup: sidebar filters (disease, method, feature-count slider, metric selector), summary stat cards, grouped bar chart, PR curve overlay, sortable formula table with normalized formulas, and a selected-formula detail panel
+- `docs/dashboard_implementation_guide.md` — 5-step implementation guide: (1) formula normalizer + aggregator → `dashboard_data.csv`, (2) Streamlit app, (3) precomputed PR curve data, (4) static PNG export for article, (5) external validation toggle
+
+**Commits:**
+- `docs(#4): add dashboard mockup and implementation guide`
+
 ## TODO 5: Confidence intervals
 This is only a planning todo, nothing to implement yet.
 To show this research is actually good i need to provide confidence intervals for each metric that is considered important. Questions to answer:
