@@ -243,6 +243,14 @@ def main():
 
     all_cycles = OmegaConf.to_container(nhanes_cfg.cycles)
     cycles = {k: v for k, v in all_cycles.items() if not args.cycles or k in args.cycles}
+
+    # Apply per-disease cycle override from conf/nhanes.yaml
+    disease_cycle_overrides = OmegaConf.to_container(nhanes_cfg.get("disease_cycles", {}))
+    if args.disease in disease_cycle_overrides:
+        allowed = set(disease_cycle_overrides[args.disease])
+        cycles = {k: v for k, v in cycles.items() if k in allowed}
+        print(f"Note: cycle override for '{args.disease}' restricts to {list(cycles.keys())}")
+
     if not cycles:
         sys.exit(f"ERROR: No matching cycles found. Available: {list(all_cycles.keys())}")
 

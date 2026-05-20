@@ -64,25 +64,15 @@ disease_case_defs:
       variable: "MCQ160L"  # "Doctor told Crohn's disease?" 1=Yes (cycles H+)
       values: [1]
 
-  t2d:
-    - file: "DIQ_{}.XPT"   # Diabetes Questionnaire
-      variable: "DIQ010"   # "Doctor told you have diabetes?" 1=Yes
-      values: [1]
-
-  t1d:
-    # NHANES does not cleanly distinguish T1D from T2D in all cycles.
-    # Use DIQ010 (diagnosed diabetes) as a proxy; verify with DIQ175D if
-    # available (risk factor: type 1 diabetes, cycles I+).
-    - file: "DIQ_{}.XPT"
-      variable: "DIQ010"
-      values: [1]
-
   psr:
     - file: "MCQ_{}.XPT"
-      variable: "MCQ160PA" # "Doctor told psoriatic arthritis?" (cycles I+)
+      variable: "MCQ070"  # "Doctor told you have psoriasis?" 1=Yes (cycles G-H)
       values: [1]
-    # Note: MCQ160PA was introduced in cycle I (2015-2016).
-    # Earlier cycles (G, H) will produce zero psoriatic arthritis cases.
+
+# Per-disease cycle overrides (optional). When set, restricts extraction to
+# the listed cycles regardless of the --cycles CLI flag or the global cycles list.
+disease_cycles:
+  psr: ["G", "H"]   # MCQ070 only present in 2011-2014
 
 # Random seed for patient-level train/test split
 seed: 42
