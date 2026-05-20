@@ -9,6 +9,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from utils import (
     load_data_for, load_disease_config, get_splits, compute_binary_metrics, find_youden_threshold,
     precision_at_recall_levels, ensure_dir, RESULTS_DIR, get_cv_folds, cv_summary,
+    lr_per_k_baselines,
 )
 
 parser = argparse.ArgumentParser(description="Sanity check — LR performance and formulas")
@@ -66,6 +67,30 @@ total_cases = int(df["is_case"].sum())
 total_prevalence = round(df["is_case"].mean(), 4)
 
 train_df, test_df = get_splits(df)
+
+# ── Per-k LR baselines (exhaustive best-subset, selection by train AUC-PR) ──
+print("\n=== Per-k LR baselines ===")
+per_k_baselines = lr_per_k_baselines(train_df, test_df, features)
+for k, v in per_k_baselines.items():
+    print(f"  k={k}: best_features={v['features']}  AUC-PR={v['auc_pr']:.4f}  AUC-ROC={v['auc_roc']:.4f}")
+
+per_k_csv = BASE_SANITY_DIR / "per_k_baselines.csv"
+per_k_new = pd.DataFrame([
+    {
+        "Timestamp":       datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Disease":         disease.name,
+        "Split_Salt":      args.split_salt,
+        "K":               k,
+        "Best_Features":   ",".join(v["features"]),
+        "Baseline_AUC_PR": v["auc_pr"],
+        "Baseline_AUC_ROC": v["auc_roc"],
+    }
+    for k, v in per_k_baselines.items()
+])
+if per_k_csv.exists():
+    per_k_new = pd.concat([pd.read_csv(per_k_csv), per_k_new], ignore_index=True)
+per_k_new.to_csv(per_k_csv, index=False)
+print(f"Saved per-k baselines to {per_k_csv}\n")
 
 # Single-feature models (Evaluating on test set)
 single_results = []

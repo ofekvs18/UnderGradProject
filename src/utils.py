@@ -236,6 +236,74 @@ def evaluate_formula_full(formula, train_df, test_df, features):
     }
 
 
+# ── Per-k feature count utilities ────────────────────────────────────────────
+
+def count_formula_features(formula: str, features) -> int:
+    """Count distinct feature names from `features` that appear in `formula`."""
+    return sum(1 for f in features if re.search(rf'\b{re.escape(f)}\b', formula))
+
+
+def lr_per_k_baselines(train_df, test_df, features, seed=42):
+    """
+    Exhaustive best-subset LR for each k=1..len(features).
+    Subset selected by highest train AUC-PR; test set used only for final evaluation.
+    Returns {k: {"features": list, "auc_pr": float, "auc_roc": float}}.
+    """
+    from itertools import combinations
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    features = list(features)
+    tr = train_df[features + ["is_case"]].dropna()
+    te = test_df[features + ["is_case"]].dropna()
+    y_tr, y_te = tr["is_case"].values, te["is_case"].values
+    baselines = {}
+
+    for k in range(1, len(features) + 1):
+        best_subset, best_tr_pr = None, -1.0
+        for subset in combinations(features, k):
+            subset = list(subset)
+            clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
+            clf.fit(tr[subset].values, y_tr)
+            pr = float(average_precision_score(y_tr, clf.predict_proba(tr[subset].values)[:, 1]))
+            if pr > best_tr_pr:
+                best_tr_pr, best_subset = pr, subset
+        clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
+        clf.fit(tr[best_subset].values, y_tr)
+        proba_te = clf.predict_proba(te[best_subset].values)[:, 1]
+        baselines[k] = {
+            "features": best_subset,
+            "auc_pr":   round(float(average_precision_score(y_te, proba_te)), 4),
+            "auc_roc":  round(float(roc_auc_score(y_te, proba_te)), 4),
+        }
+    return baselines
+
+
+def load_per_k_baselines(disease: str, split_salt: str = "") -> dict:
+    """
+    Load per-k LR baselines from results/sanity_check/per_k_baselines.csv.
+    Returns {k: {"auc_pr": float, "auc_roc": float, "features": list}}, or {} if not found.
+    """
+    per_k_csv = RESULTS_DIR / "sanity_check" / "per_k_baselines.csv"
+    if not per_k_csv.exists():
+        return {}
+    df = pd.read_csv(per_k_csv)
+    df["Split_Salt"] = df["Split_Salt"].fillna("")
+    mask = (df["Disease"] == disease) & (df["Split_Salt"] == split_salt)
+    sub = df[mask]
+    if sub.empty:
+        return {}
+    sub = sub.sort_values("Timestamp").groupby("K").last().reset_index()
+    return {
+        int(row["K"]): {
+            "auc_pr":   float(row["Baseline_AUC_PR"]),
+            "auc_roc":  float(row["Baseline_AUC_ROC"]),
+            "features": str(row["Best_Features"]).split(","),
+        }
+        for _, row in sub.iterrows()
+    }
+
+
 # ── Cross-validation helpers ──────────────────────────────────────────────────
 def get_cv_folds(df, n_splits=5, seed=42):
     """

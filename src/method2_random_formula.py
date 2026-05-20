@@ -29,6 +29,7 @@ from utils import (
     load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
     eval_formula_scores, evaluate_formula_full, get_cv_folds, cv_summary,
+    count_formula_features, load_per_k_baselines,
 )
 
 
@@ -69,15 +70,12 @@ def main():
         else:  # square
             return f"({feature}**2)"
 
-    def random_formula(rng, features=features):
-        """
-        Generate a random formula string combining 2-4 features with random
-        unary transforms and binary operators. Division is made safe by adding 1e-6.
-        """
-        n = rng.randint(2, 5)  # 2, 3, or 4 features
-        chosen = list(rng.choice(features, size=n, replace=False))
+    def random_formula_k(rng, feats, k):
+        """Generate a random formula string with exactly k distinct features."""
+        chosen = list(rng.choice(feats, size=k, replace=False))
         terms = [_random_term(f, rng) for f in chosen]
-
+        if k == 1:
+            return terms[0]
         result = terms[0]
         for term in terms[1:]:
             op = rng.choice(["+", "-", "*", "/"])
@@ -87,40 +85,49 @@ def main():
                 result = f"({result}) {op} ({term})"
         return result
 
-    def generate_formulas(n=N_FORMULAS, seed=SEED):
-        """Generate n unique random formula strings."""
-        rng = np.random.RandomState(seed)
-        seen = set()
-        formulas = []
-        attempts = 0
-        while len(formulas) < n:
-            f = random_formula(rng)
-            attempts += 1
-            if f not in seen:
-                seen.add(f)
-                formulas.append(f)
-            if attempts > n * 10:
-                break  # safety — shouldn't happen
-        print(f"Generated {len(formulas):,} unique formulas ({attempts:,} attempts)\n")
-        return formulas
+    def generate_formulas_per_k(n_per_k, seed, feats):
+        """Generate n_per_k unique formulas for each k=1..len(feats).
+        Returns list of (formula_str, k) tuples."""
+        all_formulas = []
+        for k in range(1, len(feats) + 1):
+            rng = np.random.RandomState(seed + k * 1000)
+            seen, formulas_k, attempts = set(), [], 0
+            while len(formulas_k) < n_per_k:
+                f = random_formula_k(rng, feats, k)
+                attempts += 1
+                if f not in seen:
+                    seen.add(f)
+                    formulas_k.append(f)
+                if attempts > n_per_k * 20:
+                    break
+            print(f"  k={k}: {len(formulas_k):,} formulas ({attempts:,} attempts)")
+            all_formulas.extend((f, k) for f in formulas_k)
+        return all_formulas
 
     # ── Part C: Formula evaluation ────────────────────────────────────────────────
     # eval_formula_scores and evaluate_formula_full are imported from utils
 
     # ── Part D: Run experiment ────────────────────────────────────────────────────
-    print("=== Generating formulas ===")
-    formulas = generate_formulas()
+    N_PER_K = N_FORMULAS // len(features)
+
+    print(f"=== Generating formulas: {N_PER_K} per k, k=1..{len(features)} ===")
+    formulas_with_k = generate_formulas_per_k(N_PER_K, SEED, features)
+    print(f"Generated {len(formulas_with_k):,} total formulas\n")
+
+    # Flat list of formula strings for CV section
+    all_formula_strs = [f for f, _ in formulas_with_k]
 
     print("=== Evaluating formulas ===")
     results = []
     skipped = 0
-    for i, formula in enumerate(formulas):
+    for i, (formula, k) in enumerate(formulas_with_k):
         if (i + 1) % 1000 == 0:
-            print(f"  {i+1:,}/{len(formulas):,}  valid={len(results):,}  skipped={skipped}")
+            print(f"  {i+1:,}/{len(formulas_with_k):,}  valid={len(results):,}  skipped={skipped}")
         row = evaluate_formula_full(formula, train_df, test_df, features)
         if row is None:
             skipped += 1
         else:
+            row["num_features"] = k
             results.append(row)
 
     print(f"\nDone: {len(results):,} valid formulas, {skipped:,} skipped\n")
@@ -233,7 +240,7 @@ def main():
     # Rank all formulas by train AUC-PR (single pass, no frozen test used)
     from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
     train_scores_list = []
-    for formula in formulas:
+    for formula in all_formula_strs:
         sc = eval_formula_scores(formula, tr_clean, features)
         if sc is None or not np.isfinite(sc).any():
             continue
@@ -306,9 +313,40 @@ def main():
         print(f"  CV AUC-PR mean: {cv_df.iloc[0]['cv_auc_pr_mean']:.4f}  Frozen test: {cv_winner_frozen:.4f}")
         print(f"  Saved {OUT_DIR}/top_formulas_cv.csv")
 
-    # ── Part F: Master Summary Aggregation ────────────────────────────────────
+    # ── Part F: Per-k best results ────────────────────────────────────────────
+    per_k_bl = load_per_k_baselines(disease.name, args.split_salt)
+
+    per_k_rows = []
+    for k in range(1, len(features) + 1):
+        k_df = results_df[results_df["num_features"] == k]
+        if k_df.empty:
+            continue
+        best_k = k_df.iloc[0]
+        bl_pr = per_k_bl.get(k, {}).get("auc_pr")
+        per_k_rows.append({
+            "K":                 k,
+            "Best_Formula":      best_k["formula"],
+            "AUC_PR":            best_k["auc_pr"],
+            "AUC_ROC":           best_k["auc_roc"],
+            "N_Formulas_Tested": len(k_df),
+            "Baseline_AUC_PR":   bl_pr,
+            "Delta_vs_Baseline": round(best_k["auc_pr"] - bl_pr, 4) if bl_pr is not None else None,
+        })
+
+    per_k_path = OUT_DIR / "per_k_best.csv"
+    pd.DataFrame(per_k_rows).to_csv(per_k_path, index=False)
+    print(f"Saved per-k best formulas to {per_k_path}")
+
+    print("\n=== Per-k best vs LR baseline ===")
+    for row in per_k_rows:
+        bl_str = f"baseline={row['Baseline_AUC_PR']:.4f}  delta={row['Delta_vs_Baseline']:+.4f}" if row["Baseline_AUC_PR"] is not None else "baseline=N/A"
+        print(f"  k={row['K']}: AUC-PR={row['AUC_PR']:.4f}  {bl_str}")
+
+    # ── Part G: Master Summary Aggregation ────────────────────────────────────
     best = results_df.iloc[0]
-    
+    best_k = int(best["num_features"])
+    best_bl_pr = per_k_bl.get(best_k, {}).get("auc_pr")
+
     new_m2_row = {
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Disease": disease.name,
@@ -316,6 +354,9 @@ def main():
         "Best_Random_Formula": best["formula"],
         "Best_Random_AUC_PR": round(best["auc_pr"], 4),
         "Best_Random_AUC_ROC": round(best["auc_roc"], 4),
+        "Num_Features_Best": best_k,
+        "Baseline_AUC_PR_At_K": best_bl_pr,
+        "Delta_vs_Baseline_K": round(best["auc_pr"] - best_bl_pr, 4) if best_bl_pr is not None else None,
         "N_Formulas_Tested": len(results_df),
         "CV_Winner_Formula": cv_winner_formula,
         "CV_Winner_Frozen_Test_AUC_PR": round(cv_winner_frozen, 4) if np.isfinite(cv_winner_frozen) else None,

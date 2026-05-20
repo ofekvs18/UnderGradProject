@@ -42,6 +42,8 @@ from utils import (
     medgemma_generate,
     get_cv_folds,
     cv_summary,
+    count_formula_features,
+    load_per_k_baselines,
 )
 
 _ml = load_ml_config()
@@ -303,7 +305,8 @@ def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[
             
     return unique_list
 
-def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_salt: str = ""):
+def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_salt: str = "",
+                           per_k_bl: dict = None):
     """
     Updates the global Master Summary by appending the best-performing formula
     for this run (timestamp-stamped; previous entries are never removed).
@@ -313,6 +316,8 @@ def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_sa
 
     from datetime import datetime
     best = results_df.iloc[0]
+    best_k = int(best["num_features"]) if "num_features" in best.index else 0
+    bl_pr = (per_k_bl or {}).get(best_k, {}).get("auc_pr")
 
     new_entry = pd.DataFrame([{
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -323,7 +328,10 @@ def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_sa
         "Best_LLM_Formula": best["formula"],
         "Winning_Strategy": best["strategy"],
         "Winning_Temp": best["temperature"],
-        "Total_Yield": len(results_df)
+        "Total_Yield": len(results_df),
+        "Num_Features_Best": best_k,
+        "Baseline_AUC_PR_At_K": bl_pr,
+        "Delta_vs_Baseline_K": round(float(best["auc_pr"]) - bl_pr, 4) if bl_pr is not None else None,
     }])
 
     if MASTER_SUMMARY_CSV.exists():
@@ -401,6 +409,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
 
     df, features = load_data_for(disease_slug, split_salt)
     train_df, test_df = get_splits(df)
+    per_k_bl = load_per_k_baselines(disease_slug, split_salt)
 
     all_extracted = []
     seen_strings = set()
@@ -431,7 +440,8 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
                 "strategy": item["strategy"],
                 "temperature": item["temp"],
                 "disease": item["disease"],
-                "timestamp": item["timestamp"]
+                "timestamp": item["timestamp"],
+                "num_features": count_formula_features(item["formula"], list(FEATURE_VARS)),
             })
             final_results.append(metrics)
 
@@ -470,7 +480,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
 
     if not train_scores:
         print("[WARN] No train scores available for CV selection — skipping CV block")
-        _update_master_summary(results_df, disease_slug, split_salt)
+        _update_master_summary(results_df, disease_slug, split_salt, per_k_bl)
         _write_performance_summary(results_df, disease_slug)
         return
 
@@ -518,7 +528,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
 
     if not cv_rows:
         print("[WARN] No valid CV results — falling back to frozen test winner")
-        _update_master_summary(results_df, disease_slug, split_salt)
+        _update_master_summary(results_df, disease_slug, split_salt, per_k_bl)
         _write_performance_summary(results_df, disease_slug)
         return
 
@@ -536,7 +546,35 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
     print(f"  CV AUC-PR mean: {cv_winner['cv_auc_pr_mean']:.4f}  Frozen test: {frozen_test_auc_pr_final:.4f}")
     print(f"  Saved {top_cv_path}")
 
-    _update_master_summary(results_df, disease_slug, split_salt)
+    # ── Per-k best results ────────────────────────────────────────────────────
+    per_k_rows = []
+    for k in range(1, len(list(FEATURE_VARS)) + 1):
+        k_df = results_df[results_df["num_features"] == k]
+        if k_df.empty:
+            continue
+        best_k_row = k_df.iloc[0]
+        bl_pr = per_k_bl.get(k, {}).get("auc_pr")
+        per_k_rows.append({
+            "K":                 k,
+            "Best_Formula":      best_k_row["formula"],
+            "AUC_PR":            best_k_row["auc_pr"],
+            "AUC_ROC":           best_k_row["auc_roc"],
+            "N_Formulas_Tested": len(k_df),
+            "Baseline_AUC_PR":   bl_pr,
+            "Delta_vs_Baseline": round(float(best_k_row["auc_pr"]) - bl_pr, 4) if bl_pr is not None else None,
+        })
+
+    if per_k_rows:
+        per_k_path = OUT_DIR / "per_k_best.csv"
+        pd.DataFrame(per_k_rows).to_csv(per_k_path, index=False)
+        print(f"Saved per-k best formulas to {per_k_path}")
+        print("\n=== Per-k best vs LR baseline ===")
+        for row in per_k_rows:
+            bl_str = (f"baseline={row['Baseline_AUC_PR']:.4f}  delta={row['Delta_vs_Baseline']:+.4f}"
+                      if row["Baseline_AUC_PR"] is not None else "baseline=N/A")
+            print(f"  k={row['K']}: AUC-PR={row['AUC_PR']:.4f}  {bl_str}")
+
+    _update_master_summary(results_df, disease_slug, split_salt, per_k_bl)
     _write_performance_summary(results_df, disease_slug, cv_winner, frozen_test_auc_pr_final)
 
 # MAIN ENTRY POINT

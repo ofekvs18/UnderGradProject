@@ -12,7 +12,7 @@ from utils import (
     load_data_for, load_disease_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
     get_literature_thresholds, build_threshold_prompt, THRESHOLDS_CACHE_DIR,
-    get_cv_folds, cv_summary,
+    get_cv_folds, cv_summary, load_per_k_baselines,
 )
 
 # Baseline metrics from all-features logistic regression
@@ -68,6 +68,9 @@ def main():
     df, _ = load_data_for(disease.name, args.split_salt)
     train_df, test_df = get_splits(df)
     print(f"Train: {len(train_df):,} rows  |  Test: {len(test_df):,} rows\n")
+
+    per_k_bl = load_per_k_baselines(disease.name, args.split_salt)
+    k1_baseline_pr = per_k_bl.get(1, {}).get("auc_pr")
 
     # ── Literature thresholds (auto-retrieved via MedGemma) ───────────────────────
     print(f"Fetching literature thresholds for {disease.full_name}...")
@@ -280,6 +283,9 @@ def main():
         "CV_AUC_PR_CI95_Low": cv_winner["cv_auc_pr_ci95_low"],
         "CV_AUC_PR_CI95_High": cv_winner["cv_auc_pr_ci95_high"],
         "Frozen_Test_AUC_PR": frozen_test_auc_pr,
+        "Num_Features_Best": 1,
+        "Baseline_AUC_PR_At_K": k1_baseline_pr,
+        "Delta_vs_Baseline_K": round(frozen_test_auc_pr - k1_baseline_pr, 4) if k1_baseline_pr is not None else None,
     }
 
     M1_MASTER_PATH = RESULTS_DIR / "method1_threshold" / "master_m1_summary.csv"

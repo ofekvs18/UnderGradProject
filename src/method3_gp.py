@@ -34,8 +34,9 @@ sys.path.insert(0, "src")
 from utils import (
     load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
-    get_cv_folds, cv_summary,
+    get_cv_folds, cv_summary, count_formula_features, load_per_k_baselines,
 )
+
 
 _ml = load_ml_config()
 
@@ -88,7 +89,7 @@ def _combined_auc(y, y_pred, sample_weight, prevalence=None):
 
 
 
-def evaluate_program(program, X_train, y_train, X_test, y_test):
+def evaluate_program(program, X_train, y_train, X_test, y_test, features=None):
     """
     Evaluate a gplearn program using program.execute(X) directly.
     Returns a metrics dict or None if the program produces invalid output.
@@ -129,8 +130,9 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
     m   = compute_binary_metrics(y_test, preds)
     par = precision_at_recall_levels(score_tr, y_train, score_te, y_test)
 
-    return {
-        "formula":                str(program),
+    formula_str = str(program)
+    result = {
+        "formula":                formula_str,
         "auc_roc":                round(auc_roc, 4),
         "auc_pr":                 round(auc_pr, 4),
         "precision":              round(m["precision"], 4),
@@ -141,6 +143,9 @@ def evaluate_program(program, X_train, y_train, X_test, y_test):
         "precision_at_recall_50": par[0.50][0],
         "precision_at_recall_75": par[0.75][0],
     }
+    if features is not None:
+        result["num_features"] = count_formula_features(formula_str, features)
+    return result
 
 def main():
     parser = argparse.ArgumentParser(description="Method 3: GP (Iterative Search)")
@@ -178,6 +183,13 @@ def main():
     te_clean = test_df[features + ["is_case"]].dropna()
     X_train, y_train = tr_clean[features].values, tr_clean["is_case"].values
     X_test, y_test = te_clean[features].values, te_clean["is_case"].values
+
+    # Load per-k LR baselines (computed by sanity_check.py)
+    per_k_bl = load_per_k_baselines(disease.name, args.split_salt)
+    if per_k_bl:
+        print(f"Loaded per-k baselines for k=1..{max(per_k_bl)}")
+    else:
+        print("Warning: per-k baselines not found — run sanity_check.py first")
 
     # 5. Run Tiers Specified in YAML
     # This allows you to queue multiple runs (e.g. small then huge) without code changes
@@ -226,8 +238,10 @@ def main():
         winning_program = None  # keep program object alive for CV
         winning_gen = 0
         best_overall_roc = 0.0
+        winning_num_features = 0
         patience_counter = 0
         progress_rows = []
+        per_k_best = {}  # {k: {"formula": str, "auc_pr": float, "auc_roc": float}}
 
         # Iterative Generation Loop
         for gen in range(tier_cfg.generations):
@@ -241,7 +255,11 @@ def main():
 
             for prog in gp._best_programs:
                 if prog is None: continue
-                res = evaluate_program(prog, X_train, y_train, X_test, y_test)
+                res = evaluate_program(prog, X_train, y_train, X_test, y_test, features=features)
+                if res:
+                    k = res.get("num_features", 0)
+                    if k not in per_k_best or res["auc_pr"] > per_k_best[k]["auc_pr"]:
+                        per_k_best[k] = {"formula": res["formula"], "auc_pr": res["auc_pr"], "auc_roc": res["auc_roc"]}
                 if res and res["auc_pr"] > current_gen_best_pr:
                     current_gen_best_pr = res["auc_pr"]
                     current_gen_best_formula = res["formula"]
@@ -255,6 +273,7 @@ def main():
                 winning_formula = current_gen_best_formula
                 winning_program = current_gen_best_prog  # keep reference alive
                 winning_gen = gen
+                winning_num_features = count_formula_features(winning_formula, features)
                 patience_counter = 0
                 improved = True
             else:
@@ -315,10 +334,33 @@ def main():
 
         print(f"  Tier {tier_name} CV AUC-PR: mean={tier_cv['mean']:.4f}  std={tier_cv['std']:.4f}")
 
+        # Save per-k best formulas for this tier
+        per_k_rows = []
+        for k, kdata in sorted(per_k_best.items()):
+            bl_pr = per_k_bl.get(k, {}).get("auc_pr")
+            per_k_rows.append({
+                "K":                 k,
+                "Best_Formula":      kdata["formula"],
+                "AUC_PR":            kdata["auc_pr"],
+                "AUC_ROC":           kdata["auc_roc"],
+                "Baseline_AUC_PR":   bl_pr,
+                "Delta_vs_Baseline": round(kdata["auc_pr"] - bl_pr, 4) if bl_pr is not None else None,
+            })
+        if per_k_rows:
+            pd.DataFrame(per_k_rows).to_csv(TIER_DIR / "per_k_best.csv", index=False)
+            print(f"  Saved per-k best to {TIER_DIR}/per_k_best.csv")
+
+            print(f"\n  Per-k best vs LR baseline ({tier_name}):")
+            for row in per_k_rows:
+                bl_str = (f"baseline={row['Baseline_AUC_PR']:.4f}  delta={row['Delta_vs_Baseline']:+.4f}"
+                          if row["Baseline_AUC_PR"] is not None else "baseline=N/A")
+                print(f"    k={row['K']}: AUC-PR={row['AUC_PR']:.4f}  {bl_str}")
+
         tier_results.append({
             "tier_name": tier_name,
             "winning_formula": winning_formula,
             "winning_program": winning_program,
+            "winning_num_features": winning_num_features,
             "best_overall_auc_pr": best_overall_auc_pr,
             "best_overall_roc": best_overall_roc,
             "winning_gen": winning_gen,
@@ -327,6 +369,7 @@ def main():
             "cv_auc_pr_std": tier_cv["std"],
             "cv_auc_pr_ci95_low": tier_cv["ci95_low"],
             "cv_auc_pr_ci95_high": tier_cv["ci95_high"],
+            "per_k_best": per_k_best,
         })
 
     # ── 6. Pick CV winner across tiers and evaluate on frozen test once ───────────
@@ -354,6 +397,8 @@ def main():
     new_rows = []
     for r in tier_results:
         is_cv_selected = r["tier_name"] == best_tier["tier_name"]
+        best_k = r["winning_num_features"]
+        bl_pr = per_k_bl.get(best_k, {}).get("auc_pr")
         new_rows.append({
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Disease": disease.name,
@@ -362,6 +407,9 @@ def main():
             "Best_GP_Formula": r["winning_formula"],
             "Best_GP_AUC_PR": round(r["best_overall_auc_pr"], 4),
             "Best_GP_AUC_ROC": round(r["best_overall_roc"], 4),
+            "Num_Features_Best": best_k,
+            "Baseline_AUC_PR_At_K": bl_pr,
+            "Delta_vs_Baseline_K": round(r["best_overall_auc_pr"] - bl_pr, 4) if bl_pr is not None else None,
             "Winning_Generation": r["winning_gen"],
             "Total_Generations": r["total_gen"],
             "Beats_Baseline": r["best_overall_auc_pr"] > baseline_auc_pr,

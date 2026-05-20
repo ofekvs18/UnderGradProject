@@ -10,6 +10,31 @@ These are the goals I see fitting for the implementation:
 3. For methods like method3_gp and method4_llm that have formula generation logic, should the feature count constraint be enforced strictly (exactly k features) or as an upper bound (at most k features)?
 4. Should the master summary comparison column store the baseline AUC-PR value itself, or a delta/ratio vs. the baseline?
 
+### Implementation Summary
+
+**Decisions made (based on unanswered questions):**
+1. **Baseline per k**: Exhaustive best-subset logistic regression for each k=1..9 (all CBC features). For each k the best subset is chosen by highest **train** AUC-PR; test set is used only for final reporting. Computed once in `sanity_check.py` and cached to `results/sanity_check/per_k_baselines.csv`.
+2. **Formula budget per k**: For Method 2, the total `n_formulas` budget (from `conf/ml/defaults.yaml`) is divided evenly: `N_PER_K = n_formulas // len(features)` formulas generated per k. Methods 3 and 4 generate freely (GP/LLM output determines k) but track the best formula found for each k.
+3. **Feature count constraint**: Upper bound (at most k features) for Methods 3 and 4 — the constraint is applied at tracking time via `count_formula_features`. Method 2 enforces exactly k by design.
+4. **Master summary columns**: Both the raw baseline AUC-PR value (`Baseline_AUC_PR_At_K`) and the delta (`Delta_vs_Baseline_K`) are stored, so the dashboard and downstream scripts can use either.
+
+**Files modified:**
+- `src/utils.py` — added `count_formula_features`, `lr_per_k_baselines`, `load_per_k_baselines`
+- `src/sanity_check.py` — added per-k exhaustive LR baseline computation and `per_k_baselines.csv` output
+- `src/method_threshold.py` — loads per-k baselines; master summary now includes `Num_Features_Best=1`, `Baseline_AUC_PR_At_K`, `Delta_vs_Baseline_K`
+- `src/method2_random_formula.py` — added `generate_formulas_per_k` (evenly distributed budget), per-k best results CSV, and per-k baseline comparison columns in master summary
+- `src/method3_gp.py` — added per-k best tracking from hall-of-fame programs; saves `per_k_best.csv` per tier; master summary updated with per-k columns
+- `src/method4_llm.py` — added per-k best tracking from evaluated formulas; saves `per_k_best.csv` in disease output dir; master summary updated with per-k columns
+
+**Per-k outputs (one file per method run):**
+- `results/sanity_check/per_k_baselines.csv` — LR baseline AUC-PR/AUC-ROC for each k=1..9
+- `results/method2_random/<disease>/per_k_best.csv` — best random formula per k with delta vs LR baseline
+- `results/method3_gp/<disease>/<tier>/per_k_best.csv` — best GP formula per k with delta vs LR baseline
+- `results/method4_llm/<disease>/per_k_best.csv` — best LLM formula per k with delta vs LR baseline
+
+**Commits:**
+- `feat(#1): add per-k LR baselines, feature count tracking, and per-k comparisons across all methods`
+
 ## TODO 2: EHRSHOT comparison
 To verify actual accuracy for these formulas i need to test them on other data. 
 Goals for this task:
