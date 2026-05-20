@@ -130,3 +130,66 @@ Research what is best for this, show me your thinking and decision making proces
 1. Should the CI analysis cover only the test split, or also report CIs on the train split for comparison?
 2. Is bootstrap resampling the expected approach, or are you open to analytical CIs (e.g., DeLong for AUC-ROC) where they exist?
 3. Should CIs be computed per-method for the best formula, or for every formula in the master summary?
+
+### Implementation Summary
+
+**Thinking and decision-making process:**
+
+**Q1 — What data to create CIs on?**
+The pipeline has three layers of data: the fixed MIMIC-IV test split (~20% of patients), and two external datasets (EHRSHOT, NHANES). The train split was used for formula selection/threshold fitting, so CIs on train would reflect in-sample noise — not useful for a paper. The test split is the right target.
+
+Approach chosen: **stratified bootstrap on the test split** (stratified is critical because ~1% positive rate — non-stratified bootstrap can yield bootstrap folds with zero positives). 2 000 resamples with `random_state=42`, percentile method for the CI bounds (2.5th / 97.5th).
+
+Cross-validation CIs (already in `sanity_check.py`) are useful for the LR baseline only — they are not applicable to search-based methods (M2/M3) or LLM methods (M4) where "training" is formula search, not a refittable model.
+
+External datasets (EHRSHOT, NHANES) provide cross-dataset validation, not bootstrap CIs in the classical sense. Their point estimates plus the MIMIC CIs already give a strong generalizability story.
+
+**Q2 — Which metrics need CIs?**
+- **AUC-PR** (primary metric for imbalanced data): no analytical formula → bootstrap. Most important to report.
+- **AUC-ROC**: analytical CI available via DeLong's method (fast, exact under the nonparametric assumption). Fallback to bootstrap if fewer than 30 positives in the resample.
+- **F2**: threshold-dependent → threshold is refitted per bootstrap resample on bootstrap train rows, applied to bootstrap test rows. Adds computational cost but is methodologically correct.
+- **Precision@recall(0.50)**: most clinically meaningful fixed-recall operating point → bootstrap.
+
+Metrics left out of CIs: precision, recall, F1 (all captured by the four above), AUC-PR on external datasets (computed as point estimates only — those datasets have different populations).
+
+**Q3 — How to visualize?**
+Three complementary views:
+1. **Forest plot** — primary figure for the paper. One row per method, AUC-PR on x-axis, CI as horizontal whisker. Clean, standard in clinical ML.
+2. **Error bars on bar chart** — already in the dashboard plan (TODO 4). CI columns flow naturally into the existing Plotly bars.
+3. **CI columns in master summary CSVs** — machine-readable, feeds both the dashboard and the forest plot.
+
+Shaded PR curve bands were considered but rejected: they require storing B×|test| score arrays (too large) and are harder to read than the forest plot in a paper.
+
+**Concrete implementation steps:**
+
+**Step 1 — `src/compute_ci.py` (new utility module)**
+- `stratified_bootstrap_indices(y_true, n_boot, seed)` → generator of (train_idx, test_idx) arrays that preserve positive rate
+- `bootstrap_ci(y_true, scores, metric_fn, n_boot=2000, alpha=0.05, seed=42)` → `(lo, hi, point)` — generic, reusable
+- Pre-built wrappers exported from the module: `ci_auc_pr`, `ci_auc_roc`, `ci_f2`, `ci_precision_at_recall`
+- `delong_auc_roc_ci(y_true, scores, alpha=0.05)` → `(lo, hi)` — analytical fast path for AUC-ROC
+
+**Step 2 — `src/compute_ci_all.py` (standalone backfill script)**
+Reads existing master summary CSVs for all methods + sanity_check, loads the test split, runs bootstrap for each row's formula, appends CI columns. This lets you add CIs to past runs without re-running experiments. CLI: `python src/compute_ci_all.py --disease ra`.
+
+Columns added per method: `AUC_PR_CI_Low`, `AUC_PR_CI_High`, `AUC_ROC_CI_Low`, `AUC_ROC_CI_High`, `F2_CI_Low`, `F2_CI_High`, `P_at_R50_CI_Low`, `P_at_R50_CI_High`, `CI_N_Boot`, `CI_Seed`.
+
+**Step 3 — Forward integration into method scripts**
+After `compute_ci_all.py` is validated, add a CI computation block at the end of each method script (after the best formula is selected) so future runs write CI columns directly. Affected files: `method_threshold.py`, `method2_random_formula.py`, `method3_gp.py`, `method4_llm.py`, `sanity_check.py`.
+
+**Step 4 — Forest plot script (`src/plot_ci_forest.py`)**
+Reads all master summaries, takes the best formula per method (highest AUC-PR), draws a Matplotlib forest plot: methods on y-axis, AUC-PR + 95% CI on x-axis, vertical dashed line at LR all-features baseline. Outputs `results/figures/ci_forest_auc_pr.png` at 300 DPI.
+
+**Step 5 — Dashboard integration**
+Update `src/dashboard.py` (TODO 4 Step 2) to read CI columns when present and pass them as `error_x` to Plotly bar traces. CI display is opt-in via a sidebar toggle — degrades gracefully when CI columns are absent.
+
+**Files to create:**
+- `src/compute_ci.py` — CI utility functions (DeLong + stratified bootstrap)
+- `src/compute_ci_all.py` — backfill script for existing master summaries
+- `src/plot_ci_forest.py` — forest plot generator for paper figures
+
+**Files to modify:**
+- `src/method_threshold.py`, `src/method2_random_formula.py`, `src/method3_gp.py`, `src/method4_llm.py`, `src/sanity_check.py` — add CI block after best-formula selection
+- `src/dashboard.py` — add error bars (after TODO 4 Step 2)
+
+**Commits:**
+- `docs(#5): add confidence interval planning and implementation guide`
