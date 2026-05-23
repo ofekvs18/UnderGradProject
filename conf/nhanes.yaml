@@ -41,7 +41,7 @@ demo_file: "DEMO_{}.XPT"   # demographics file (for SEQN list only)
 # Each condition specifies which questionnaire file and which variable/values
 # identify a positive case for that condition.
 #
-# Supported disease slugs: ra, lup, crhn, t2d, t1d, psr
+# Supported disease slugs: ra, psr
 # (must match conf/disease/<slug>.yaml slugs)
 #
 # IMPORTANT: response code meanings differ by cycle. Verify against codebooks.
@@ -53,16 +53,6 @@ disease_case_defs:
     - file: "MCQ_{}.XPT"
       variable: "MCQ195"   # "What kind of arthritis?" 2=Rheumatoid (cycles G-J)
       values: [2]
-
-  lup:
-    - file: "MCQ_{}.XPT"
-      variable: "MCQ160B"  # "Doctor told lupus?" 1=Yes
-      values: [1]
-
-  crhn:
-    - file: "MCQ_{}.XPT"
-      variable: "MCQ160L"  # "Doctor told Crohn's disease?" 1=Yes (cycles H+)
-      values: [1]
 
   psr:
     - file: "MCQ_{}.XPT"
