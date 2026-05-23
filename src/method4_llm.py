@@ -523,7 +523,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
             "cv_auc_pr_std": s["std"],
             "cv_auc_pr_ci95_low": s["ci95_low"],
             "cv_auc_pr_ci95_high": s["ci95_high"],
-            "frozen_test_auc_pr_final": None,
+            "frozen_test_auc_pr": None,
         })
 
     if not cv_rows:
@@ -538,7 +538,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
     # Evaluate CV winner on frozen test exactly once
     cv_winner_metrics = evaluate_formula_full(cv_winner["formula"], train_df, test_df, list(FEATURE_VARS))
     frozen_test_auc_pr_final = cv_winner_metrics["auc_pr"] if cv_winner_metrics else float("nan")
-    cv_df.loc[0, "frozen_test_auc_pr_final"] = frozen_test_auc_pr_final
+    cv_df.loc[0, "frozen_test_auc_pr"] = frozen_test_auc_pr_final
 
     top_cv_path = OUT_DIR / "method4_top_cv.csv"
     cv_df.to_csv(top_cv_path, index=False)

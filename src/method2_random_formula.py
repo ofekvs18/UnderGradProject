@@ -294,7 +294,7 @@ def main():
             "cv_auc_pr_std": s["std"],
             "cv_auc_pr_ci95_low": s["ci95_low"],
             "cv_auc_pr_ci95_high": s["ci95_high"],
-            "frozen_test_auc_pr_final": None,
+            "frozen_test_auc_pr": None,
         })
 
     if not cv_rows:
@@ -307,7 +307,7 @@ def main():
         # Evaluate CV winner on frozen test exactly once
         cv_winner_metrics = evaluate_formula_full(cv_winner_formula, train_df, test_df, features)
         cv_winner_frozen  = cv_winner_metrics["auc_pr"] if cv_winner_metrics else float("nan")
-        cv_df.loc[cv_df["formula"] == cv_winner_formula, "frozen_test_auc_pr_final"] = cv_winner_frozen
+        cv_df.loc[cv_df["formula"] == cv_winner_formula, "frozen_test_auc_pr"] = cv_winner_frozen
         cv_df.to_csv(OUT_DIR / "top_formulas_cv.csv", index=False)
         print(f"  CV winner: {cv_winner_formula}")
         print(f"  CV AUC-PR mean: {cv_df.iloc[0]['cv_auc_pr_mean']:.4f}  Frozen test: {cv_winner_frozen:.4f}")

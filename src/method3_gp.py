@@ -307,15 +307,24 @@ def main():
                 print(f"\n--- STOP: Plateau detected at gen {gen} (no improvement for {patience} gens) ---")
                 break
 
-        # ── CV on this tier's winning program (after evolution, not during) ────────
-        print(f"\n  Running CV for tier {tier_name}...")
-        fold_prs = []
-        if winning_program is not None:
+        # ── Nested CV: run CV on all hall-of-fame programs, pick winner by CV mean ──
+        # winner_program from the evolution loop was tracked by test AUC-PR (monitoring
+        # only); here we select the true CV winner without touching the frozen test set.
+        from sklearn.metrics import roc_auc_score as _roc, average_precision_score as _aps
+        hof_programs = [p for p in gp._best_programs if p is not None]
+        print(f"\n  Running nested CV for tier {tier_name} on {len(hof_programs)} hall-of-fame programs...")
+
+        best_cv_mean = -1.0
+        cv_winning_program = winning_program  # fallback
+        cv_winning_formula = winning_formula
+        tier_cv = {"mean": best_overall_auc_pr, "std": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
+
+        for prog in hof_programs:
+            fold_prs = []
             for fold_train_df, fold_val_df in cv_folds:
                 ft = fold_train_df[features + ["is_case"]].dropna()
                 fv = fold_val_df[features + ["is_case"]].dropna()
                 if ft["is_case"].sum() < 5 or fv["is_case"].sum() < 5:
-                    print(f"    Fold skipped (too few positives)")
                     continue
                 X_ft = ft[features].values
                 X_fv = fv[features].values
@@ -323,8 +332,8 @@ def main():
                 y_fv = fv["is_case"].values
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
-                    sc_ft = np.asarray(winning_program.execute(X_ft), dtype=float)
-                    sc_fv = np.asarray(winning_program.execute(X_fv), dtype=float)
+                    sc_ft = np.asarray(prog.execute(X_ft), dtype=float)
+                    sc_fv = np.asarray(prog.execute(X_fv), dtype=float)
                 bad_ft = ~np.isfinite(sc_ft)
                 bad_fv = ~np.isfinite(sc_fv)
                 if bad_ft.mean() > BAD_FRAC or bad_fv.mean() > BAD_FRAC:
@@ -332,7 +341,6 @@ def main():
                 sc_ft[bad_ft] = np.nanmedian(sc_ft[~bad_ft]) if (~bad_ft).any() else 0.0
                 sc_fv[bad_fv] = np.nanmedian(sc_fv[~bad_fv]) if (~bad_fv).any() else 0.0
                 try:
-                    from sklearn.metrics import roc_auc_score as _roc, average_precision_score as _aps
                     auc_roc_ft = float(_roc(y_ft, sc_ft))
                     if auc_roc_ft < 0.5:
                         sc_fv = -sc_fv
@@ -340,13 +348,25 @@ def main():
                 except Exception:
                     pass
 
-        if len(fold_prs) >= 3:
-            tier_cv = cv_summary(fold_prs)
-        else:
-            print(f"  [WARN] {tier_name}: fewer than 3 valid CV folds — using train AUC-PR fallback")
-            tier_cv = {"mean": best_overall_auc_pr, "std": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
+            if len(fold_prs) < 3:
+                continue
+            s = cv_summary(fold_prs)
+            if s["mean"] > best_cv_mean:
+                best_cv_mean = s["mean"]
+                cv_winning_program = prog
+                cv_winning_formula = str(prog)
+                tier_cv = s
 
-        print(f"  Tier {tier_name} CV AUC-PR: mean={tier_cv['mean']:.4f}  std={tier_cv['std']:.4f}")
+        if best_cv_mean < 0:
+            print(f"  [WARN] {tier_name}: no program had ≥3 valid CV folds — using evolution best as fallback")
+            cv_winning_program = winning_program
+            cv_winning_formula = winning_formula
+
+        # Use CV winner going forward
+        winning_program = cv_winning_program
+        winning_formula = cv_winning_formula
+        winning_num_features = count_formula_features(winning_formula, features)
+        print(f"  Tier {tier_name} CV winner AUC-PR: mean={tier_cv['mean']:.4f}  std={tier_cv['std']:.4f}")
 
         # Save per-k best formulas for this tier
         per_k_rows = []
