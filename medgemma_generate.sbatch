@@ -8,8 +8,11 @@
 #SBATCH --gpus=rtx_3090:1
 #SBATCH --mem=24G
 
+: "${DISEASE:?DISEASE not set — pass via --export=DISEASE=<slug>}"
+
 echo "SLURM_JOBID=$SLURM_JOBID"
 echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST"
+echo "Disease: $DISEASE"
 echo "Start: $(date)"
 
 module load anaconda
@@ -21,6 +24,6 @@ source activate medgemma
 
 cd ~/UnderGradProject
 mkdir -p results/method4_llm
-python -u src/method4_generate.py
+python -u src/method4_generate.py --disease "$DISEASE"
 
 echo "End: $(date)"
