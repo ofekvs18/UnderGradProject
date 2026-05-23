@@ -6,8 +6,10 @@ Runs, in order:
   2. Sanity check                (sanity_check.py)
   3. Method 1 — Threshold        (method_threshold.py)
   4. Method 2 — Random Formula   (method2_random_formula.py)
-  5. Method 3 — Genetic Program  (method3_gp.py)
-  6. Method 4 — LLM              (method4_llm.py)
+  5. Method 3 — Genetic Program  (method3_gp.py)        ← cluster job in production
+  6. Method 4 — LLM generate+eval (method4_llm.py all)  ← generate needs GPU cluster
+  7. Cross-method correlation    (cross_method_correlation.py)
+  8. Compare methods             (compare_methods.py)
 
 Usage:
     python src/run_full_pipeline.py --disease ra
@@ -91,6 +93,8 @@ def main():
     )
 
     # Step 5: Method 3 — Genetic programming
+    # NOTE: In production this should be submitted via pipeline.sbatch (CPU-heavy, overnight).
+    # Running locally here is only suitable for small-tier testing on a single disease.
     run_step(
         "Method 3 — Genetic programming",
         [PYTHON, str(SRC_DIR / "method3_gp.py"), "--disease", disease],
@@ -98,9 +102,11 @@ def main():
     )
 
     # Step 6: Method 4 — LLM
+    # NOTE: The 'generate' phase requires a GPU and should run via medgemma_generate.sbatch
+    # on the cluster.  Running 'all' locally is only suitable for testing with cached outputs.
     run_step(
         "Method 4 — LLM-guided search",
-        [PYTHON, str(SRC_DIR / "method4_llm.py"), "--disease", disease],
+        [PYTHON, str(SRC_DIR / "method4_llm.py"), "all", "--disease", disease],
         dry_run=dry_run,
     )
 
@@ -108,6 +114,13 @@ def main():
     run_step(
         "Cross-method score vector correlation",
         [PYTHON, str(SRC_DIR / "cross_method_correlation.py"), "--disease", disease],
+        dry_run=dry_run,
+    )
+
+    # Step 8: Aggregate all methods into comparison table
+    run_step(
+        "Compare methods (aggregate master summaries)",
+        [PYTHON, str(SRC_DIR / "compare_methods.py")],
         dry_run=dry_run,
     )
 
