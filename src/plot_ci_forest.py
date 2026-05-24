@@ -122,7 +122,7 @@ def main():
     ax.spines["right"].set_visible(False)
 
     plt.tight_layout()
-    out_path = fig_dir / "ci_forest_auc_pr.png"
+    out_path = fig_dir / f"{args.disease}_ci_forest_auc_pr.png"
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"Saved forest plot: {out_path}")
