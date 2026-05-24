@@ -11,14 +11,20 @@ CONF_DIR="conf/disease"
 SPLIT_SALT=${SPLIT_SALT:-""}
 DRY_RUN=0
 
-# t1d and t2d are intentionally excluded — NHANES cannot distinguish them.
-NHANES_DISEASES="ra crhn psr lup"
-
 for arg in "$@"; do
     [[ "$arg" == "--dry-run" ]] && DRY_RUN=1
 done
 
 PYTHON=/home/ofekvi/.conda/envs/biomarkers/bin/python
+
+# Derive NHANES-eligible diseases from conf/nhanes.yaml disease_case_defs keys.
+# Any disease without a case definition there has no NHANES data and will be skipped.
+NHANES_DISEASES=$($PYTHON -c "
+import yaml
+with open('conf/nhanes.yaml') as f:
+    cfg = yaml.safe_load(f)
+print(' '.join(cfg.get('disease_case_defs', {}).keys()))
+")
 
 # Fake ID counter stored in a temp file so subshells share it.
 _ID_FILE=$(mktemp)
