@@ -1,5 +1,5 @@
 """
-compute_ci_all.py — Bootstrap 95% CIs for the best formula from each method.
+mimic_compute_ci.py — Bootstrap 95% CIs for the best formula from each method.
 
 Reads master summaries for M1–M4, evaluates each best formula on the test set
 with bootstrap resampling, and writes:
@@ -7,7 +7,7 @@ with bootstrap resampling, and writes:
   - results/figures/{disease}_ci_data.csv            (one row per method, for forest plot)
 
 Usage:
-    python src/compute_ci_all.py --disease ra
+    python src/mimic_compute_ci.py --disease ra
 """
 
 import argparse

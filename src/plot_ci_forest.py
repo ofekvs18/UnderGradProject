@@ -48,7 +48,7 @@ def main():
     ci_path = fig_dir / f"{args.disease}_ci_data.csv"
     if not ci_path.exists():
         print(f"ERROR: CI data not found at {ci_path}")
-        print("Run: python src/compute_ci_all.py --disease", args.disease)
+        print("Run: python src/mimic_compute_ci.py --disease", args.disease)
         sys.exit(1)
 
     df = pd.read_csv(ci_path)
