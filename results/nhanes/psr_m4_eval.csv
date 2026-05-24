@@ -9,3 +9,8 @@ Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precisio
 2026-05-24 11:07:45,psr,m4,llm,(hgb + mchc) * rdw - wbc,(hgb + mchc) * rdw - wbc,0.5959,0.0323,0.0231,0.6406,0.0446,0.101,0.0338,0.0248,0.022,blind,0.7
 2026-05-24 11:07:45,psr,m4,llm,(hgb + mchc) * rdw - wbc,(hgb + mchc) * rdw - wbc,0.5959,0.0323,0.0231,0.6406,0.0446,0.101,0.0338,0.0248,0.022,blind,0.7
 2026-05-24 11:07:45,psr,m4,llm,sqrt(mchc) * rbc / (hgb + 0.01),sqrt(mchc) * rbc / (hgb + 0.01),0.5511,0.0225,0.0236,0.7188,0.0456,0.1041,0.0229,0.0232,0.0238,seeded,0.7
+2026-05-24 18:02:42,psr,m4,llm,sqrt(mchc) * rbc / (hgb + 0.01),sqrt(mchc) * rbc / (hgb + 0.01),0.5511,0.0225,0.0236,0.7188,0.0456,0.1041,0.0229,0.0232,0.0238,seeded,0.7
+2026-05-24 18:02:42,psr,m4,llm,sqrt(mchc) * rbc / (hgb + 0.01),sqrt(mchc) * rbc / (hgb + 0.01),0.5511,0.0225,0.0236,0.7188,0.0456,0.1041,0.0229,0.0232,0.0238,seeded,0.7
+2026-05-24 18:02:42,psr,m4,llm,(hgb + mchc) * rdw - wbc,(hgb + mchc) * rdw - wbc,0.5959,0.0323,0.0231,0.6406,0.0446,0.101,0.0338,0.0248,0.022,blind,0.7
+2026-05-24 18:02:42,psr,m4,llm,(hgb + mchc) * rdw - wbc,(hgb + mchc) * rdw - wbc,0.5959,0.0323,0.0231,0.6406,0.0446,0.101,0.0338,0.0248,0.022,blind,0.7
+2026-05-24 18:02:42,psr,m4,llm,sqrt(mchc) * rbc / (hgb + 0.01),sqrt(mchc) * rbc / (hgb + 0.01),0.5511,0.0225,0.0236,0.7188,0.0456,0.1041,0.0229,0.0232,0.0238,seeded,0.7
