@@ -41,45 +41,67 @@ demo_file: "DEMO_{}.XPT"   # demographics file (for SEQN list only)
 # Each condition specifies which questionnaire file and which variable/values
 # identify a positive case for that condition.
 #
-# Supported disease slugs: ra, psr, lup (active); crhn, t1d, t2d (excluded — see entries below)
-# (must match conf/disease/<slug>.yaml slugs)
+# Active diseases: ra, psr
+# Excluded diseases: lup, crhn, t1d, t2d (see entries below)
 #
-# IMPORTANT: response code meanings differ by cycle. Verify against codebooks.
+# Variable names are uppercased after read_sas() — use uppercase here.
+# Response codes verified against XPT files directly (see test_hydra_config.py output).
 disease_case_defs:
   ra:
-    - file: "MCQ_{}.XPT"   # Medical Conditions Questionnaire
-      variable: "MCQ160a"  # "Doctor told you have arthritis?" 1=Yes
+    # Step 1: ever told you had arthritis (MCQ160A=1)
+    # Step 2: type is rheumatoid arthritis (MCQ195=1)
+    # Verified in XPT: MCQ160A present G/H/I/J, MCQ195 present G/H/I/J
+    # MCQ195 codes confirmed from XPT value_counts and published literature:
+    #   1 = Rheumatoid arthritis
+    #   2 = Osteoarthritis / degenerative arthritis
+    #   3 = Psoriatic arthritis
+    #   4 = Other
+    #   7 = Refused, 9 = Don't know
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ160A"
       values: [1]
     - file: "MCQ_{}.XPT"
-      variable: "MCQ195"   # "What kind of arthritis?" 2=Rheumatoid (cycles G-J)
-      values: [2]
+      variable: "MCQ195"
+      values: [1]
 
   psr:
+    # MCQ070=1: "Has a doctor ever told you that you have psoriasis?"
+    # Verified in XPT: present in G (167 cases) and H (162 cases), absent in I and J
+    # Cycle restriction enforced via disease_cycles.psr below
     - file: "MCQ_{}.XPT"
-      variable: "MCQ070"  # "Doctor told you have psoriasis?" 1=Yes (cycles G-H)
+      variable: "MCQ070"
       values: [1]
 
   lup:
-    - file: "MCQ_{}.XPT"
-      variable: "MCQ160n"  # "Doctor told you have lupus?" 1=Yes (cycles G-J)
-      values: [1]
+    excluded: true
+    reason: >
+      MCQ191 (lupus variable used in NHANES 2001-2010) is absent from cycles G-J.
+      MCQ160n in these cycles = gout, not lupus.
+      No valid lupus variable exists in the current cycles (2011-2018).
 
   crhn:
     excluded: true
-    reason: "No consistent Crohn's variable in NHANES cycles G-J; MCQ203 is jaundice, IBD question discontinued after cycle F (2009-10)"
+    reason: >
+      MCQ203 in cycles G-J = jaundice, not Crohn's disease.
+      IBD question was discontinued after cycle F (2009-10).
+      No valid Crohn's variable exists in cycles G-J.
 
   t1d:
     excluded: true
-    reason: "NHANES diabetes question (DIQ010) does not distinguish type 1 from type 2"
+    reason: >
+      DIQ010 captures all diabetes without type distinction.
+      T1/T2 separation requires age-at-diagnosis + insulin-only treatment algorithm
+      (DID040Q absent in cycles G-J; feasibility unconfirmed).
 
   t2d:
     excluded: true
-    reason: "NHANES diabetes question (DIQ010) does not distinguish type 2 from type 1"
+    reason: >
+      Same limitation as t1d — DIQ010 does not distinguish type.
 
-# Per-disease cycle overrides (optional). When set, restricts extraction to
-# the listed cycles regardless of the --cycles CLI flag or the global cycles list.
+# Per-disease cycle overrides.
+# Restricts extraction to listed cycles regardless of global cycles list or --cycles flag.
 disease_cycles:
-  psr: ["G", "H"]   # MCQ070 only present in 2011-2014
+  psr: ["G", "H"]   # MCQ070 absent from cycles I and J (confirmed via XPT scan)
 
 # Random seed for patient-level train/test split
 seed: 42
