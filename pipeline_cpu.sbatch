@@ -42,11 +42,11 @@ run_step() {
     echo "-- [$label] done in $(( elapsed / 60 ))m $(( elapsed % 60 ))s --"
 }
 
-# run_step "sanity check"      $PYTHON -u src/sanity_check.py          --disease "$DISEASE" --split-salt "$SPLIT_SALT"
-# run_step "method1 threshold" $PYTHON -u src/method_threshold.py      --disease "$DISEASE" --split-salt "$SPLIT_SALT"
-# run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT"
-# run_step "method3 GP"        $PYTHON -u src/method3_gp.py             --disease "$DISEASE" --split-salt "$SPLIT_SALT"
-# run_step "method4 evaluate"  $PYTHON -u src/method4_llm.py evaluate   --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+run_step "sanity check"      $PYTHON -u src/sanity_check.py          --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+run_step "method1 threshold" $PYTHON -u src/method_threshold.py      --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+run_step "method3 GP"        $PYTHON -u src/method3_gp.py             --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+run_step "method4 evaluate"  $PYTHON -u src/method4_llm.py evaluate   --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "cross-method corr" $PYTHON -u src/cross_method_correlation.py --disease "$DISEASE"
 run_step "compare methods"   $PYTHON -u src/compare_methods.py
 run_step "compute CI"        $PYTHON -u src/compute_ci_all.py         --disease "$DISEASE"
