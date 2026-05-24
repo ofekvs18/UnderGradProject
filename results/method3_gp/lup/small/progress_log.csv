@@ -1,0 +1,13 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"neg(mul(neg(mul(sqrt(sub(plt, wbc)), sqrt(sqrt(hct)))), mul(sqrt(sqrt(mul(plt, mchc))), sub(sub(sub(mch, wbc), mul(0.806, mch)), sqrt(div(hgb, mch))))))",0.0096,True,False
+3,"sub(add(div(mcv, rbc), add(div(mcv, rbc), add(div(mcv, rbc), add(div(mcv, rbc), mul(hct, wbc))))), wbc)",0.0098,True,False
+4,"sub(add(div(mcv, rbc), add(div(mcv, rbc), sub(add(div(mcv, rbc), add(div(mcv, rbc), sub(add(div(mcv, rbc), mul(hct, wbc)), wbc))), wbc))), wbc)",0.0101,True,False
+5,"add(mcv, sub(sub(add(div(mcv, rbc), add(div(mcv, rbc), sub(add(div(mcv, rbc), sub(add(div(mcv, rbc), add(div(mcv, rbc), mul(hct, wbc))), wbc)), wbc))), wbc), wbc))",0.0103,True,False
+6,"add(mcv, sub(sub(add(div(mcv, rbc), add(div(mcv, rbc), sub(add(div(mcv, rbc), sub(add(div(mcv, rbc), add(mcv, mul(hct, wbc))), wbc)), wbc))), wbc), wbc))",0.0106,True,False
+7,"add(mcv, sub(sub(add(div(mcv, rbc), add(mcv, sub(add(div(mcv, rbc), sub(add(div(mcv, rbc), add(mcv, mul(hct, wbc))), wbc)), wbc))), wbc), wbc))",0.0108,True,True
+8,"add(mcv, sub(sub(add(mcv, add(mcv, sub(add(div(mcv, rbc), sub(add(mcv, add(div(mcv, rbc), mul(hct, wbc))), wbc)), wbc))), wbc), wbc))",0.011,True,True
+9,"add(mcv, sub(sub(add(mcv, add(mcv, sub(add(mcv, sub(add(div(mcv, rbc), sub(add(div(mcv, rbc), add(div(mcv, rbc), mul(hct, wbc))), wbc)), wbc)), wbc))), wbc), wbc))",0.0111,True,True
+10,"add(mcv, sub(sub(add(mcv, add(mcv, sub(add(mcv, sub(add(div(mcv, rbc), sub(add(div(mcv, rbc), add(div(mcv, rbc), mul(hct, wbc))), wbc)), wbc)), wbc))), wbc), wbc))",0.0111,False,True
+12,"add(mcv, sub(sub(add(div(rdw, rbc), add(mcv, sub(add(div(mcv, rbc), sub(add(div(mcv, wbc), add(mcv, mul(hct, wbc))), wbc)), wbc))), wbc), wbc))",0.012,True,True
+15,"add(mcv, sub(sub(add(div(rdw, rbc), add(mcv, sub(add(div(mcv, rbc), add(div(mcv, wbc), add(mcv, mul(hct, wbc)))), wbc))), wbc), wbc))",0.0121,True,True
+19,"add(div(mcv, rbc), add(div(mcv, wbc), sub(add(div(mcv, wbc), add(div(mcv, rbc), add(mcv, add(add(log(sqrt(mcv)), sub(mul(rbc, rdw), log(mchc))), sub(add(div(mcv, wbc), add(div(mcv, rbc), mul(hct, wbc))), wbc))))), wbc)))",0.013,True,True

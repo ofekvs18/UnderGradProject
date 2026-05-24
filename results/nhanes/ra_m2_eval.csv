@@ -1,0 +1,11 @@
+Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75
+2026-05-24 10:53:48,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.6449,0.0546,0.0472,0.5808,0.0874,0.1782,0.0603,0.0482,0.0402
+2026-05-24 10:53:48,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.6449,0.0546,0.0472,0.5808,0.0874,0.1782,0.0603,0.0482,0.0402
+2026-05-24 10:53:48,ra,m2,random,(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.5385,0.0352,0.0387,0.0556,0.0456,0.0511,0.034,0.0336,0.0322
+2026-05-24 10:53:48,ra,m2,random,((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),0.5532,0.0363,0.0323,0.3535,0.0591,0.1182,0.0335,0.0355,0.034
+2026-05-24 10:53:48,ra,m2,random,(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),0.5865,0.0481,0.0451,0.4192,0.0814,0.1576,0.0504,0.0406,0.0346
+2026-05-24 11:07:57,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.6449,0.0546,0.0472,0.5808,0.0874,0.1782,0.0603,0.0482,0.0402
+2026-05-24 11:07:57,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.6449,0.0546,0.0472,0.5808,0.0874,0.1782,0.0603,0.0482,0.0402
+2026-05-24 11:07:57,ra,m2,random,(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.5385,0.0352,0.0387,0.0556,0.0456,0.0511,0.034,0.0336,0.0322
+2026-05-24 11:07:57,ra,m2,random,((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),0.5532,0.0363,0.0323,0.3535,0.0591,0.1182,0.0335,0.0355,0.034
+2026-05-24 11:07:57,ra,m2,random,(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),0.5865,0.0481,0.0451,0.4192,0.0814,0.1576,0.0504,0.0406,0.0346

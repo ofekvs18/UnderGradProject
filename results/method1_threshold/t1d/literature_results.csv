@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+rdw,15.0,above,0.473,0.0099,0.0079,0.1812,0.0151,0.0335,29253,"Elevated RDW can indicate increased red blood cell production variability, which can be seen in early T1D."
+hgb,10.0,below,0.5395,0.0113,0.0122,0.2625,0.0233,0.0515,29293,Anemia is a common finding in T1D due to chronic inflammation and impaired erythropoiesis.
+hct,30.0,below,0.5632,0.0121,0.0123,0.2406,0.0234,0.0511,29292,"Low HCT is a sign of anemia, which is common in T1D."
+wbc,12.0,above,0.4854,0.0101,0.0088,0.1719,0.0168,0.0366,29267,"Elevated WBC count can indicate infection or inflammation, which can be associated with T1D."
+plt,400.0,above,0.6078,0.0154,0.0163,0.075,0.0268,0.0436,29239,Thrombocytosis can be seen in T1D due to increased platelet production.
+mcv,80.0,below,0.5417,0.0121,0.009,0.0406,0.0147,0.0238,29260,"Microcytosis (low MCV) can be a sign of iron deficiency anemia, which can occur in T1D."
+mch,25.0,below,0.4924,0.0103,0.0046,0.0187,0.0074,0.0116,29260,"Low MCH indicates smaller red blood cells, which can be seen in iron deficiency anemia."
+mchc,30.0,below,0.4148,0.0088,0.0035,0.0094,0.0051,0.007,29261,"Low MCHc indicates decreased hemoglobin concentration per cell, which can be seen in iron deficiency anemia."
+rbc,4.0,below,0.5441,0.0118,0.0124,0.6406,0.0244,0.0576,29260,"Low RBC count is a sign of anemia, which is common in T1D."

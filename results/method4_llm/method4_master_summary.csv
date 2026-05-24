@@ -1,0 +1,31 @@
+Disease,Best_LLM_AUC_PR,Best_LLM_AUC_ROC,Best_LLM_Formula,Winning_Strategy,Winning_Temp,Total_Yield,Timestamp,Split_Salt,Num_Features_Best,Baseline_AUC_PR_At_K,Delta_vs_Baseline_K
+ra,0.0166,0.6098,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),blind,0.7,33,,,,,
+crhn,0.0268,0.6417,(hgb - hct) * (mchc - mcv) / (plt + 0.01),blind,1.0,36,,,,,
+psr,0.0094,0.5036,sqrt(mchc) * rbc / (hgb + 0.01),seeded,0.7,43,,,,,
+lup,0.0153,0.5383,(mch + mchc) / (mcv + 0.01),blind,1.0,35,,,,,
+t1d,0.017,0.6199,(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),blind,0.7,41,,,,,
+t2d,0.1539,0.5684,(mch - mchc) / (mcv + 0.01),blind,1.0,32,,,,,
+psr,0.0095,0.5057,sqrt(mchc) * rbc / (hgb + 0.01),seeded,0.7,43,2026-05-02 22:47:55,,,,
+crhn,0.0268,0.6417,(hgb - hct) * (mchc - mcv) / (plt + 0.01),blind,1.0,36,2026-05-02 22:54:36,,,,
+lup,0.0153,0.5383,(mch + mchc) / (mcv + 0.01),blind,1.0,35,2026-05-02 23:13:36,,,,
+ra,0.0166,0.6098,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),blind,0.7,33,2026-05-02 23:16:06,,,,
+t1d,0.017,0.6198,(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),blind,0.7,41,2026-05-02 23:18:31,,,,
+t2d,0.1539,0.5684,(mch - mchc) / (mcv + 0.01),blind,1.0,32,2026-05-02 23:54:02,,,,
+psr,0.008,0.6441,(hgb + mchc) * rdw - wbc,blind,0.7,43,2026-05-03 00:28:24,_seed2,,,
+crhn,0.0176,0.6361,sqrt(mchc) * mcv / plt,seeded,1.0,35,2026-05-03 00:34:31,_seed2,,,
+t1d,0.0167,0.5932,(mch + mchc) / (mcv + 0.01),blind,0.7,42,2026-05-03 00:53:15,_seed2,,,
+lup,0.0058,0.5497,plt * rdw / (wbc + 0.01),blind,0.7,35,2026-05-03 01:07:29,_seed2,,,
+t2d,0.1558,0.5741,(mch - mchc) / (mcv + 0.01),blind,1.0,33,2026-05-03 01:40:53,_seed2,,,
+ra,0.0157,0.5838,(hgb / mchc) * (plt / (wbc + 1)) * (rdw / (mcv + 1)),blind,0.7,33,2026-05-03 02:01:14,_seed2,,,
+lup,0.0076,0.57,(hgb - 100) * (rdw + 1) / (wbc + 1) + (plt - 400000) / (wbc + 1),blind,0.3,35,2026-05-04 01:25:18,saltsalt,,,
+psr,0.01,0.6282,(hgb + mchc) * rdw - wbc,blind,0.7,43,2026-05-04 02:09:28,saltsalt,,,
+t1d,0.0149,0.5953,(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),blind,0.7,41,2026-05-04 02:21:40,saltsalt,,,
+ra,0.0149,0.5653,plt * (mchc - 30) / (hct + 0.01),blind,1.0,33,2026-05-04 03:38:14,saltsalt,,,
+crhn,0.0154,0.6378,sqrt(mchc) * mcv / plt,seeded,1.0,36,2026-05-04 03:59:30,saltsalt,,,
+t2d,0.1519,0.5643,(mch - mchc) / (mcv + 0.01),blind,1.0,32,2026-05-04 04:01:19,saltsalt,,,
+psr,0.0095,0.5057,sqrt(mchc) * rbc / (hgb + 0.01),seeded,0.7,43,2026-05-24 02:57:15,,3.0,0.0098,-0.0003
+t2d,0.1539,0.5684,(mch - mchc) / (mcv + 0.01),blind,1.0,32,2026-05-24 03:11:02,,3.0,0.1763,-0.0224
+lup,0.0153,0.5383,(mch + mchc) / (mcv + 0.01),blind,1.0,35,2026-05-24 03:21:20,,3.0,0.0049,0.0104
+ra,0.0166,0.6098,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),blind,0.7,33,2026-05-24 03:29:03,,4.0,0.0161,0.0005
+t1d,0.017,0.6198,(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),blind,0.7,41,2026-05-24 03:46:40,,3.0,0.0192,-0.0022
+crhn,0.0268,0.6417,(hgb - hct) * (mchc - mcv) / (plt + 0.01),blind,1.0,36,2026-05-24 04:46:35,,5.0,0.0219,0.0049

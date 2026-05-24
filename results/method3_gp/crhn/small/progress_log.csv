@@ -1,0 +1,12 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"div(div(mcv, neg(sqrt(mcv))), plt)",0.02,True,False
+1,"div(div(mcv, neg(add(mchc, plt))), plt)",0.0201,True,False
+2,"sub(log(0.495), div(div(mcv, neg(sqrt(log(sub(-0.915, 0.868))))), plt))",0.0207,True,False
+3,"sub(log(0.495), div(div(mcv, neg(sqrt(div(div(mcv, neg(sqrt(neg(neg(sqrt(mcv)))))), plt)))), plt))",0.0211,True,False
+4,"sub(log(0.495), div(div(mcv, neg(sqrt(div(div(div(mcv, neg(sqrt(neg(div(mcv, add(plt, rdw)))))), plt), plt)))), plt))",0.0212,True,False
+5,"sub(log(0.495), div(div(mcv, neg(sqrt(div(div(div(mcv, neg(sqrt(neg(div(mcv, add(plt, rdw)))))), plt), plt)))), plt))",0.0212,False,False
+7,"sub(log(0.495), div(div(mcv, neg(sqrt(div(log(0.495), plt)))), plt))",0.0218,True,False
+8,"sub(log(0.495), div(div(mcv, sqrt(div(neg(sqrt(sub(sqrt(sqrt(sub(sqrt(div(hgb, wbc)), div(mcv, add(mchc, plt))))), div(mcv, add(mchc, plt))))), plt))), plt))",0.022,True,False
+10,"sub(log(0.495), div(div(mcv, sqrt(div(neg(sqrt(sub(sub(sqrt(div(hgb, wbc)), div(mcv, add(mchc, plt))), mchc))), plt))), plt))",0.0225,True,True
+14,"div(div(mcv, sqrt(div(mchc, plt))), plt)",0.0229,True,True
+15,"div(div(mcv, sqrt(div(mchc, plt))), plt)",0.0229,False,True

@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+rdw,15.0,above,0.5372,0.0104,0.0111,0.2898,0.0214,0.0481,29248,"Elevated RDW can indicate increased red blood cell production variability, which can be seen in inflammatory conditions like Crohn's disease."
+hgb,10.0,below,0.5319,0.011,0.01,0.2438,0.0192,0.043,29288,Anemia (low hemoglobin) is a common finding in Crohn's disease due to blood loss from intestinal inflammation and malabsorption.
+hct,30.0,below,0.5508,0.011,0.0121,0.2686,0.0231,0.0512,29287,Anemia (low hematocrit) is a common finding in Crohn's disease due to blood loss from intestinal inflammation and malabsorption.
+wbc,12.0,above,0.5205,0.0106,0.0112,0.2473,0.0215,0.0476,29262,"Elevated white blood cell count (leukocytosis) can indicate inflammation or infection, which can be associated with Crohn's disease."
+plt,400000.0,below,0.3728,0.0072,0.0097,1.0,0.0192,0.0466,29235,"Thrombocytopenia (low platelet count) can occur in Crohn's disease due to splenic sequestration, bone marrow suppression, or bleeding."
+mcv,80.0,below,0.5719,0.0162,0.0164,0.0848,0.0275,0.0463,29255,Microcytic anemia (low MCV) can be seen in Crohn's disease due to iron deficiency from blood loss or malabsorption.
+mch,25.0,below,0.5255,0.0153,0.0115,0.053,0.0188,0.0307,29255,"Low mean corpuscular hemoglobin (MCH) is associated with microcytic anemia, which can be seen in Crohn's disease due to iron deficiency from blood loss or malabsorption."
+mchc,30.0,below,0.4332,0.0102,0.0082,0.0247,0.0123,0.0176,29256,"Low mean corpuscular hemoglobin concentration (MCHC) is associated with microcytic anemia, which can be seen in Crohn's disease due to iron deficiency from blood loss or malabsorption."
+rbc,4.0,below,0.5197,0.0102,0.0107,0.6254,0.0211,0.0501,29255,Anemia (low red blood cell count) is a common finding in Crohn's disease due to blood loss from intestinal inflammation and malabsorption.

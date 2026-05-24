@@ -1,0 +1,10 @@
+K,Best_Formula,AUC_PR,AUC_ROC,N_Formulas_Tested,Baseline_AUC_PR,Delta_vs_Baseline
+1,log(abs(mch)+1),0.0134,0.5268,36,0.0076,0.0058
+2,(sqrt(abs(rbc))) - (log(abs(mch)+1)),0.0143,0.5369,1111,0.0089,0.0054
+3,((log(abs(hgb)+1)) - (rbc)) / (abs((mchc**2))+1e-6),0.0145,0.5554,1111,0.0098,0.0047
+4,(((sqrt(abs(rdw))) * ((rbc**2))) - (mch)) / (abs(mchc)+1e-6),0.0151,0.5316,1111,0.0093,0.0058
+5,(((((mchc**2)) * (log(abs(plt)+1))) + (mch)) + (sqrt(abs(wbc)))) + (sqrt(abs(mcv))),0.0145,0.5693,1111,0.0126,0.0019
+6,(((((mchc) * (mch)) * (log(abs(plt)+1))) / (abs(mcv)+1e-6)) + (rdw)) - (log(abs(hct)+1)),0.0154,0.5871,1111,0.0157,-0.0003
+7,((((((log(abs(mch)+1)) + ((hct**2))) * (sqrt(abs(hgb)))) * (rbc)) - ((mcv**2))) / (abs(log(abs(rdw)+1))+1e-6)) + ((wbc**2)),0.0144,0.5363,1111,0.0156,-0.0012
+8,(((((((sqrt(abs(rdw))) + (wbc)) / (abs((hgb**2))+1e-6)) * (log(abs(plt)+1))) - (sqrt(abs(mcv)))) / (abs(sqrt(abs(rbc)))+1e-6)) + (log(abs(hct)+1))) - (sqrt(abs(mch))),0.0151,0.5233,1111,0.015,0.0001
+9,((((((((log(abs(plt)+1)) / (abs(sqrt(abs(hgb)))+1e-6)) / (abs(sqrt(abs(hct)))+1e-6)) / (abs(sqrt(abs(mchc)))+1e-6)) * (log(abs(rdw)+1))) - ((mch**2))) + (wbc)) * (mcv)) / (abs((rbc**2))+1e-6),0.0146,0.5265,1111,0.0156,-0.001

@@ -1,0 +1,11 @@
+formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,num_features
+(((((((mch) * (sqrt(abs(hgb)))) * (sqrt(abs(plt)))) + (sqrt(abs(wbc)))) / (abs(hct)+1e-6)) - (rbc)) + (mchc)) / (abs((mcv**2))+1e-6),0.6505,0.0264,0.0147,0.5972,0.0287,0.067,0.0227,0.0179,0.0139,8
+(((((((mchc**2)) / (abs(mcv)+1e-6)) / (abs(log(abs(hct)+1))+1e-6)) - (log(abs(hgb)+1))) / (abs(mch)+1e-6)) * ((plt**2))) - ((rdw**2)),0.6593,0.0259,0.0156,0.6502,0.0304,0.071,0.0228,0.0175,0.014,7
+(((((plt) - (sqrt(abs(rbc)))) / (abs((mcv**2))+1e-6)) / (abs(log(abs(wbc)+1))+1e-6)) / (abs((hct**2))+1e-6)) / (abs((rdw**2))+1e-6),0.6189,0.0255,0.0141,0.6078,0.0276,0.0647,0.0208,0.0152,0.0122,6
+(((((((mcv**2)) / (abs(sqrt(abs(mchc)))+1e-6)) / (abs(sqrt(abs(hgb)))+1e-6)) * (rdw)) * ((hct**2))) * (mch)) / (abs(plt)+1e-6),0.6268,0.0255,0.014,0.5936,0.0273,0.0638,0.0205,0.016,0.0126,7
+((((((((sqrt(abs(wbc))) + (plt)) / (abs(sqrt(abs(mcv)))+1e-6)) / (abs(log(abs(hgb)+1))+1e-6)) + (rbc)) / (abs(rdw)+1e-6)) / (abs(mch)+1e-6)) * ((mchc**2))) / (abs(hct)+1e-6),0.6353,0.0253,0.0137,0.6537,0.0268,0.0632,0.0224,0.0162,0.0127,9
+((((((mchc) + (log(abs(wbc)+1))) * (log(abs(plt)+1))) - (mcv)) - (log(abs(rdw)+1))) + (log(abs(hct)+1))) - (rbc),0.658,0.0252,0.0172,0.576,0.0334,0.0769,0.02,0.0178,0.014,7
+(((((((((mchc**2)) * (log(abs(rbc)+1))) * (sqrt(abs(mcv)))) + ((hct**2))) / (abs((plt**2))+1e-6)) * (log(abs(hgb)+1))) * ((rdw**2))) + (wbc)) + (mch),0.6161,0.0249,0.015,0.3357,0.0287,0.0636,0.021,0.015,0.0121,9
+((((((((log(abs(hgb)+1)) * (sqrt(abs(hct)))) / (abs(sqrt(abs(plt)))+1e-6)) * ((rdw**2))) * (mchc)) - (sqrt(abs(wbc)))) * ((mcv**2))) + (rbc)) + (sqrt(abs(mch))),0.5965,0.0248,0.0139,0.4558,0.027,0.062,0.019,0.0141,0.0113,9
+((((((((mch) + (sqrt(abs(rbc)))) + (wbc)) + (log(abs(rdw)+1))) - (mchc)) + (sqrt(abs(hct)))) / (abs((plt**2))+1e-6)) * (hgb)) * (sqrt(abs(mcv))),0.6251,0.0247,0.0157,0.4735,0.0304,0.0694,0.0224,0.0164,0.0125,9
+(((((((sqrt(abs(hgb))) - (sqrt(abs(mchc)))) + (sqrt(abs(mch)))) / (abs(plt)+1e-6)) * (log(abs(hct)+1))) * (log(abs(rdw)+1))) * (log(abs(mcv)+1))) * (log(abs(rbc)+1)),0.6256,0.0245,0.0154,0.4806,0.0298,0.0681,0.0198,0.0159,0.0123,8

@@ -1,0 +1,31 @@
+Disease,Best_Random_Formula,Best_Random_AUC_PR,Best_Random_AUC_ROC,N_Formulas_Tested,Timestamp,Split_Salt,CV_Winner_Formula,CV_Winner_Frozen_Test_AUC_PR,Num_Features_Best,Baseline_AUC_PR_At_K,Delta_vs_Baseline_K
+crhn,(((log(abs(plt)+1)) - (log(abs(mcv)+1))) / (abs(sqrt(abs(mch)))+1e-6)) * ((mchc**2)),0.0245,0.6446,10000,,,,,,,
+lup,(((mchc) * (log(abs(rdw)+1))) - (wbc)) / (abs(log(abs(mch)+1))+1e-6),0.017,0.6179,10000,,,,,,,
+psr,((((hgb**2)) - (mchc)) / (abs((rdw**2))+1e-6)) - (log(abs(mcv)+1)),0.0152,0.5338,10000,,,,,,,
+ra,((rbc**2)) / (abs(hct)+1e-6),0.0174,0.5797,10000,,,,,,,
+t1d,((log(abs(rdw)+1)) / (abs(log(abs(plt)+1))+1e-6)) / (abs(mchc)+1e-6),0.0202,0.631,10000,,,,,,,
+t2d,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1753,0.6052,10000,,,,,,,
+crhn,(((log(abs(plt)+1)) - (log(abs(mcv)+1))) / (abs(sqrt(abs(mch)))+1e-6)) * ((mchc**2)),0.0245,0.6446,10000,2026-05-02 21:52:36,,(((mchc**2)) - ((mch**2))) * (plt),0.023,,,
+t1d,((log(abs(rdw)+1)) / (abs(log(abs(plt)+1))+1e-6)) / (abs(mchc)+1e-6),0.0202,0.631,10000,2026-05-02 22:07:25,,(((log(abs(rbc)+1)) / (abs(sqrt(abs(plt)))+1e-6)) * (hct)) - (mchc),0.0187,,,
+ra,((rbc**2)) / (abs(hct)+1e-6),0.0174,0.5796,10000,2026-05-02 22:07:29,,((log(abs(plt)+1)) * (mchc)) * (sqrt(abs(rdw))),0.0163,,,
+psr,((((hgb**2)) - (mchc)) / (abs((rdw**2))+1e-6)) - (log(abs(mcv)+1)),0.0152,0.5332,10000,2026-05-02 22:07:59,,((log(abs(hct)+1)) - (sqrt(abs(rbc)))) + (sqrt(abs(mchc))),0.014,,,
+lup,(((mchc) * (log(abs(rdw)+1))) - (wbc)) / (abs(log(abs(mch)+1))+1e-6),0.017,0.6179,10000,2026-05-02 22:08:02,,(((wbc**2)) + (mch)) + (mcv),0.0097,,,
+t2d,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1752,0.6052,10000,2026-05-02 23:07:28,,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1752,,,
+crhn,(((mchc**2)) - ((mch**2))) * (plt),0.024,0.6449,10000,2026-05-02 23:24:23,_seed2,((((mcv**2)) / (abs(plt)+1e-6)) * (log(abs(hct)+1))) + (wbc),0.0197,,,
+lup,(((sqrt(abs(hgb))) * (log(abs(plt)+1))) - (wbc)) / (abs(log(abs(rbc)+1))+1e-6),0.0073,0.5176,10000,2026-05-02 23:44:47,_seed2,(sqrt(abs(mch))) - (sqrt(abs(mcv))),0.0043,,,
+psr,(((log(abs(hgb)+1)) + (mchc)) - ((wbc**2))) / (abs((rdw**2))+1e-6),0.0123,0.5208,10000,2026-05-02 23:46:29,_seed2,((log(abs(hct)+1)) - (sqrt(abs(rbc)))) + (sqrt(abs(mchc))),0.0074,,,
+ra,(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.0185,0.5647,10000,2026-05-02 23:47:26,_seed2,((log(abs(plt)+1)) * (mchc)) * (sqrt(abs(rdw))),0.0156,,,
+t1d,(((log(abs(mcv)+1)) + (log(abs(wbc)+1))) / (abs((mchc**2))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.0186,0.6097,10000,2026-05-03 00:12:10,_seed2,(((log(abs(rbc)+1)) / (abs(sqrt(abs(plt)))+1e-6)) * (hct)) - (mchc),0.0177,,,
+t2d,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1719,0.6036,10000,2026-05-03 00:46:39,_seed2,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1719,,,
+lup,(((wbc**2)) + (rdw)) - (log(abs(plt)+1)),0.0097,0.5687,10000,2026-05-04 00:54:31,saltsalt,(((mchc) * (log(abs(rdw)+1))) - (wbc)) / (abs(log(abs(mch)+1))+1e-6),0.007,,,
+ra,((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),0.0158,0.5404,10000,2026-05-04 01:25:23,saltsalt,((log(abs(plt)+1)) * (mchc)) * (sqrt(abs(rdw))),0.0156,,,
+psr,((sqrt(abs(rdw))) - ((wbc**2))) / (abs(mcv)+1e-6),0.0131,0.537,10000,2026-05-04 01:27:42,saltsalt,((log(abs(plt)+1)) + (mch)) / (abs(sqrt(abs(mcv)))+1e-6),0.0101,,,
+t1d,(((log(abs(mcv)+1)) + (log(abs(wbc)+1))) / (abs((mchc**2))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.0181,0.6299,10000,2026-05-04 01:42:11,saltsalt,(((log(abs(rbc)+1)) / (abs(sqrt(abs(plt)))+1e-6)) * (hct)) - (mchc),0.0169,,,
+t2d,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1667,0.5961,10000,2026-05-04 02:35:26,saltsalt,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1667,,,
+crhn,(((log(abs(hct)+1)) * ((plt**2))) / (abs(sqrt(abs(wbc)))+1e-6)) / (abs((rdw**2))+1e-6),0.0195,0.646,10000,2026-05-04 02:39:59,saltsalt,((((mcv**2)) / (abs(plt)+1e-6)) * (log(abs(hct)+1))) + (wbc),0.0159,,,
+t2d,((log(abs(rdw)+1)) - (log(abs(mcv)+1))) + (sqrt(abs(mchc))),0.1735,0.6151,8924,2026-05-24 02:22:06,,((log(abs(rdw)+1)) - (log(abs(mcv)+1))) + (sqrt(abs(mchc))),0.1735,3.0,0.1763,-0.0028
+psr,(((((mchc) * (mch)) * (log(abs(plt)+1))) / (abs(mcv)+1e-6)) + (rdw)) - (log(abs(hct)+1)),0.0154,0.5871,8924,2026-05-24 02:25:46,,(((((((mchc**2)) / (abs(sqrt(abs(mcv)))+1e-6)) + (hgb)) + (rbc)) - (log(abs(hct)+1))) * (log(abs(rdw)+1))) * ((mch**2)),0.0085,6.0,0.0157,-0.0003
+lup,((((((((hgb**2)) + (sqrt(abs(rbc)))) - (hct)) - (log(abs(rdw)+1))) * (mchc)) - (sqrt(abs(mch)))) + (log(abs(plt)+1))) * ((wbc**2)),0.0183,0.6267,8924,2026-05-24 02:29:33,,(((((mch**2)) / (abs(sqrt(abs(hct)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6)) - (mchc)) + ((wbc**2)),0.0088,8.0,0.0107,0.0076
+ra,(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),0.0185,0.6071,8924,2026-05-24 02:30:21,,((((((sqrt(abs(mcv))) - (sqrt(abs(hgb)))) - ((rdw**2))) * (plt)) / (abs(sqrt(abs(rbc)))+1e-6)) * ((mch**2))) / (abs(sqrt(abs(wbc)))+1e-6),0.0172,6.0,0.017,0.0015
+t1d,((((((((log(abs(hct)+1)) * (mchc)) - ((mcv**2))) * (sqrt(abs(hgb)))) - (log(abs(mch)+1))) - (rbc)) - (log(abs(wbc)+1))) / (abs(plt)+1e-6)) - ((rdw**2)),0.02,0.6167,8924,2026-05-24 02:36:20,,((((mchc**2)) / (abs(log(abs(mch)+1))+1e-6)) * (log(abs(plt)+1))) / (abs(sqrt(abs(hct)))+1e-6),0.0189,9.0,0.0203,-0.0003
+crhn,(((((((mch) * (sqrt(abs(hgb)))) * (sqrt(abs(plt)))) + (sqrt(abs(wbc)))) / (abs(hct)+1e-6)) - (rbc)) + (mchc)) / (abs((mcv**2))+1e-6),0.0264,0.6505,8924,2026-05-24 02:36:55,,((((((((log(abs(hgb)+1)) * (sqrt(abs(hct)))) / (abs(sqrt(abs(plt)))+1e-6)) * ((rdw**2))) * (mchc)) - (sqrt(abs(wbc)))) * ((mcv**2))) + (rbc)) + (sqrt(abs(mch))),0.0248,8.0,0.0224,0.004

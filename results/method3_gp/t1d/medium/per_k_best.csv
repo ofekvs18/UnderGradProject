@@ -1,0 +1,10 @@
+K,Best_Formula,AUC_PR,AUC_ROC,Baseline_AUC_PR,Delta_vs_Baseline
+1,"sub(log(0.495), log(plt))",0.0154,0.6078,0.0143,0.0011
+2,"sub(plt, div(neg(sub(div(mchc, -0.238), mchc)), -0.072))",0.018,0.639,0.018,0.0
+3,"sub(plt, div(neg(sub(add(sub(wbc, log(neg(neg(sqrt(-0.803))))), div(mchc, -0.238)), mchc)), -0.072))",0.0189,0.6454,0.0192,-0.0003
+4,"add(neg(neg(sub(plt, sqrt(wbc)))), div(sub(mul(sub(plt, neg(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)))), mchc), neg(neg(sub(plt, mcv)))), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))))",0.0196,0.6386,0.0203,-0.0007
+5,"add(neg(neg(sub(plt, neg(add(add(sub(div(mchc, -0.238), mchc), mcv), mcv))))), div(mul(sub(plt, neg(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)))), mchc), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0204,0.6617,0.0203,0.0001
+6,"add(neg(neg(neg(neg(plt)))), div(add(add(mul(add(sub(div(mchc, -0.238), sqrt(wbc)), mcv), mchc), rdw), rdw), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.02,0.6536,0.0205,-0.0005
+7,"add(neg(neg(sub(plt, sub(hct, mchc)))), div(add(mul(add(div(mchc, -0.238), mcv), mchc), rdw), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0199,0.653,0.0204,-0.0005
+8,"add(neg(neg(add(plt, sqrt(div(neg(hgb), rdw))))), div(add(mul(sub(rdw, mcv), sub(mchc, wbc)), sub(mul(mch, plt), div(hct, mch))), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))))",0.0166,0.6197,0.0204,-0.0038
+9,"sub(mul(div(sub(add(add(mcv, mch), div(mch, wbc)), mul(add(rbc, hgb), sqrt(mch))), sub(sqrt(mul(hgb, mchc)), mul(div(0.125, hct), sqrt(mcv)))), add(log(neg(div(wbc, hct))), neg(mul(add(mcv, mcv), log(rdw))))), mul(sqrt(sqrt(log(mul(rbc, mch)))), sub(sub(sqrt(neg(-0.585)), sqrt(mul(0.001, rbc))), neg(add(mul(mchc, plt), neg(hct))))))",0.0162,0.6211,0.0203,-0.0041

@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+rdw,15.0,above,0.6291,0.0057,0.0053,0.3578,0.0104,0.0249,29242,Elevated red cell distribution width (RDW) is common in SLE due to increased red cell production variability.
+hgb,10.0,below,0.648,0.0067,0.0062,0.3909,0.0123,0.0293,29282,"Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."
+hct,30.0,below,0.654,0.0063,0.007,0.4,0.0138,0.0328,29281,"Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."
+wbc,12.0,above,0.4158,0.0036,0.0034,0.1927,0.0066,0.0158,29256,Leukocytosis can occur in SLE due to inflammation and immune complex deposition.
+plt,400.0,above,0.4828,0.0041,0.0061,0.0826,0.0113,0.0235,29228,"Thrombocytopenia is common in SLE, resulting from autoimmune destruction of platelets."
+mcv,80.0,below,0.5208,0.0052,0.0082,0.1101,0.0153,0.0317,29249,"Macrocytosis can be seen in SLE, particularly in cases with drug-induced effects or vitamin B12 deficiency."
+mch,28.0,below,0.5097,0.0046,0.0052,0.2569,0.0103,0.0242,29249,"Macrocytosis can be seen in SLE, particularly in cases with drug-induced effects or vitamin B12 deficiency."
+mchc,32.0,below,0.4953,0.0036,0.0035,0.211,0.0069,0.0165,29250,"Macrocytosis can be seen in SLE, particularly in cases with drug-induced effects or vitamin B12 deficiency."
+rbc,4.0,below,0.6318,0.0079,0.005,0.7523,0.0099,0.0242,29249,"Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."

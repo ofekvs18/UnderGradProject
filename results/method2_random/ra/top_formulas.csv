@@ -1,0 +1,11 @@
+formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,num_features
+(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),0.6071,0.0185,0.0137,0.53,0.0267,0.0621,0.017,0.0142,0.0123,6
+(((((((((wbc**2)) / (abs((hct**2))+1e-6)) + (mch)) * ((mchc**2))) * (sqrt(abs(plt)))) - (mcv)) + (log(abs(rbc)+1))) * (sqrt(abs(rdw)))) / (abs(sqrt(abs(hgb)))+1e-6),0.6413,0.0175,0.0155,0.63,0.0303,0.0708,0.0211,0.0178,0.013,9
+((rbc**2)) / (abs(hct)+1e-6),0.5796,0.0174,0.0132,0.61,0.0258,0.0606,0.0129,0.013,0.0121,2
+((sqrt(abs(hct))) / (abs(rbc)+1e-6)) * ((mchc**2)),0.5811,0.0173,0.0127,0.59,0.0249,0.0586,0.0151,0.0127,0.0118,3
+(((((((mch**2)) / (abs(log(abs(rbc)+1))+1e-6)) * (sqrt(abs(plt)))) - ((hct**2))) / (abs(mcv)+1e-6)) * (log(abs(rdw)+1))) + (sqrt(abs(hgb))),0.6357,0.0173,0.0151,0.63,0.0294,0.0687,0.0217,0.0166,0.013,7
+(((sqrt(abs(plt))) - ((rbc**2))) + (rdw)) * (hgb),0.6522,0.0172,0.0173,0.63,0.0337,0.078,0.0199,0.0186,0.0139,4
+((((((sqrt(abs(mcv))) - (sqrt(abs(hgb)))) - ((rdw**2))) * (plt)) / (abs(sqrt(abs(rbc)))+1e-6)) * ((mch**2))) / (abs(sqrt(abs(wbc)))+1e-6),0.6442,0.0172,0.0164,0.5733,0.0319,0.0736,0.0212,0.0181,0.0136,7
+(((((sqrt(abs(wbc))) - ((rdw**2))) + (plt)) - (hct)) / (abs((mchc**2))+1e-6)) - (rbc),0.5902,0.0171,0.0127,0.7467,0.025,0.0594,0.0131,0.0139,0.0126,6
+((((((((log(abs(mch)+1)) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(sqrt(abs(hct)))+1e-6)) + (mchc)) - (sqrt(abs(wbc)))) + (sqrt(abs(plt)))) / (abs(sqrt(abs(rbc)))+1e-6)) + (sqrt(abs(hgb)))) + (log(abs(mcv)+1)),0.6256,0.017,0.0157,0.5467,0.0306,0.0706,0.02,0.0164,0.0129,9
+(((log(abs(rdw)+1)) + (sqrt(abs(mch)))) - (sqrt(abs(rbc)))) + (log(abs(plt)+1)),0.6375,0.017,0.0151,0.6433,0.0296,0.0692,0.0211,0.0166,0.0132,4

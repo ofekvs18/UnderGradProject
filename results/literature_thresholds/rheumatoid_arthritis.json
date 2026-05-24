@@ -1,0 +1,47 @@
+{
+  "rdw": {
+    "threshold": 16.0,
+    "direction": "above",
+    "source": "Elevated RDW is a common finding in RA, reflecting increased red blood cell variation in size."
+  },
+  "hgb": {
+    "threshold": 11.0,
+    "direction": "below",
+    "source": "Anemia is frequently observed in RA due to chronic inflammation and iron deficiency."
+  },
+  "hct": {
+    "threshold": 33.0,
+    "direction": "below",
+    "source": "Anemia is frequently observed in RA due to chronic inflammation and iron deficiency."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated WBC count can indicate inflammation and infection, which may be associated with RA."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytosis is sometimes seen in RA, potentially due to inflammation and increased platelet production."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytosis (low MCV) can be seen in RA due to iron deficiency anemia."
+  },
+  "mch": {
+    "threshold": 25.0,
+    "direction": "below",
+    "source": "Low MCH is associated with microcytic anemia, often seen in iron deficiency."
+  },
+  "mchc": {
+    "threshold": 28.0,
+    "direction": "below",
+    "source": "Low MCHC is associated with microcytic anemia, often seen in iron deficiency."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Anemia is frequently observed in RA due to chronic inflammation and iron deficiency."
+  }
+}

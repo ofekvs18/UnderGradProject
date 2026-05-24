@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+rdw,15.0,above,0.5732,0.0068,0.007,0.321,0.0138,0.0324,29252,"Elevated RDW can indicate increased red blood cell production variability, which can be seen in psoriasis."
+hgb,11.0,below,0.5169,0.0057,0.0058,0.4012,0.0114,0.0272,29292,Anemia (low Hgb) is common in psoriasis due to chronic inflammation and potential iron deficiency.
+hct,33.0,below,0.5427,0.006,0.0064,0.4321,0.0127,0.0303,29291,"Low Hct is associated with anemia, a frequent finding in psoriasis."
+wbc,12.0,above,0.4883,0.0056,0.0058,0.2222,0.0113,0.0262,29266,"Elevated WBC count can indicate inflammation, which is a hallmark of psoriasis."
+plt,400.0,above,0.5075,0.0071,0.0075,0.0679,0.0134,0.0259,29238,Elevated platelet count (thrombocytosis) can be seen in psoriasis due to inflammation.
+mcv,80.0,below,0.5251,0.0062,0.0069,0.0617,0.0124,0.0238,29259,"Low MCV (microcytosis) can be associated with iron deficiency anemia, a potential complication of psoriasis."
+mch,25.0,below,0.4731,0.0051,0.0053,0.0432,0.0095,0.0179,29259,"Low MCH (mean corpuscular hemoglobin) can be seen in iron deficiency anemia, a potential complication of psoriasis."
+mchc,30.0,below,0.3922,0.0042,0.0035,0.0185,0.0059,0.01,29260,"Low MCHc (mean corpuscular hemoglobin concentration) can be seen in iron deficiency anemia, a potential complication of psoriasis."
+rbc,4.5,below,0.5339,0.0087,0.0058,0.858,0.0115,0.0281,29259,"Low RBC count is associated with anemia, a frequent finding in psoriasis."

@@ -1,0 +1,12 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"add(neg(neg(sub(sqrt(mcv), div(rbc, rbc)))), div(add(mul(sub(rdw, mcv), sub(mchc, wbc)), sub(mul(mch, plt), div(hct, mch))), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))))",0.0165,True,False
+1,"add(neg(neg(sub(sqrt(mcv), div(rbc, rbc)))), div(add(mul(sub(sub(plt, wbc), mcv), sub(mchc, wbc)), sub(mul(mch, plt), div(hct, mch))), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))))",0.0174,True,False
+2,"mul(plt, add(add(sub(wbc, log(neg(sqrt(-0.803)))), div(mchc, -0.238)), mcv))",0.0186,True,False
+4,"mul(plt, add(add(div(add(sub(mul(add(sub(div(mchc, -0.238), mchc), mcv), mchc), log(rbc)), mcv), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))), div(mchc, -0.238)), mcv))",0.0191,True,False
+5,"mul(plt, add(add(div(add(sub(mul(add(sub(div(mchc, -0.238), mchc), mcv), mchc), log(rbc)), mcv), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))), div(mchc, -0.238)), mcv))",0.0191,False,False
+6,"add(neg(neg(sub(plt, div(neg(sub(neg(neg(sub(plt, neg(sub(log(neg(sqrt(-0.803))), mchc))))), mchc)), -0.072)))), div(add(sub(mul(add(sub(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)), mchc), mcv), mchc), log(rbc)), mcv), sub(neg(sqrt(wbc)), sub(sqrt(0.943), log(wbc)))))",0.0194,True,False
+8,"add(neg(neg(sub(plt, neg(add(sub(div(mchc, -0.238), mchc), mcv))))), div(add(sub(mul(add(sub(div(mchc, -0.238), -0.238), mcv), mchc), log(rbc)), mcv), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0199,True,False
+9,"add(neg(neg(sub(plt, div(sqrt(-0.803), -0.072)))), div(add(sub(mul(add(div(mchc, -0.238), mcv), mchc), sub(sub(plt, div(mchc, -0.238)), mchc)), mcv), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0202,True,False
+10,"add(neg(neg(sub(plt, neg(add(add(sub(div(mchc, -0.238), mchc), mcv), mcv))))), div(mul(sub(plt, neg(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)))), mchc), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0204,True,True
+15,"add(neg(neg(sub(plt, neg(add(add(sub(div(mchc, -0.238), mchc), mcv), mcv))))), div(mul(sub(plt, neg(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)))), mchc), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0204,False,True
+20,"add(neg(neg(sub(plt, neg(add(add(sub(div(mchc, -0.238), mchc), mcv), mcv))))), div(mul(sub(plt, neg(sub(plt, div(neg(add(sub(div(mchc, -0.238), mchc), mcv)), -0.072)))), mchc), sub(neg(sqrt(wbc)), sub(log(rbc), log(wbc)))))",0.0204,False,True
