@@ -41,7 +41,7 @@ demo_file: "DEMO_{}.XPT"   # demographics file (for SEQN list only)
 # Each condition specifies which questionnaire file and which variable/values
 # identify a positive case for that condition.
 #
-# Supported disease slugs: ra, psr
+# Supported disease slugs: ra, psr, lup (active); crhn, t1d, t2d (excluded — see entries below)
 # (must match conf/disease/<slug>.yaml slugs)
 #
 # IMPORTANT: response code meanings differ by cycle. Verify against codebooks.
@@ -65,12 +65,16 @@ disease_case_defs:
       values: [1]
 
   crhn:
-    # VERIFY: No dedicated Crohn's variable in standard MCQ G-J.
-    # MCQ203 asks about bowel/Crohn's/colitis in some cycles — confirm variable
-    # name and response code (2=Crohn's disease) against codebooks before running.
-    - file: "MCQ_{}.XPT"
-      variable: "MCQ203"  # "What kind of bowel disease?" 2=Crohn's disease
-      values: [2]
+    excluded: true
+    reason: "No consistent Crohn's variable in NHANES cycles G-J; MCQ203 is jaundice, IBD question discontinued after cycle F (2009-10)"
+
+  t1d:
+    excluded: true
+    reason: "NHANES diabetes question (DIQ010) does not distinguish type 1 from type 2"
+
+  t2d:
+    excluded: true
+    reason: "NHANES diabetes question (DIQ010) does not distinguish type 2 from type 1"
 
 # Per-disease cycle overrides (optional). When set, restricts extraction to
 # the listed cycles regardless of the --cycles CLI flag or the global cycles list.

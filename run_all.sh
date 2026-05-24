@@ -23,7 +23,8 @@ NHANES_DISEASES=$($PYTHON -c "
 import yaml
 with open('conf/nhanes.yaml') as f:
     cfg = yaml.safe_load(f)
-print(' '.join(cfg.get('disease_case_defs', {}).keys()))
+active = [k for k, v in cfg.get('disease_case_defs', {}).items() if not v.get('excluded')]
+print(' '.join(active))
 ")
 
 # Fake ID counter stored in a temp file so subshells share it.
