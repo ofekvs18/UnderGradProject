@@ -49,7 +49,6 @@ run_step "method3 GP"        $PYTHON -u src/method3_gp.py             --disease 
 run_step "method4 evaluate"  $PYTHON -u src/method4_llm.py evaluate   --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "cross-method corr" $PYTHON -u src/cross_method_correlation.py --disease "$DISEASE"
 run_step "compare methods"   $PYTHON -u src/compare_methods.py
-run_step "compute CI"        $PYTHON -u src/compute_ci_all.py         --disease "$DISEASE"
 
 TOTAL=$(( SECONDS - PIPELINE_START ))
 echo ""

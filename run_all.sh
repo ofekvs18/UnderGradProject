@@ -1,7 +1,7 @@
 #!/bin/bash
-# run_all.sh — submit one GPU + one CPU SLURM job per disease.
-# CPU job depends on GPU finishing (afterok). NHANES evaluate is submitted
-# as an additional CPU job for diseases where data/<disease>_nhanes_data.csv exists.
+# run_all.sh — submit one GPU + one CPU + one post-compute SLURM job per disease.
+# CPU depends on GPU (afterok); post-compute depends on CPU (afterok).
+# Post-compute runs CIs, NHANES eval, dashboard, and forest plot.
 #
 # Usage:
 #   bash run_all.sh            # live submission
@@ -60,17 +60,16 @@ for file in "$CONF_DIR"/*.yaml; do
         pipeline_cpu.sbatch)
     [[ "$DRY_RUN" == "1" ]] && echo "  → CPU job ID: $cpu_id (dependency: afterok:$gpu_id)"
 
-    # 3. NHANES evaluate — only ra, crhn, psr, lup (t1d/t2d excluded by config)
-    if [[ " $NHANES_DISEASES " == *" $disease "* ]]; then
-        nhanes_id=$(_submit "NHANES $disease" \
-            --dependency=afterok:"$cpu_id" \
-            --partition=main --time=0-01:00:00 \
-            --job-name="nhanes_${disease}" \
-            --output="results/nhanes_${disease}_%j.out" \
-            --cpus-per-task=2 --mem=8G \
-            --wrap="cd ~/UnderGradProject && $PYTHON -u src/nhanes_evaluate.py --disease $disease")
-        [[ "$DRY_RUN" == "1" ]] && echo "  → NHANES job ID: $nhanes_id (dependency: afterok:$cpu_id)"
-    fi
+    # 3. Post-compute — CIs, NHANES eval, dashboard, forest plot
+    #    NHANES steps are skipped for diseases without NHANES data (t1d, t2d).
+    skip_nhanes=0
+    [[ " $NHANES_DISEASES " != *" $disease "* ]] && skip_nhanes=1
+
+    post_id=$(_submit "POST $disease" \
+        --dependency=afterok:"$cpu_id" \
+        --export=DISEASE="$disease",SKIP_NHANES="$skip_nhanes" \
+        post_compute.sbatch)
+    [[ "$DRY_RUN" == "1" ]] && echo "  → POST job ID: $post_id (dependency: afterok:$cpu_id, skip_nhanes=$skip_nhanes)"
 done
 
 echo ""
