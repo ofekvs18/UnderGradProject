@@ -59,6 +59,19 @@ disease_case_defs:
       variable: "MCQ070"  # "Doctor told you have psoriasis?" 1=Yes (cycles G-H)
       values: [1]
 
+  lup:
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ160n"  # "Doctor told you have lupus?" 1=Yes (cycles G-J)
+      values: [1]
+
+  crhn:
+    # VERIFY: No dedicated Crohn's variable in standard MCQ G-J.
+    # MCQ203 asks about bowel/Crohn's/colitis in some cycles — confirm variable
+    # name and response code (2=Crohn's disease) against codebooks before running.
+    - file: "MCQ_{}.XPT"
+      variable: "MCQ203"  # "What kind of bowel disease?" 2=Crohn's disease
+      values: [2]
+
 # Per-disease cycle overrides (optional). When set, restricts extraction to
 # the listed cycles regardless of the --cycles CLI flag or the global cycles list.
 disease_cycles:
