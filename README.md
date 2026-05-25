@@ -19,12 +19,15 @@ Compares four methods for deriving single-formula biomarkers from CBC data using
 
 | # | Script | Method |
 |---|--------|--------|
-| — | `sanity_check.py` | All-features logistic regression baseline |
+| — | `sanity_check.py` | All-features LR baseline + per-k best-subset analysis |
 | 1 | `method_threshold.py` | Threshold optimization (literature + data-driven) |
 | 2 | `method2_random_formula.py` | Random formula search (10 000 candidates, CV-selected) |
-| 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected) |
+| 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected, optional LLM seeding) |
 | 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B IT) |
 | — | `cross_method_correlation.py` | Pairwise Pearson r between method score vectors |
+| — | `nhanes_evaluate.py` | External validation on NHANES cycles G–J |
+| — | `ehrshot_evaluate.py` | External validation on EHRSHOT (blocked on data access) |
+| — | `dashboard.py` | Streamlit + Plotly interactive results dashboard |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
 
