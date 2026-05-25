@@ -38,7 +38,9 @@ pip install -r requirements.txt
 # Place data/<disease>_modeling_data.csv (see Data section)
 python src/sanity_check.py --disease ra
 python src/method2_random_formula.py --disease ra
-python src/method3_gp.py --disease ra
+python src/method3_gp.py --disease ra                               # vanilla GP
+python src/method3_gp.py --disease ra \
+    --seed-file data/llm_seeds/ra/gemini_25_pro.csv                 # seeded GP
 python src/method4_llm.py all --disease ra
 python src/compare_methods.py              # → results/methods_comparison.csv
 python src/cross_method_correlation.py --disease ra  # → results/cross_method/
@@ -55,6 +57,8 @@ python src/cross_method_correlation.py --disease ra  # → results/cross_method/
   ```
 - Target: ~1% positive rate — use imbalanced-aware metrics (AUC-PR primary)
 - Split: pre-computed train/test (80/20, patient-level) — **do not re-split**
+- LLM seed files: `data/llm_seeds/<disease>/{gemini_25_pro,gpt4o_deep_research,scispace_agent}.csv` (gitignored)
+  — populated for `ra`, `crhn`, `psr`, `lup`, `t1d`; none for `t2d`
 
 ## Configuration
 

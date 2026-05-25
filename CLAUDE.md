@@ -69,7 +69,7 @@ biomarker-pipeline/
     ├── sanity_check.py           # LR baseline + per-k best-subset analysis
     ├── method_threshold.py       # Method 1: threshold optimization
     ├── method2_random_formula.py # Method 2: random formula search (CV-selected)
-    ├── method3_gp.py             # Method 3: genetic programming (CV-selected)
+    ├── method3_gp.py             # Method 3: genetic programming (CV-selected, seeded-GP via --seed-file)
     ├── method4_llm.py            # Method 4: LLM-generated formulas (Med-Gemma 4B)
     ├── compare_methods.py        # aggregate master summaries into one comparison table
     ├── cross_method_correlation.py  # pairwise Pearson r between method score vectors (Issue #25)
@@ -90,6 +90,19 @@ biomarker-pipeline/
 Each method writes a master summary CSV that is **append-only** (runs are never overwritten).
 Every row includes `Timestamp` and `Split_Salt` so you can trace which run produced which result.
 Run `python src/compare_methods.py` to merge all master summaries into `results/methods_comparison.csv`.
+
+Method 3 writes two masters:
+- Global: `results/method3_gp/master_gp_summary.csv`
+- Per-disease: `results/method3_gp/<disease>/master_m3_summary.csv`
+
+Both include `Seed_File` (basename or `"none"`) and `Seed_Count_Used` columns.
+
+## LLM seed files
+Seed formula CSVs live in `data/llm_seeds/<disease>/` (gitignored). Three agents per disease:
+- `gemini_25_pro.csv`, `gpt4o_deep_research.csv`, `scispace_agent.csv`
+
+Populated for: `ra`, `crhn`, `psr`, `lup`, `t1d`. No seeds for `t2d` — vanilla GP only.
+Pass `--seed-file data/llm_seeds/<disease>/gemini_25_pro.csv` to `method3_gp.py` to warm-start GP.
 
 ## graphify
 
