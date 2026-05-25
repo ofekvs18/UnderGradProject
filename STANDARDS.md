@@ -92,7 +92,10 @@ Rationale: All methods must use identical data.
 ### Feature Names
 Standard CBC features (lowercase):
 ```python
-CBC_FEATURES = ['hct', 'hgb', 'mch', 'mchc', 'mcv', 'plt', 'rbc', 'rdw', 'wbc']
+CBC_FEATURES = [
+    'hct', 'hgb', 'mch', 'mchc', 'mcv', 'plt', 'rbc', 'rdw', 'wbc',
+    'neut_pct', 'lym_pct', 'mono_pct', 'eos_pct', 'baso_pct',
+]
 ```
 
 ### Data Leakage Prevention

@@ -3,13 +3,13 @@
 
 seed: 42
 
-# Baseline metrics — update as better results are obtained
+# Values below are reset in Issue #30 and will be repopulated by sanity_check.py
 baselines:
-  lr_auc_roc: 0.6580
-  lr_auc_pr: 0.0170
-  m2_best_auc_pr: 0.0174
-  gp_best_auc_roc: 0.6715
-  gp_best_auc_pr: 0.0179
+  lr_auc_roc: 0.0   # reset — recompute after Issue 30 rerun
+  lr_auc_pr:  0.0   # reset — recompute after Issue 30 rerun
+  m2_best_auc_pr:  0.0
+  gp_best_auc_roc: 0.0
+  gp_best_auc_pr:  0.0
 
 # Method 2: Random formula search
 method2:

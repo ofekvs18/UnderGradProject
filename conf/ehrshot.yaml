@@ -18,6 +18,12 @@ cbc_codes:
   mchc: ["OMOP/3010813", "LOINC/786-4"]    # MCHC [Mass/volume]
   plt:  ["OMOP/3007461", "LOINC/777-3"]    # Platelets [#/volume] in Blood
   rdw:  ["OMOP/3014111", "LOINC/788-0"]    # Erythrocyte distribution width
+  # IMPORTANT: neut_pct–baso_pct concept IDs added in Issue #30. Verify against local EHRSHOT vocabulary before running ehrshot_data.py
+  neut_pct:  ["OMOP/3013650", "LOINC/770-8"]   # Neutrophils/100 leukocytes in Blood
+  lym_pct:   ["OMOP/3004327", "LOINC/736-9"]   # Lymphocytes/100 leukocytes in Blood
+  mono_pct:  ["OMOP/3009744", "LOINC/5905-5"]  # Monocytes/100 leukocytes in Blood
+  eos_pct:   ["OMOP/3013429", "LOINC/713-8"]   # Eosinophils/100 leukocytes in Blood
+  baso_pct:  ["OMOP/3017732", "LOINC/706-2"]   # Basophils/100 leukocytes in Blood
 
 # ICD code format used in EHRSHOT MEDS events (prefix + raw ICD code)
 icd_prefixes:

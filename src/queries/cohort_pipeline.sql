@@ -16,7 +16,7 @@
 SELECT COUNT(*) AS total_admissions
 FROM `physionet-data.mimiciv_3_1_hosp.admissions`;
 
--- Test 2: Project access (expect 9 rows after adding RDW)
+-- Test 2: Project access (expect 14 rows after adding differential features)
 SELECT * FROM `{bq_dataset}.ref_cbc_tests`;
 
 -- Test 3: Disease patient count
@@ -248,15 +248,20 @@ filtered AS (
 SELECT
   l.subject_id,
   l.is_case,
-  MAX(IF(f.test_abbrev = 'HCT', f.valuenum, NULL)) AS hct,
-  MAX(IF(f.test_abbrev = 'HGB', f.valuenum, NULL)) AS hgb,
-  MAX(IF(f.test_abbrev = 'MCH', f.valuenum, NULL)) AS mch,
-  MAX(IF(f.test_abbrev = 'MCHC', f.valuenum, NULL)) AS mchc,
-  MAX(IF(f.test_abbrev = 'MCV', f.valuenum, NULL)) AS mcv,
-  MAX(IF(f.test_abbrev = 'PLT', f.valuenum, NULL)) AS plt,
-  MAX(IF(f.test_abbrev = 'RBC', f.valuenum, NULL)) AS rbc,
-  MAX(IF(f.test_abbrev = 'RDW', f.valuenum, NULL)) AS rdw,
-  MAX(IF(f.test_abbrev = 'WBC', f.valuenum, NULL)) AS wbc
+  MAX(IF(f.test_abbrev = 'HCT',     f.valuenum, NULL)) AS hct,
+  MAX(IF(f.test_abbrev = 'HGB',     f.valuenum, NULL)) AS hgb,
+  MAX(IF(f.test_abbrev = 'MCH',     f.valuenum, NULL)) AS mch,
+  MAX(IF(f.test_abbrev = 'MCHC',    f.valuenum, NULL)) AS mchc,
+  MAX(IF(f.test_abbrev = 'MCV',     f.valuenum, NULL)) AS mcv,
+  MAX(IF(f.test_abbrev = 'PLT',     f.valuenum, NULL)) AS plt,
+  MAX(IF(f.test_abbrev = 'RBC',     f.valuenum, NULL)) AS rbc,
+  MAX(IF(f.test_abbrev = 'RDW',     f.valuenum, NULL)) AS rdw,
+  MAX(IF(f.test_abbrev = 'WBC',     f.valuenum, NULL)) AS wbc,
+  MAX(IF(f.test_abbrev = 'NEUTpct', f.valuenum, NULL)) AS neut_pct,
+  MAX(IF(f.test_abbrev = 'LYMpct',  f.valuenum, NULL)) AS lym_pct,
+  MAX(IF(f.test_abbrev = 'MONOpct', f.valuenum, NULL)) AS mono_pct,
+  MAX(IF(f.test_abbrev = 'EOS_pct', f.valuenum, NULL)) AS eos_pct,
+  MAX(IF(f.test_abbrev = 'BASO_pct',f.valuenum, NULL)) AS baso_pct
 FROM `{bq_dataset}.{disease}_cohort_labels` l
 LEFT JOIN filtered f ON l.subject_id = f.subject_id
 GROUP BY l.subject_id, l.is_case;
@@ -365,7 +370,8 @@ SELECT
   f.subject_id,
   f.is_case,
   s.split,
-  f.hct, f.hgb, f.mch, f.mchc, f.mcv, f.plt, f.rbc, f.rdw, f.wbc
+  f.hct, f.hgb, f.mch, f.mchc, f.mcv, f.plt, f.rbc, f.rdw, f.wbc,
+  f.neut_pct, f.lym_pct, f.mono_pct, f.eos_pct, f.baso_pct
 FROM `{bq_dataset}.{disease}_cbc_features` f
 JOIN `{bq_dataset}.{disease}_splits{split_salt}` s
   ON f.subject_id = s.subject_id

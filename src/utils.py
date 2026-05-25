@@ -348,7 +348,10 @@ def ensure_dir(path):
 # ── LLM helpers (MedGemma on cluster) ─────────────────────────────────────────
 MEDGEMMA_MODEL_ID = "google/medgemma-4b-it"
 MEDGEMMA_MAX_NEW_TOKENS = 1024
-CBC_FEATURE_LIST = ["rdw", "hgb", "hct", "wbc", "plt", "mcv", "mch", "mchc", "rbc"]
+CBC_FEATURE_LIST = [
+    "hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc",
+    "neut_pct", "lym_pct", "mono_pct", "eos_pct", "baso_pct",
+]
 THRESHOLDS_CACHE_DIR = RESULTS_DIR / "literature_thresholds"
 
 # Prompt library cache

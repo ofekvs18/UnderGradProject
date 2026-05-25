@@ -28,7 +28,9 @@ Quick reference:
 
 ## Data
 - `data/modeling_data.csv` — exported from BigQuery, gitignored
-- Columns: subject_id, is_case, split, hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc
+- Columns: subject_id, is_case, split, hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc,
+           neut_pct, lym_pct, mono_pct, eos_pct, baso_pct
+- Feature count: 14 (9 standard CBC + 5 differential: neutrophil/lymphocyte/monocyte/eosinophil/basophil %)
 - Split is immutable: train (80%) / test (20%), patient-level, deterministic
 - ~1% positive rate — always use imbalanced-aware metrics
 
