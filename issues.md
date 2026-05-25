@@ -8,8 +8,8 @@
 | 25 | Cross-method score vector correlation analysis | 24 | closed |
 | 26 | Store LLM seed files and define naming standard | — | closed |
 | 27 | Add `--seed-file` flag to `method3_gp.py` for seeded-GP warm start | 26 | closed |
-| 28 | Evaluate seeded GP against vanilla GP on Crohn's disease | 27 | open |
-| 29 | Generalize seeded-GP to all remaining diseases | 28 | open |
+| 28 | Evaluate seeded GP against vanilla GP on Crohn's disease | 27 | closed |
+| 29 | Generalize seeded-GP to all remaining diseases | 28 | closed (negative result — no seeded run beat vanilla; see experiment_log.md) |
 | **30** | **Expand feature set to 14 CBC features + full data purge and rerun** | — | **open** |
 
 ---

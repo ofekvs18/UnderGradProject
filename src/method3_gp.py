@@ -242,7 +242,13 @@ def _inject_seed_programs(gp, seed_exprs, features, combined_auc_fitness, X_trai
     if n_inject == 0:
         return 0
 
-    func_objects = {fn.name: fn for fn in gp.function_set_}
+    # Build function map from nodes in existing programs (post-fit objects)
+    func_objects = {}
+    for prog in pop:
+        if prog is not None:
+            for node in prog.program:
+                if hasattr(node, 'name') and node.name not in func_objects:
+                    func_objects[node.name] = node
 
     valid_pop = [(i, p) for i, p in enumerate(pop) if p is not None and hasattr(p, 'fitness_')]
     if not valid_pop:
