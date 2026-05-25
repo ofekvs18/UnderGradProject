@@ -8,7 +8,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 
-# CPU-only pipeline: sanity, M1, M2, M3, M4-evaluate, post-processing
+# CPU-only pipeline: data extraction, sanity, M1, M2, M3, M4-evaluate, post-processing
 # M4 generate (GPU) must have already run — raw_outputs.json must exist.
 # Launched by run_all.sh with --dependency=afterok:<gpu_job_id>.
 
@@ -25,7 +25,7 @@ echo "=========================================="
 set -e
 
 cd ~/UnderGradProject
-mkdir -p results
+mkdir -p results cluster_results
 
 PYTHON=/home/ofekvi/.conda/envs/biomarkers/bin/python
 echo "Python: $($PYTHON --version)"
@@ -42,6 +42,7 @@ run_step() {
     echo "-- [$label] done in $(( elapsed / 60 ))m $(( elapsed % 60 ))s --"
 }
 
+run_step "extract cohort"    $PYTHON -u src/run_pipeline.py          disease="$DISEASE" pipeline.split_salt="$SPLIT_SALT"
 run_step "sanity check"      $PYTHON -u src/sanity_check.py          --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method1 threshold" $PYTHON -u src/method_threshold.py      --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT"

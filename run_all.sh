@@ -4,21 +4,53 @@
 # Post-compute runs CIs, NHANES eval, dashboard, and forest plot.
 #
 # Usage:
-#   bash run_all.sh            # live submission
-#   bash run_all.sh --dry-run  # print sbatch commands, no submission
+#   bash run_all.sh               # live submission
+#   bash run_all.sh --dry-run     # print sbatch commands, no submission
+#   bash run_all.sh --purge       # wipe data/ + results/, then submit all jobs
+#   bash run_all.sh --purge --dry-run  # show what would be deleted + printed, no action
 
 CONF_DIR="conf/disease"
 SPLIT_SALT=${SPLIT_SALT:-""}
 DRY_RUN=0
+PURGE=0
 
 for arg in "$@"; do
     [[ "$arg" == "--dry-run" ]] && DRY_RUN=1
+    [[ "$arg" == "--purge"   ]] && PURGE=1
 done
 
+# ── Purge ─────────────────────────────────────────────────────────────────────
+if [[ "$PURGE" == "1" ]]; then
+    echo "=== PURGE ==="
+    echo "Will permanently delete:"
+    echo "  data/            (all modeling CSVs)"
+    echo "  results/         (all method outputs, summaries, CIs, figures)"
+    echo "  cluster_results/ (SLURM job outputs)"
+    echo ""
+    echo "Jobs will be submitted immediately after. Each CPU job regenerates"
+    echo "its own modeling CSV via run_pipeline.py before running methods."
+    echo ""
+
+    if [[ "$DRY_RUN" == "1" ]]; then
+        echo "[dry-run] No files deleted. Continuing to dry-run job submission..."
+        echo ""
+    else
+        read -r -p "Type YES to confirm purge and resubmit: " confirm
+        if [[ "$confirm" != "YES" ]]; then
+            echo "Aborted."
+            exit 1
+        fi
+        rm -rf data/ results/ cluster_results/
+        mkdir -p data results cluster_results
+        echo "Purge complete. Submitting jobs..."
+        echo ""
+    fi
+fi
+
+# ── Job submission ─────────────────────────────────────────────────────────────
 PYTHON=/home/ofekvi/.conda/envs/biomarkers/bin/python
 
 # Derive NHANES-eligible diseases from conf/nhanes.yaml disease_case_defs keys.
-# Any disease without a case definition there has no NHANES data and will be skipped.
 NHANES_DISEASES=$($PYTHON -c "
 import yaml
 with open('conf/nhanes.yaml') as f:
@@ -61,6 +93,8 @@ for file in "$CONF_DIR"/*.yaml; do
     [[ "$DRY_RUN" == "1" ]] && echo "  → GPU job ID: $gpu_id"
 
     # 2. CPU job — depends on GPU finishing
+    #    When --purge was used, this job also runs run_pipeline.py first
+    #    to regenerate the modeling CSV before any method scripts run.
     cpu_id=$(_submit "CPU $disease" \
         --dependency=afterok:"$gpu_id" \
         --export=DISEASE="$disease",SPLIT_SALT="$SPLIT_SALT" \
@@ -68,7 +102,6 @@ for file in "$CONF_DIR"/*.yaml; do
     [[ "$DRY_RUN" == "1" ]] && echo "  → CPU job ID: $cpu_id (dependency: afterok:$gpu_id)"
 
     # 3. Post-compute — CIs, NHANES eval, dashboard, forest plot
-    #    NHANES steps are skipped for diseases without NHANES data (t1d, t2d).
     skip_nhanes=0
     [[ " $NHANES_DISEASES " != *" $disease "* ]] && skip_nhanes=1
 
