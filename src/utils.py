@@ -243,37 +243,57 @@ def count_formula_features(formula: str, features) -> int:
     return sum(1 for f in features if re.search(rf'\b{re.escape(f)}\b', formula))
 
 
-def lr_per_k_baselines(train_df, test_df, features, seed=42):
+def lr_per_k_baselines(train_df, test_df, features, seed=42, exhaustive_k_max=5):
     """
-    Exhaustive best-subset LR for each k=1..len(features).
-    Subset selected by highest train AUC-PR; test set used only for final evaluation.
+    Best-subset LR for each k=1..len(features).
+    For k <= exhaustive_k_max: exhaustive search (selected by train AUC-PR).
+    For k >  exhaustive_k_max: greedy forward selection from the k-1 best subset.
+    Test set used only for final evaluation.
     Returns {k: {"features": list, "auc_pr": float, "auc_roc": float}}.
     """
     from itertools import combinations
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import roc_auc_score, average_precision_score
 
+    def _fit_pr(subset):
+        clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
+        clf.fit(tr[subset].values, y_tr)
+        return clf, float(average_precision_score(y_tr, clf.predict_proba(tr[subset].values)[:, 1]))
+
     features = list(features)
     tr = train_df[features + ["is_case"]].dropna()
     te = test_df[features + ["is_case"]].dropna()
     y_tr, y_te = tr["is_case"].values, te["is_case"].values
     baselines = {}
+    prev_best_subset = []
 
     for k in range(1, len(features) + 1):
-        best_subset, best_tr_pr = None, -1.0
-        for subset in combinations(features, k):
-            subset = list(subset)
-            clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
-            clf.fit(tr[subset].values, y_tr)
-            pr = float(average_precision_score(y_tr, clf.predict_proba(tr[subset].values)[:, 1]))
-            if pr > best_tr_pr:
-                best_tr_pr, best_subset = pr, subset
-        clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=seed)
-        clf.fit(tr[best_subset].values, y_tr)
-        proba_te = clf.predict_proba(te[best_subset].values)[:, 1]
-        intercept = clf.intercept_[0]
+        if k <= exhaustive_k_max:
+            best_subset, best_tr_pr = None, -1.0
+            n_combos = sum(1 for _ in combinations(features, k))
+            print(f"  k={k}: exhaustive search over {n_combos} subsets ...", flush=True)
+            for subset in combinations(features, k):
+                subset = list(subset)
+                _, pr = _fit_pr(subset)
+                if pr > best_tr_pr:
+                    best_tr_pr, best_subset = pr, subset
+        else:
+            # Greedy forward: add the single best new feature to previous best subset
+            remaining = [f for f in features if f not in prev_best_subset]
+            print(f"  k={k}: greedy forward over {len(remaining)} candidates ...", flush=True)
+            best_subset, best_tr_pr = None, -1.0
+            for feat in remaining:
+                candidate = prev_best_subset + [feat]
+                _, pr = _fit_pr(candidate)
+                if pr > best_tr_pr:
+                    best_tr_pr, best_subset = pr, candidate
+
+        prev_best_subset = best_subset
+        clf_final, _ = _fit_pr(best_subset)
+        proba_te = clf_final.predict_proba(te[best_subset].values)[:, 1]
+        intercept = clf_final.intercept_[0]
         parts = [f"{intercept:.4f}"]
-        for coef, name in zip(clf.coef_[0], best_subset):
+        for coef, name in zip(clf_final.coef_[0], best_subset):
             sign = "+" if coef >= 0 else "-"
             parts.append(f"{sign} ({abs(coef):.4f} * {name})")
         formula_str = "logit(p) = " + " ".join(parts)
