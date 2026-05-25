@@ -42,7 +42,7 @@ run_step() {
     echo "-- [$label] done in $(( elapsed / 60 ))m $(( elapsed % 60 ))s --"
 }
 
-run_step "extract cohort"    $PYTHON -u src/run_pipeline.py          disease="$DISEASE" pipeline.split_salt="$SPLIT_SALT"
+run_step "extract cohort"    $PYTHON -u src/run_pipeline.py          disease="$DISEASE" split_salt="$SPLIT_SALT"
 run_step "sanity check"      $PYTHON -u src/sanity_check.py          --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method1 threshold" $PYTHON -u src/method_threshold.py      --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT"
