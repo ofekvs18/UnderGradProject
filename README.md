@@ -24,6 +24,7 @@ Compares four methods for deriving single-formula biomarkers from CBC data using
 | 2 | `method2_random_formula.py` | Random formula search (10 000 candidates, CV-selected) |
 | 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected) |
 | 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B IT) |
+| — | `cross_method_correlation.py` | Pairwise Pearson r between method score vectors |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
 
@@ -36,7 +37,8 @@ python src/sanity_check.py --disease ra
 python src/method2_random_formula.py --disease ra
 python src/method3_gp.py --disease ra
 python src/method4_llm.py all --disease ra
-python src/compare_methods.py   # → results/methods_comparison.csv
+python src/compare_methods.py              # → results/methods_comparison.csv
+python src/cross_method_correlation.py --disease ra  # → results/cross_method/
 ```
 
 ## Data

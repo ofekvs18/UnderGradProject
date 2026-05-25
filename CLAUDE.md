@@ -65,7 +65,8 @@ biomarker-pipeline/
     ├── method2_random_formula.py # Method 2: random formula search (CV-selected)
     ├── method3_gp.py             # Method 3: genetic programming (CV-selected)
     ├── method4_llm.py            # Method 4: LLM-generated formulas (Med-Gemma 4B)
-    └── compare_methods.py        # aggregate master summaries into one comparison table
+    ├── compare_methods.py        # aggregate master summaries into one comparison table
+    └── cross_method_correlation.py  # pairwise Pearson r between method score vectors (Issue #25)
 ```
 
 ## Master summaries
