@@ -1,6 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(sqrt(mcv), mch)",0.0138,True,False
-5,"sub(sqrt(mcv), mch)",0.0138,False,False
-10,"sub(sqrt(mcv), mch)",0.0138,False,False
-15,"sub(sqrt(mcv), mch)",0.0138,False,False
-20,"sub(sqrt(mcv), mch)",0.0138,False,False

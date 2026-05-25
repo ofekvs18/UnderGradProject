@@ -1,6 +1,0 @@
-Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Winning_Strategy,Winning_Temp
-2026-05-24 20:15:33,ra,m4,llm,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),0.5405,0.0811,0.0862,0.778,0.1551,0.2985,0.0752,0.0848,0.0847,blind,0.7
-2026-05-24 20:15:33,ra,m4,llm,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),0.5405,0.0811,0.0862,0.778,0.1551,0.2985,0.0752,0.0848,0.0847,blind,0.7
-2026-05-24 20:15:33,ra,m4,llm,(hgb / mchc) * (plt / (wbc + 1)) * (rdw / (mcv + 1)),(hgb / mchc) * (plt / (wbc + 1)) * (rdw / (mcv + 1)),0.5878,0.1074,0.094,0.6273,0.1635,0.2939,0.1101,0.0978,0.0888,blind,0.7
-2026-05-24 20:15:33,ra,m4,llm,plt * (mchc - 30) / (hct + 0.01),plt * (mchc - 30) / (hct + 0.01),0.5777,0.0917,0.0948,0.5764,0.1628,0.2859,0.0911,0.0937,0.0888,blind,1.0
-2026-05-24 20:15:33,ra,m4,llm,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),0.5405,0.0811,0.0862,0.778,0.1551,0.2985,0.0752,0.0848,0.0847,blind,0.7

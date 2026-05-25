@@ -1,6 +1,0 @@
-method,label,formula,auc_pr,auc_roc,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
-m1,M1: Threshold,plt > 268.0,0.019,0.6272,0.0104,0.0137,0.5449,0.6024
-m2,M2: Random Search,(((((((mch) * (sqrt(abs(hgb)))) * (sqrt(abs(plt)))) + (sqrt(abs(wbc)))) / (abs(hct)+1e-6)) - (rbc)) + (mchc)) / (abs((mcv**2))+1e-6),0.0264,0.6505,0.0179,0.0421,0.6167,0.6812
-m3,M3: Genetic Programming,"div(div(sub(add(sub(add(add(sub(rbc, -0.700), neg(mcv)), mul(neg(mcv), neg(mcv))), mul(log(mchc), mul(log(mchc), sqrt(-0.248)))), add(mul(add(sub(mchc, wbc), mul(log(mchc), sqrt(-0.248))), sub(sub(neg(plt), wbc), mch)), mul(rdw, rdw))), div(hct, -0.248)), mul(mul(mul(rdw, rdw), rdw), mul(neg(mcv), mul(mul(log(mchc), sqrt(-0.248)), sqrt(hgb))))), mul(mul(neg(mchc), mul(neg(mcv), mul(mul(log(mchc), sqrt(-0.248)), sqrt(hgb)))), neg(mch)))",0.0307,0.6397,0.0194,0.0494,0.605,0.6695
-m4,M4: LLM,(hgb - hct) * (mchc - mcv) / (plt + 0.01),0.0268,0.6417,0.0181,0.0446,0.6086,0.6753
-lr_baseline,LR Baseline (all features),,0.0222,,,,,

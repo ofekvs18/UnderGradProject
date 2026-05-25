@@ -1,6 +1,0 @@
-method,label,formula,auc_pr,auc_roc,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
-m1,M1: Threshold,rbc < 3.99,0.0141,0.5861,0.0107,0.0133,0.5453,0.5966
-m2,M2: Random Search,(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.0185,0.5647,0.0108,0.0147,0.5259,0.5837
-m3,M3: Genetic Programming,"mul(sub(mul(rdw, rdw), add(mul(sub(sub(mchc, wbc), mul(mch, mchc)), add(add(mul(sub(rdw, mchc), sub(mchc, wbc)), mch), mch)), mul(neg(mul(mch, sqrt(sub(div(mul(neg(mul(mch, sqrt(mul(neg(mul(mch, sqrt(sub(div(neg(mul(mch, sqrt(sub(div(mul(plt, mcv), log(wbc)), sub(sqrt(mch), neg(hct)))))), log(wbc)), mul(neg(mul(mch, mch)), rdw))))), rdw)))), rdw), log(wbc)), sub(rdw, neg(hct)))))), rdw))), mul(mul(mul(mul(sub(sub(mchc, wbc), sub(neg(mul(sub(rbc, rdw), rdw)), wbc)), mul(sub(rbc, log(sub(div(mul(plt, neg(mul(sub(rbc, rdw), rdw))), log(wbc)), div(mul(plt, mcv), log(wbc))))), plt)), rdw), rdw), mch))",0.0214,0.6712,0.017,0.025,0.6365,0.6984
-m4,M4: LLM,(hct - 40) * (plt - 100) * (rdw - 25) / (hgb - 100),0.0166,0.6098,0.0131,0.0234,0.5748,0.6427
-lr_baseline,LR Baseline (all features),,0.017,,,,,

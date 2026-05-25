@@ -1,6 +1,0 @@
-disease,method,variant,formula,formula_display,auc_pr,auc_roc
-t2d,m1,lit,mcv < 80.0,mcv < 80.0,0.1521,0.5702
-t2d,m1,dd,mcv < 89.0,mcv < 89.0,0.1521,0.5702
-t2d,m2,random,((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),((log(abs(rdw)+1)) / (abs(mcv)+1e-6)) * ((mchc**2)),0.1753,0.6052
-t2d,m3,gp,"mul(mul(mul(rdw, div(mchc, add(rdw, mchc))), div(mchc, add(rdw, mchc))), mul(mul(mul(rdw, mchc), div(div(div(mchc, add(rdw, mchc)), add(rdw, mchc)), add(rdw, mchc))), mul(mul(mul(rdw, div(mchc, add(rdw, mchc))), div(mchc, add(rdw, mchc))), mul(mul(mul(rdw, mchc), div(div(div(div(mchc, add(rdw, mchc)), add(rdw, mchc)), add(rdw, mchc)), add(rdw, mchc))), div(mchc, add(add(add(rdw, add(rdw, add(add(rdw, mchc), mchc))), add(rdw, add(rdw, add(add(rdw, mchc), mchc)))), mcv))))))",((rdw * (mchc / (rdw + mchc))) * (mchc / (rdw + mchc))) * (((rdw * mchc) * (((mchc / (rdw + mchc)) / (rdw + mchc)) / (rdw + mchc))) * (((rdw * (mchc / (rdw + mchc))) * (mchc / (rdw + mchc))) * (((rdw * mchc) * ((((mchc / (rdw + mchc)) / (rdw + mchc)) / (rdw + mchc)) / (rdw + mchc))) * (mchc / (((rdw + (rdw + ((rdw + mchc) + mchc))) + (rdw + (rdw + ((rdw + mchc) + mchc)))) + mcv))))),0.1934,0.6381
-t2d,m4,llm,(mch - mchc) / (mcv + 0.01),(mch - mchc) / (mcv + 0.01),0.1558,0.5741

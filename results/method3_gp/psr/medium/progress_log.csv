@@ -1,5 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sqrt(mul(log(mchc), mul(mch, mch)))",0.0136,True,False
-1,"add(sqrt(neg(mch)), log(mchc))",0.0138,True,False
-5,"add(sqrt(neg(mch)), log(mchc))",0.0138,False,False
-10,"add(sqrt(neg(mch)), log(mchc))",0.0138,False,False

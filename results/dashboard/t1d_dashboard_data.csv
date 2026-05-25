@@ -1,6 +1,0 @@
-disease,method,variant,formula,formula_display,auc_pr,auc_roc
-t1d,m1,lit,plt > 400.0,plt > 400.0,0.0154,0.6079
-t1d,m1,dd,plt > 237.0,plt > 237.0,0.0154,0.6079
-t1d,m2,random,((log(abs(rdw)+1)) / (abs(log(abs(plt)+1))+1e-6)) / (abs(mchc)+1e-6),((log(abs(rdw)+1)) / (abs(log(abs(plt)+1))+1e-6)) / (abs(mchc)+1e-6),0.0202,0.631
-t1d,m3,gp,"div(sqrt(sqrt(hgb)), mul(add(mul(add(div(mchc, -0.238), mcv), sub(div(mchc, -0.238), mul(sqrt(div(mchc, -0.238)), sqrt(plt)))), mcv), sub(div(mchc, -0.238), mul(sqrt(div(mchc, -0.238)), sqrt(plt)))))",sqrt(sqrt(hgb)) / (((((mchc / -0.238) + mcv) * ((mchc / -0.238) - (sqrt((mchc / -0.238)) * sqrt(plt)))) + mcv) * ((mchc / -0.238) - (sqrt((mchc / -0.238)) * sqrt(plt)))),0.0208,0.6467
-t1d,m4,llm,(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),(mchc + 0.01) * (plt + 0.01) / (rdw + 0.01),0.017,0.6199

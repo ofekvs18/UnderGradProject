@@ -1,6 +1,0 @@
-Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75
-2026-05-24 20:15:33,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.653,0.1246,0.1203,0.613,0.2011,0.3369,0.152,0.1275,0.1032
-2026-05-24 20:15:33,ra,m2,random,((rbc**2)) / (abs(hct)+1e-6),((rbc**2)) / (abs(hct)+1e-6),0.653,0.1246,0.1203,0.613,0.2011,0.3369,0.152,0.1275,0.1032
-2026-05-24 20:15:33,ra,m2,random,(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),(((wbc) + (sqrt(abs(mch)))) / (abs(sqrt(abs(rdw)))+1e-6)) / (abs(log(abs(plt)+1))+1e-6),0.538,0.0887,0.081,0.7434,0.1461,0.2821,0.0889,0.0827,0.081
-2026-05-24 20:15:33,ra,m2,random,((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),((((wbc**2)) - (sqrt(abs(mchc)))) + (mcv)) - (rdw),0.5509,0.0934,0.083,0.7332,0.1491,0.2856,0.0902,0.0882,0.0837
-2026-05-24 20:15:33,ra,m2,random,(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),(((((sqrt(abs(rdw))) * (sqrt(abs(mcv)))) - (plt)) - ((mchc**2))) / (abs((rbc**2))+1e-6)) * (hct),0.6032,0.1048,0.1025,0.5479,0.1727,0.2931,0.1143,0.1036,0.0914

@@ -1,9 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"mul(div(log(log(sqrt(-0.562))), add(log(neg(mcv)), sub(add(hct, plt), sqrt(mchc)))), neg(sub(div(log(mchc), sub(wbc, plt)), add(sub(rbc, hct), log(rbc)))))",0.0208,True,False
-1,"div(div(mcv, neg(log(mchc))), plt)",0.021,True,False
-2,"div(mcv, neg(sqrt(sub(wbc, plt))))",0.0219,True,False
-3,"log(div(sqrt(plt), div(mcv, log(div(sqrt(plt), div(mcv, neg(sqrt(-0.803))))))))",0.0239,True,True
-5,"div(div(mcv, neg(mul(mchc, log(mch)))), sqrt(sqrt(sub(wbc, plt))))",0.0249,True,True
-9,"log(div(div(mcv, neg(mul(mchc, div(sqrt(plt), div(mcv, mchc))))), sqrt(sub(wbc, mcv))))",0.0254,True,True
-10,"log(div(div(mcv, neg(mul(mchc, div(sqrt(plt), div(mcv, mchc))))), sqrt(sub(wbc, mcv))))",0.0254,False,True
-15,"log(div(div(mcv, neg(mul(mchc, div(sqrt(plt), div(mcv, mchc))))), sqrt(sub(wbc, mcv))))",0.0254,False,True

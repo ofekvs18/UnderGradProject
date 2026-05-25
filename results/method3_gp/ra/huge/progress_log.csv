@@ -1,2 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"mul(sub(log(div(sub(mul(wbc, -0.632), add(plt, hct)), sub(log(-0.813), div(mch, rbc)))), div(abs(abs(log(mch))), sqrt(sqrt(mul(mchc, hct))))), abs(mul(sqrt(sqrt(mul(wbc, mcv))), mul(sqrt(div(0.175, wbc)), mul(log(rdw), sub(mch, hgb))))))",0.0169,True,False
