@@ -297,6 +297,8 @@ def main():
             "frozen_test_auc_pr": None,
         })
 
+    cv_winner_mean = float("nan")
+    cv_winner_std  = float("nan")
     if not cv_rows:
         print("  [WARN] No valid CV results — falling back to frozen test winner")
         cv_winner_formula = results_df.iloc[0]["formula"]
@@ -304,13 +306,15 @@ def main():
     else:
         cv_df = pd.DataFrame(cv_rows).sort_values("cv_auc_pr_mean", ascending=False).reset_index(drop=True)
         cv_winner_formula = cv_df.iloc[0]["formula"]
+        cv_winner_mean    = cv_df.iloc[0]["cv_auc_pr_mean"]
+        cv_winner_std     = cv_df.iloc[0]["cv_auc_pr_std"]
         # Evaluate CV winner on frozen test exactly once
         cv_winner_metrics = evaluate_formula_full(cv_winner_formula, train_df, test_df, features)
         cv_winner_frozen  = cv_winner_metrics["auc_pr"] if cv_winner_metrics else float("nan")
         cv_df.loc[cv_df["formula"] == cv_winner_formula, "frozen_test_auc_pr"] = cv_winner_frozen
         cv_df.to_csv(OUT_DIR / "top_formulas_cv.csv", index=False)
         print(f"  CV winner: {cv_winner_formula}")
-        print(f"  CV AUC-PR mean: {cv_df.iloc[0]['cv_auc_pr_mean']:.4f}  Frozen test: {cv_winner_frozen:.4f}")
+        print(f"  CV AUC-PR mean: {cv_winner_mean:.4f}  Frozen test: {cv_winner_frozen:.4f}")
         print(f"  Saved {OUT_DIR}/top_formulas_cv.csv")
 
     # ── Part F: Per-k best results ────────────────────────────────────────────
@@ -359,6 +363,8 @@ def main():
         "Delta_vs_Baseline_K": round(best["auc_pr"] - best_bl_pr, 4) if best_bl_pr is not None else None,
         "N_Formulas_Tested": len(results_df),
         "CV_Winner_Formula": cv_winner_formula,
+        "CV_AUC_PR_Mean": round(cv_winner_mean, 4) if np.isfinite(cv_winner_mean) else None,
+        "CV_AUC_PR_Std": round(cv_winner_std, 4) if np.isfinite(cv_winner_std) else None,
         "CV_Winner_Frozen_Test_AUC_PR": round(cv_winner_frozen, 4) if np.isfinite(cv_winner_frozen) else None,
     }
 
