@@ -1,47 +1,68 @@
-# RA Biomarker Discovery Pipeline
+# Biomarker Discovery Pipeline
 
-Can routine CBC values predict Rheumatoid Arthritis?
+Can routine CBC values predict autoimmune and metabolic diseases?
 
-Compares methods for deriving single-formula biomarkers from CBC data using MIMIC-IV.
+Compares four methods for deriving single-formula biomarkers from CBC data using MIMIC-IV, evaluated across 6 diseases.
 
-**Goal:** Beat all-features logistic regression baseline (AUC-ROC: 0.658, AUC-PR: 0.017)
+## Diseases
+
+| Slug | Disease | ICD-9 |
+|------|---------|-------|
+| `ra` | Rheumatoid Arthritis | 714.x |
+| `crhn` | Crohn's Disease | 555.x |
+| `t1d` | Type 1 Diabetes | 250.x1, 250.x3 |
+| `t2d` | Type 2 Diabetes | 250.x0, 250.x2 |
+| `psr` | Psoriasis | 696.1x |
+| `lup` | Lupus (DLE/SLE) | 695.4x, 710.0x |
+
+## Methods
+
+| # | Script | Method |
+|---|--------|--------|
+| — | `sanity_check.py` | All-features logistic regression baseline |
+| 1 | `method_threshold.py` | Threshold optimization (literature + data-driven) |
+| 2 | `method2_random_formula.py` | Random formula search (10 000 candidates, CV-selected) |
+| 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected) |
+| 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B IT) |
+
+Full results: [`results/experiment_log.md`](results/experiment_log.md)
 
 ## Quick start
 
 ```bash
 pip install -r requirements.txt
-# Place data/modeling_data.csv (see Data section)
-python src/run_pipeline.py
+# Place data/<disease>_modeling_data.csv (see Data section)
+python src/sanity_check.py --disease ra
+python src/method2_random_formula.py --disease ra
+python src/method3_gp.py --disease ra
+python src/method4_llm.py all --disease ra
+python src/compare_methods.py   # → results/methods_comparison.csv
 ```
 
 ## Data
 
-- File: `data/modeling_data.csv` (gitignored)
-- Source: MIMIC-IV (BigQuery export)
-- Features: `hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc`
-- Target: ICD-9 714.x (RA), ~1% positive rate
-- Split: pre-computed train/test (80/20) — **do not re-split**
+- Files: `data/<disease>_modeling_data.csv` (gitignored, exported from BigQuery)
+- Source: MIMIC-IV v3.1 via `src/queries/cohort_pipeline.sql` + `src/run_pipeline.py`
+- Features: 14 CBC features — 9 standard + 5 differential counts
+  ```
+  hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc,
+  neut_pct, lym_pct, mono_pct, eos_pct, baso_pct
+  ```
+- Target: ~1% positive rate — use imbalanced-aware metrics (AUC-PR primary)
+- Split: pre-computed train/test (80/20, patient-level) — **do not re-split**
 
-## Methods
+## Configuration
 
-| # | Script | Method | Status |
-|---|--------|--------|--------|
-| — | `sanity_check.py` | All-features logistic regression (baseline) | ✓ |
-| 1 | `method_threshold.py` | Threshold optimization (literature + data-driven) | ✓ |
-| 2 | `method2_random_formula.py` | Random formula generation | ✓ |
-| 3 | `method3_gp.py` | Genetic programming (gplearn) | ✓ |
-| 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B) | ✓ |
+| File | Purpose |
+|------|---------|
+| `conf/disease/<slug>.yaml` | ICD patterns, full name, per-feature disease relevance for LLM prompts |
+| `conf/ml/defaults.yaml` | Hyperparameters for all method scripts |
+| `conf/nhanes.yaml` | NHANES CBC variable names (validation cohort) |
+| `conf/ehrshot.yaml` | EHRSHOT concept IDs (validation cohort) |
 
-Full results: [`results/experiment_log.md`](results/experiment_log.md)
+## Cluster
 
-To compare all methods across diseases and split variants:
 ```bash
-python src/compare_methods.py
-# → results/methods_comparison.csv
-```
-
-
-read all on server 
-```bash
-squeue --me -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R"
+bash run_all.sh                  # submit all jobs
+squeue --me -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R"  # monitor
 ```
