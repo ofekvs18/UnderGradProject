@@ -51,11 +51,17 @@ fi
 PYTHON=/home/ofekvi/.conda/envs/biomarkers/bin/python
 
 # Derive NHANES-eligible diseases from conf/nhanes.yaml disease_case_defs keys.
+# A disease is active if its entry is a non-empty list of conditions (not a dict
+# with excluded: true, and not an empty list).
 NHANES_DISEASES=$($PYTHON -c "
 import yaml
 with open('conf/nhanes.yaml') as f:
     cfg = yaml.safe_load(f)
-active = [k for k, v in cfg.get('disease_case_defs', {}).items() if not v.get('excluded')]
+active = []
+for k, v in cfg.get('disease_case_defs', {}).items():
+    # v is a list of conditions (active) or a dict with excluded: true (inactive)
+    if isinstance(v, list) and len(v) > 0:
+        active.append(k)
 print(' '.join(active))
 ")
 
