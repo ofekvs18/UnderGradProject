@@ -24,6 +24,6 @@ source activate medgemma
 
 cd ~/UnderGradProject
 mkdir -p results/method4_llm
-python -u src/method4_generate.py --disease "$DISEASE"
+python -u src/method4_llm.py generate --disease "$DISEASE"
 
 echo "End: $(date)"
