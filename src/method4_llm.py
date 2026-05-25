@@ -30,6 +30,7 @@ import pandas as pd
 
 sys.path.insert(0, "src")
 from utils import (
+    CBC_FEATURE_LIST,
     RESULTS_DIR,
     ensure_dir,
     eval_formula_scores,
@@ -71,14 +72,15 @@ BASelines = {
 
 def _init_paths(disease: str) -> None:
     """Initialize paths and load baselines. CRITICAL: uses global keyword."""
-    global OUT_DIR, RAW_FILE, PARSED_FILE, RESULTS_FILE, SUMMARY_FILE
-    
+    global OUT_DIR, RAW_FILE, PARSED_FILE, RESULTS_FILE, SUMMARY_FILE, _CURRENT_DISEASE
+
+    _CURRENT_DISEASE = disease
     OUT_DIR      = RESULTS_DIR / "method4_llm" / disease
     RAW_FILE     = OUT_DIR / "raw_outputs.json"
     PARSED_FILE  = OUT_DIR / "parsed_formulas.json"
     RESULTS_FILE = OUT_DIR / "method4_results.csv"
     SUMMARY_FILE = OUT_DIR / "method4_summary.txt"
-    
+
     ensure_dir(OUT_DIR)
     _load_baselines_from_sanity(disease)
 
@@ -112,7 +114,13 @@ MODEL_ID         = _ml.method4.model_id
 DEFAULT_REPEATS  = _ml.method4.default_repeats
 MAX_NEW_TOKENS   = _ml.method4.max_new_tokens
 FUNCTIONAL_CORR  = _ml.method4.functional_corr
-FEATURE_VARS     = {"hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc"}
+FEATURE_VARS     = {
+    "hct", "hgb", "mch", "mchc", "mcv", "plt", "rbc", "rdw", "wbc",
+    "neut_pct", "lym_pct", "mono_pct", "eos_pct", "baso_pct",
+}
+
+# Current disease — set by _init_paths; used by prompt building for seeded strategy
+_CURRENT_DISEASE = "ra"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -128,14 +136,49 @@ _FEATURE_BLOCK = "\n".join(
     for var, info in _PROMPT_DATA["method4_llm"]["components"]["cbc_features"]["features"].items()
 )
 
+def _load_feature_importances(disease: str) -> dict | None:
+    """
+    Load GP feature importances from results/method3_gp/<disease>/feature_importance.json.
+    Returns {feature: score} dict sorted descending, or None if the file doesn't exist.
+    """
+    fi_path = RESULTS_DIR / "method3_gp" / disease / "feature_importance.json"
+    if not fi_path.exists():
+        return None
+    try:
+        with open(fi_path, encoding="utf-8") as f:
+            data = json.load(f)
+        return dict(sorted(data.items(), key=lambda x: -x[1]))
+    except Exception as e:
+        print(f"[WARN] Failed to load feature importances from {fi_path}: {e}")
+        return None
+
+
 def build_prompt(strategy: str, n_formulas: int, chain_of_thought: bool) -> str:
-    """Builds a prompt string with injected baseline hints for the seeded strategy."""
-    template = _PROMPT_DATA["method4_llm"]["prompts"][strategy]["template"]
+    """Builds a prompt string. For seeded strategy, loads runtime GP feature importances."""
     cot_section = f"\n{_COT_INSTRUCTION}\n" if chain_of_thought else ""
     format_spec = _FORMAT_SPEC.format(n_formulas=n_formulas)
 
+    if strategy == "seeded":
+        fi = _load_feature_importances(_CURRENT_DISEASE)
+        if fi is None:
+            print(f"[WARN] No feature_importance.json for '{_CURRENT_DISEASE}' — falling back to blind prompt")
+            strategy = "blind"
+        else:
+            ranked = list(fi.items())[:10]
+            top_features = " > ".join(f"{feat} ({score:.2f})" for feat, score in ranked)
+
+    template = _PROMPT_DATA["method4_llm"]["prompts"][strategy]["template"]
+
+    fmt_kwargs: dict = dict(
+        feature_block=_FEATURE_BLOCK,
+        n_formulas=n_formulas,
+        cot_section=cot_section,
+        format_spec=format_spec,
+    )
+    if strategy == "seeded":
+        fmt_kwargs["top_features"] = top_features
+
     # Contextual seeding from Master Sanity Check
-    baseline_context = ""
     if strategy == "seeded" and BASelines["single_feat_name"] != "None":
         baseline_context = (
             f"\nClinical Context Supplement:\n"
@@ -143,18 +186,9 @@ def build_prompt(strategy: str, n_formulas: int, chain_of_thought: bool) -> str:
             f"for this cohort (AUC-PR: {BASelines['single_feat_pr']:.4f}).\n"
             f"- Aim to generate formulas that refine this relationship or combine it with other relevant CBC indices.\n"
         )
+        fmt_kwargs["feature_block"] = baseline_context + "\n" + _FEATURE_BLOCK
 
-    prompt = template.format(
-        feature_block=_FEATURE_BLOCK,
-        n_formulas=n_formulas,
-        cot_section=cot_section,
-        format_spec=format_spec
-    )
-    
-    if baseline_context:
-        prompt = prompt.replace("Here are the features available:", baseline_context + "\nHere are the features available:")
-        
-    return prompt.strip()
+    return template.format(**fmt_kwargs).strip()
 
 def get_all_prompt_configs() -> list[dict]:
     configs = []
@@ -408,6 +442,8 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
         raw_entries = json.load(f)
 
     df, features = load_data_for(disease_slug, split_salt)
+    assert set(CBC_FEATURE_LIST).issubset(set(df.columns)), \
+        f"CSV missing features: {set(CBC_FEATURE_LIST) - set(df.columns)}"
     train_df, test_df = get_splits(df)
     per_k_bl = load_per_k_baselines(disease_slug, split_salt)
 

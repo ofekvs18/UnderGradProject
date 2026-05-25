@@ -77,6 +77,41 @@
             "unit": "10^9/L",
             "normal_range": "4.5–11.0 × 10⁹/L",
             "ra_relevance": "Can be elevated in active RA inflammation or lowered by immunosuppressive treatment"
+          },
+          "neut_pct": {
+            "name": "Neutrophil percentage",
+            "description": "Percentage of white blood cells that are neutrophils",
+            "unit": "%",
+            "normal_range": "50–70%",
+            "ra_relevance": "Elevated in acute inflammation; NLR (neut_pct/lym_pct) is a validated inflammation marker"
+          },
+          "lym_pct": {
+            "name": "Lymphocyte percentage",
+            "description": "Percentage of white blood cells that are lymphocytes",
+            "unit": "%",
+            "normal_range": "20–40%",
+            "ra_relevance": "Key adaptive immune cell; often reduced relative to neutrophils in RA (elevated NLR)"
+          },
+          "mono_pct": {
+            "name": "Monocyte percentage",
+            "description": "Percentage of white blood cells that are monocytes",
+            "unit": "%",
+            "normal_range": "2–8%",
+            "ra_relevance": "Innate immunity; elevated in chronic inflammation and autoimmune disease"
+          },
+          "eos_pct": {
+            "name": "Eosinophil percentage",
+            "description": "Percentage of white blood cells that are eosinophils",
+            "unit": "%",
+            "normal_range": "1–4%",
+            "ra_relevance": "Allergic/parasitic response; may be altered in autoimmune conditions"
+          },
+          "baso_pct": {
+            "name": "Basophil percentage",
+            "description": "Percentage of white blood cells that are basophils",
+            "unit": "%",
+            "normal_range": "0–1%",
+            "ra_relevance": "Rare; elevated in hypersensitivity and some autoimmune conditions"
           }
         }
       },
@@ -84,7 +119,7 @@
         "description": "Output format specification for LLM-generated formulas",
         "source_file": "src/method4_llm.py",
         "source_variable": "_FORMAT_SPEC",
-        "template": "OUTPUT FORMAT (strict):\nReturn exactly {n_formulas} formula(s), one per line, using this syntax:\n  FORMULA: <python expression>\n\nRules:\n- Use only these variable names: hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc\n- Allowed operators: +  -  *  /  **\n- Allowed functions: np.sqrt()  np.log1p()  np.abs()\n- No conditionals, no loops, no external symbols\n- Each formula must be a single expression (no assignment, no def)\n- Use 3 to 7 features per formula\n- Higher output should correspond to higher probability of Rheumatoid Arthritis\n\nExample (style only, do not reuse):\n  FORMULA: rdw * plt / (hgb + 0.01)",
+        "template": "OUTPUT FORMAT (strict):\nReturn exactly {n_formulas} formula(s), one per line, using this syntax:\n  FORMULA: <python expression>\n\nRules:\n- Use only these variable names: hct, hgb, mch, mchc, mcv, plt, rbc, rdw, wbc, neut_pct, lym_pct, mono_pct, eos_pct, baso_pct\n- Note: neut_pct + lym_pct + mono_pct + eos_pct + baso_pct ≈ 100 (they are parts of the same differential)\n- Allowed operators: +  -  *  /  **\n- Allowed functions: np.sqrt()  np.log1p()  np.abs()\n- No conditionals, no loops, no external symbols\n- Each formula must be a single expression (no assignment, no def)\n- Use 3 to 7 features per formula\n- Higher output should correspond to higher probability of Rheumatoid Arthritis\n\nExamples (style only, do not reuse):\n  FORMULA: rdw * plt / (hgb + 0.01)\n  FORMULA: np.log1p(neut_pct / (lym_pct + 0.01)) * rdw\n  FORMULA: (neut_pct - lym_pct) / (neut_pct + lym_pct + 0.01) * plt",
         "variables": ["n_formulas"]
       },
       "cot_instruction": {
@@ -112,7 +147,7 @@
         "source_file": "src/method4_llm.py",
         "source_function": "build_seeded_prompt",
         "variables": ["n_formulas", "chain_of_thought"],
-        "template": "You are a clinical data scientist with deep expertise in hematology and autoimmune disease. Your task is to design mathematical biomarker formulas that can identify patients likely to have Rheumatoid Arthritis (RA) using Complete Blood Count (CBC) measurements alone.\n\nCLINICAL CONTEXT:\nRheumatoid Arthritis is a systemic autoimmune disease causing chronic joint inflammation. It commonly induces anemia of chronic disease, reactive thrombocytosis, and elevated markers of red cell heterogeneity. CBC panels are routinely collected and may carry subtle RA-related signals.\n\nAVAILABLE CBC FEATURES:\n{feature_block}\n\nDATA-DRIVEN GUIDANCE (derived from prior experiments on this dataset):\n1. Feature importance ranking (most to least discriminative):\n   RDW > PLT > MCHC > HCT > MCV > WBC > RBC\n   (hgb and mch tend to be redundant with hct and mchc respectively)\n\n2. Effective transformations observed on this heavily imbalanced dataset (~1% positive rate):\n   - np.log1p() on skewed count features (e.g. plt, wbc, rbc) reduces outlier influence\n   - np.sqrt() on ratio features helps compress variance\n   - Ratios between features (e.g. rdw / mcv) can amplify subtle group differences\n\n3. Optimal formula complexity: 3–7 features per formula. Simpler formulas\n   generalise better; overly complex formulas tend to overfit.\n\nTASK:\nUsing the above clinical knowledge and data-driven guidance, propose {n_formulas} distinct formula(s) that compute a continuous score where higher values indicate a greater likelihood of RA. Aim for diverse combinations — avoid repeating the same feature pairings.\n{cot_section}\n{format_spec}",
+        "template": "You are a clinical data scientist with deep expertise in hematology and autoimmune disease. Your task is to design mathematical biomarker formulas that can identify patients likely to have Rheumatoid Arthritis (RA) using Complete Blood Count (CBC) measurements alone.\n\nCLINICAL CONTEXT:\nRheumatoid Arthritis is a systemic autoimmune disease causing chronic joint inflammation. It commonly induces anemia of chronic disease, reactive thrombocytosis, and elevated markers of red cell heterogeneity. CBC panels are routinely collected and may carry subtle RA-related signals.\n\nAVAILABLE CBC FEATURES:\n{feature_block}\n\nDATA-DRIVEN GUIDANCE (derived from prior GP experiments on this dataset):\n1. Feature importance ranking (most to least discriminative):\n   {top_features}\n\n2. Effective transformations observed on this heavily imbalanced dataset (~1% positive rate):\n   - np.log1p() on skewed count features (e.g. plt, wbc, rbc) reduces outlier influence\n   - np.sqrt() on ratio features helps compress variance\n   - Ratios between features (e.g. rdw / mcv, neut_pct / lym_pct) can amplify subtle group differences\n\n3. Optimal formula complexity: 3–7 features per formula. Simpler formulas\n   generalise better; overly complex formulas tend to overfit.\n\nTASK:\nUsing the above clinical knowledge and data-driven guidance, propose {n_formulas} distinct formula(s) that compute a continuous score where higher values indicate a greater likelihood of RA. Aim for diverse combinations — avoid repeating the same feature pairings.\n{cot_section}\n{format_spec}",
         "notes": [
           "feature_block is generated from CBC_FEATURES",
           "cot_section is either empty string or COT_INSTRUCTION based on chain_of_thought parameter",

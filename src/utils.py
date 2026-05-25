@@ -354,6 +354,34 @@ CBC_FEATURE_LIST = [
 ]
 THRESHOLDS_CACHE_DIR = RESULTS_DIR / "literature_thresholds"
 
+# Translation map for seed-file variable names → pipeline feature names.
+# Used by the seeded-GP warm-start (Issue 27) and any LLM seed ingestion.
+SEED_VAR_MAP = {
+    "lab_HCT_last":    "hct",
+    "lab_HGB_last":    "hgb",
+    "lab_HB_last":     "hgb",   # alternate spelling used in some seed files
+    "lab_MCH_last":    "mch",
+    "lab_MCHC_last":   "mchc",
+    "lab_MCV_last":    "mcv",
+    "lab_PLT_last":    "plt",
+    "lab_RBC_last":    "rbc",
+    "lab_RDW_last":    "rdw",
+    "lab_WBC_last":    "wbc",
+    # CBC differential (Crohn's extended feature set)
+    "lab_NEUTpct_last": "neut_pct",
+    "lab_LYMpct_last":  "lym_pct",
+    "lab_MONOpct_last": "mono_pct",
+    "lab_EOS_pct_last": "eos_pct",
+    "lab_BASO_pct_last":"baso_pct",
+}
+
+
+def translate_seed_expression(expr: str) -> str:
+    """Translate lab_X_last variable names to pipeline feature names."""
+    for seed_var, pipeline_var in SEED_VAR_MAP.items():
+        expr = expr.replace(seed_var, pipeline_var)
+    return expr
+
 # Prompt library cache
 _PROMPTS = None
 
