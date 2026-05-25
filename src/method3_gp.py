@@ -35,6 +35,7 @@ from utils import (
     load_data_for, load_disease_config, load_ml_config, get_splits, compute_binary_metrics,
     find_youden_threshold, precision_at_recall_levels, ensure_dir, RESULTS_DIR,
     get_cv_folds, cv_summary, count_formula_features, load_per_k_baselines,
+    translate_seed_expression,
 )
 
 
@@ -147,11 +148,155 @@ def evaluate_program(program, X_train, y_train, X_test, y_test, features=None):
         result["num_features"] = count_formula_features(formula_str, features)
     return result
 
+# ── Seed injection helpers (Issue #27) ───────────────────────────────────────
+
+def _load_seed_exprs(seed_file):
+    """Load and translate seed expressions from CSV. Returns list of translated expr strings."""
+    try:
+        df = pd.read_csv(seed_file)
+        if "expression" not in df.columns:
+            print(f"[WARN] Seed file {seed_file} has no 'expression' column — skipping")
+            return []
+        exprs = []
+        for raw in df["expression"].dropna().astype(str):
+            try:
+                exprs.append(translate_seed_expression(raw.strip()))
+            except Exception:
+                pass
+        return exprs
+    except Exception as e:
+        print(f"[WARN] Failed to load seed file {seed_file}: {e}")
+        return []
+
+
+def _parse_seed_expression(expr_str, features, func_objects):
+    """
+    Convert a seed expression string to a gplearn program list (prefix notation).
+    func_objects: dict mapping function name -> _Function object.
+    Returns None if the expression uses unavailable functions or variables.
+    """
+    import ast as _ast
+    feature_idx = {f: i for i, f in enumerate(features)}
+    _aliases = {'log1p': 'log', 'log2': 'log', 'absolute': 'abs', 'negative': 'neg'}
+
+    def _node(n):
+        if isinstance(n, _ast.BinOp):
+            op_map = {_ast.Add: 'add', _ast.Sub: 'sub', _ast.Mult: 'mul', _ast.Div: 'div'}
+            name = op_map.get(type(n.op))
+            fn = func_objects.get(name) if name else None
+            if fn is None:
+                return None
+            left, right = _node(n.left), _node(n.right)
+            if left is None or right is None:
+                return None
+            return [fn] + left + right
+        elif isinstance(n, _ast.UnaryOp) and isinstance(n.op, _ast.USub):
+            fn = func_objects.get('neg')
+            if fn is None:
+                return None
+            inner = _node(n.operand)
+            return ([fn] + inner) if inner is not None else None
+        elif isinstance(n, _ast.Call):
+            fn_name = (n.func.id if isinstance(n.func, _ast.Name)
+                       else n.func.attr if isinstance(n.func, _ast.Attribute) else None)
+            if fn_name is None:
+                return None
+            fn_name = _aliases.get(fn_name, fn_name)
+            fn = func_objects.get(fn_name)
+            if fn is None or len(n.args) != 1:
+                return None
+            inner = _node(n.args[0])
+            return ([fn] + inner) if inner is not None else None
+        elif isinstance(n, _ast.Name):
+            idx = feature_idx.get(n.id)
+            return [idx] if idx is not None else None
+        elif isinstance(n, _ast.Constant) and isinstance(n.value, (int, float)):
+            return [float(n.value)]
+        elif hasattr(_ast, 'Num') and isinstance(n, _ast.Num):  # Python <3.8
+            return [float(n.n)]
+        return None
+
+    try:
+        tree = _ast.parse(expr_str.strip(), mode='eval')
+        return _node(tree.body)
+    except Exception:
+        return None
+
+
+def _inject_seed_programs(gp, seed_exprs, features, combined_auc_fitness, X_train, y_train,
+                           seed_fraction):
+    """
+    Replace the weakest programs in gp._programs[-1] with programs built from seed_exprs.
+    Must be called after at least one gp.fit() so gp.function_set_ is available.
+    Returns the count of successfully injected programs.
+    """
+    import copy
+    if not hasattr(gp, '_programs') or not gp._programs:
+        return 0
+    pop = gp._programs[-1]
+    if not pop:
+        return 0
+
+    n_max = max(1, int(len(pop) * seed_fraction))
+    n_inject = min(n_max, len(seed_exprs))
+    if n_inject == 0:
+        return 0
+
+    func_objects = {fn.name: fn for fn in gp.function_set_}
+
+    valid_pop = [(i, p) for i, p in enumerate(pop) if p is not None and hasattr(p, 'fitness_')]
+    if not valid_pop:
+        return 0
+    # Replace weakest programs first
+    valid_pop.sort(key=lambda x: x[1].fitness_)
+    replace_slots = [idx for idx, _ in valid_pop[:n_inject]]
+    template = valid_pop[0][1]
+
+    injected = 0
+    slot_ptr = 0
+    for expr_str in seed_exprs:
+        if injected >= n_inject:
+            break
+        program_list = _parse_seed_expression(expr_str, features, func_objects)
+        if program_list is None:
+            continue
+        try:
+            new_prog = copy.deepcopy(template)
+            new_prog.program = program_list
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                scores = np.asarray(new_prog.execute(X_train), dtype=float)
+            bad = ~np.isfinite(scores)
+            if bad.mean() > BAD_FRAC:
+                continue
+            if bad.any():
+                scores[bad] = np.nanmedian(scores[~bad]) if (~bad).any() else 0.0
+            raw_fit = combined_auc_fitness(y_train, scores, None)
+            new_prog.raw_fitness_ = raw_fit
+            # greater_is_better=True → parsimony subtracts
+            new_prog.fitness_ = raw_fit - gp.parsimony_coefficient * len(program_list)
+            pop[replace_slots[slot_ptr]] = new_prog
+            slot_ptr += 1
+            injected += 1
+        except Exception:
+            continue
+    return injected
+
+
 def main():
     parser = argparse.ArgumentParser(description="Method 3: GP (Iterative Search)")
     parser.add_argument("--disease", default="ra", help="Disease slug (e.g. ra, dm1)")
     parser.add_argument("--split-salt", default="", help="Labeled split variant (e.g. _seed2)")
     parser.add_argument("--log-every", type=int, default=5, help="Track progress every X gens")
+    parser.add_argument("--seed-file", type=str, default=None,
+        help="Path to CSV with expression column (LLM seed formulas). "
+             "Optional. If omitted, GP initializes fully at random.")
+    parser.add_argument("--seed-fraction", type=float, default=0.3,
+        help="Fraction of initial population to fill with seed formulas (default 0.3).")
+    parser.add_argument("--pop", type=int, default=None,
+        help="Override population_size for all active tiers.")
+    parser.add_argument("--gen", type=int, default=None,
+        help="Override generations for all active tiers.")
     args = parser.parse_args()
 
     # 1. Load Configurations
@@ -191,6 +336,18 @@ def main():
     else:
         print("Warning: per-k baselines not found — run sanity_check.py first")
 
+    # 5a. Load seed expressions (Issue #27)
+    seed_file_basename = "none"
+    seed_exprs = []
+    if args.seed_file:
+        from pathlib import Path as _Path
+        seed_file_basename = _Path(args.seed_file).name
+        seed_exprs = _load_seed_exprs(args.seed_file)
+        if seed_exprs:
+            print(f"Loaded {len(seed_exprs)} seed expressions from {seed_file_basename}")
+        else:
+            print(f"[WARN] No valid seed expressions loaded from {seed_file_basename}")
+
     # 5. Run Tiers Specified in YAML
     # This allows you to queue multiple runs (e.g. small then huge) without code changes
     cv_folds = get_cv_folds(train_df)
@@ -199,6 +356,9 @@ def main():
     for tier_name in ml.method3.active_tiers:
         tier_cfg = ml.method3.gp_configs[tier_name]
         patience = tier_cfg.get("patience", 10)
+        # CLI overrides for quick experiments
+        pop_size = args.pop if args.pop else tier_cfg.population_size
+        n_gens   = args.gen if args.gen else tier_cfg.generations
 
         TIER_DIR = OUT_DIR_BASE / tier_name
         ensure_dir(TIER_DIR)
@@ -218,7 +378,7 @@ def main():
         print(f"  Fitness: roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
               f"pr_w={_ml.method3.fitness.pr_weight} * (AUC-PR / prevalence={prevalence:.4f})")
         gp = SymbolicTransformer(
-            population_size=tier_cfg.population_size,
+            population_size=pop_size,
             generations=1,
             warm_start=True,
             hall_of_fame=ml.method3.hall_of_fame,
@@ -242,11 +402,25 @@ def main():
         patience_counter = 0
         progress_rows = []
         per_k_best = {}  # {k: {"formula": str, "auc_pr": float, "auc_roc": float}}
+        seed_count_used = 0
+        _seeds_injected = False
 
         # Iterative Generation Loop
-        for gen in range(tier_cfg.generations):
+        for gen in range(n_gens):
             gp.set_params(generations=gen + 1)
             gp.fit(X_train, y_train)
+
+            # Inject seeds into gen-0 population so they participate as parents from gen 1
+            if not _seeds_injected and seed_exprs:
+                seed_count_used = _inject_seed_programs(
+                    gp, seed_exprs, features, combined_auc_fitness,
+                    X_train, y_train, args.seed_fraction,
+                )
+                if seed_count_used > 0:
+                    print(f"  Injected {seed_count_used} seed programs into generation 1 parent pool")
+                else:
+                    print("  [WARN] No seed programs could be parsed/injected for this tier")
+                _seeds_injected = True
 
             current_gen_best_pr = -1.0
             current_gen_best_formula = ""
@@ -404,6 +578,7 @@ def main():
             "cv_auc_pr_ci95_low": tier_cv["ci95_low"],
             "cv_auc_pr_ci95_high": tier_cv["ci95_high"],
             "per_k_best": per_k_best,
+            "seed_count_used": seed_count_used,
         })
 
     # ── 6. Pick CV winner across tiers and evaluate on frozen test once ───────────
@@ -453,6 +628,8 @@ def main():
             "CV_AUC_PR_CI95_High": r["cv_auc_pr_ci95_high"],
             "CV_Selected": is_cv_selected,
             "Frozen_Test_AUC_PR_Final": round(frozen_test_auc_pr_final, 4) if is_cv_selected else None,
+            "Seed_File": seed_file_basename,
+            "Seed_Count_Used": r["seed_count_used"],
         })
 
     new_df = pd.DataFrame(new_rows)
@@ -462,6 +639,15 @@ def main():
         master_df = new_df
 
     master_df.to_csv(MASTER_PATH, index=False)
+
+    # Per-disease master (pass criteria path: results/method3_gp/<disease>/master_m3_summary.csv)
+    DISEASE_MASTER_PATH = OUT_DIR_BASE / "master_m3_summary.csv"
+    if DISEASE_MASTER_PATH.exists():
+        disease_master_df = pd.concat([pd.read_csv(DISEASE_MASTER_PATH), new_df], ignore_index=True)
+    else:
+        disease_master_df = new_df
+    disease_master_df.to_csv(DISEASE_MASTER_PATH, index=False)
+
     print(f"Master summary updated: {disease.name} | CV winner: {best_tier['tier_name']}")
 
 if __name__ == "__main__":
