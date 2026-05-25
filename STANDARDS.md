@@ -86,8 +86,8 @@ model = LogisticRegression(random_state=RANDOM_SEED)
 ## Data Rules
 
 ### IMMUTABLE DATASET
-Once `ra_modeling_data.csv` exists with train/test split → **NEVER** regenerate or modify.  
-Rationale: All methods must use identical data.
+Once `<disease>_modeling_data.csv` exists with train/test split → **NEVER** regenerate or modify.  
+Rationale: All methods must use identical data for a given disease.
 
 ### Feature Names
 Standard CBC features (lowercase):
@@ -110,7 +110,7 @@ CBC_FEATURES = [
 **Primary:** AUC-PR (class imbalance ~1%)  
 **Secondary:** AUC-ROC
 
-**Baseline (RA):** All-features logistic regression (AUC-PR ~0.017, AUC-ROC ~0.658)
+**Baseline:** All-features logistic regression, computed per disease by `sanity_check.py` and stored in `results/sanity_check/master_sanity_summary.csv`. Do not hardcode baseline values — load from config or the sanity CSV.
 
 **Reporting:**
 - Code: 4 decimals (`0.0179`)
@@ -135,12 +135,13 @@ Each method saves to `results/methodX_*/`:
 
 ## Git
 
-**Commit format:** `<type>: <description>`  
-Types: `feat`, `fix`, `docs`, `refactor`, `data`, `exp`
+**Commit format:** `<type>(#<issue>): <description>` — always include the issue number.  
+Types: `feat`, `fix`, `docs`, `refactor`, `data`, `exp`, `chore`
 
 ```
-feat: implement GP method
-exp: GP large config (AUC-PR 0.0179)
+feat(#17): implement GP method
+fix(#24): add CV_AUC_PR_Mean to master summaries
+exp(#28): GP large config crohn's (AUC-PR 0.0312)
 ```
 
 **Commit:** code, docs, small results (<1MB)  
