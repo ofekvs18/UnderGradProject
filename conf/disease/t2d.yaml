@@ -4,3 +4,19 @@ icd_patterns:
   - "250_0%"
   - "250_2%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Anemia of chronic disease; reduced with renal involvement in T2D"
+  hgb:      "Low in diabetic nephropathy; reflects chronic erythropoietin deficiency"
+  mch:      "Altered in iron-deficiency or chronic disease anemia"
+  mchc:     "Decreased with iron deficiency; reflects inflammatory and metabolic state"
+  mcv:      "Macrocytosis with metformin-related B12 depletion; common in long-term T2D"
+  plt:      "Thrombocytosis and platelet hyperactivation in metabolic syndrome"
+  rbc:      "Reduced in nephropathy; elevated RBC fragility under chronic hyperglycemia"
+  rdw:      "Elevated RDW strongly associated with T2D and insulin resistance"
+  wbc:      "Leukocytosis associated with obesity-driven chronic inflammation in T2D"
+  neut_pct: "Elevated NLR linked to insulin resistance and T2D cardiovascular outcomes"
+  lym_pct:  "Reduced lymphocyte percentage in metabolic syndrome and obesity"
+  mono_pct: "Elevated monocytes in obesity-driven chronic low-grade inflammation"
+  eos_pct:  "Altered in metabolic syndrome; associations with adipose tissue inflammation"
+  baso_pct: "Limited direct T2D relevance"

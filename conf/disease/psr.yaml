@@ -3,3 +3,19 @@ full_name: "Psoriasis"
 icd_patterns:
   - "6961%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Mild anemia of chronic inflammation in moderate-to-severe psoriasis"
+  hgb:      "Reduced in systemic inflammation associated with severe or erythrodermic psoriasis"
+  mch:      "May be decreased in chronic disease anemia"
+  mchc:     "Decreased in hypochromic anemia of chronic inflammation"
+  mcv:      "Normocytic typical; macrocytosis can occur with methotrexate therapy"
+  plt:      "Thrombocytosis reported in active psoriasis; platelets mediate skin inflammation"
+  rbc:      "Mild reduction in severe systemic disease"
+  rdw:      "Elevated RDW associated with psoriasis severity and systemic inflammation"
+  wbc:      "Leukocytosis correlates with psoriasis disease activity; altered by biologics"
+  neut_pct: "Elevated in active psoriasis; neutrophils drive skin lesion formation"
+  lym_pct:  "Reduced relative to neutrophils; altered by biologics and immunosuppressants"
+  mono_pct: "Elevated monocytes contribute to psoriatic inflammation"
+  eos_pct:  "May be elevated in atopic comorbidities common with psoriasis"
+  baso_pct: "Limited direct psoriasis relevance"

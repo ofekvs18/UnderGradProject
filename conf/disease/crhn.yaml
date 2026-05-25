@@ -3,3 +3,19 @@ full_name: "Crohn's Disease"
 icd_patterns:
   - "555%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Reduced due to GI blood loss, malabsorption, and chronic intestinal inflammation"
+  hgb:      "Low in iron-deficiency anemia from GI bleeding and nutritional malabsorption"
+  mch:      "Reduced in iron-deficiency from chronic intestinal blood loss"
+  mchc:     "Decreased in iron deficiency; may reflect mixed deficiency with B12/folate"
+  mcv:      "Microcytic in iron deficiency; macrocytic in B12/folate deficiency — mixed patterns common"
+  plt:      "Reactive thrombocytosis in active IBD; correlates with disease activity"
+  rbc:      "Reduced in GI blood loss and nutritional deficiency"
+  rdw:      "Elevated in mixed-deficiency anemia; correlates with IBD disease activity"
+  wbc:      "Leukocytosis in active flares; reflects intestinal and systemic inflammation"
+  neut_pct: "Elevated in active flares; neutrophil-to-lymphocyte ratio tracks IBD disease activity"
+  lym_pct:  "Reduced during active disease and in patients on immunosuppressants"
+  mono_pct: "Elevated in chronic intestinal inflammation"
+  eos_pct:  "Elevated in eosinophilic colitis; eosinophilic infiltration is part of IBD pathology"
+  baso_pct: "Limited direct relevance; may reflect systemic allergic or immune activation"

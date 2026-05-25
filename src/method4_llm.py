@@ -37,6 +37,7 @@ from utils import (
     evaluate_formula_full,
     get_splits,
     load_data_for,
+    load_disease_config,
     load_ml_config,
     load_medgemma,
     load_prompts,
@@ -130,11 +131,26 @@ _CURRENT_DISEASE = "ra"
 _PROMPT_DATA = load_prompts()
 _FORMAT_SPEC = _PROMPT_DATA["method4_llm"]["components"]["format_spec"]["template"]
 _COT_INSTRUCTION = _PROMPT_DATA["method4_llm"]["components"]["cot_instruction"]["template"]
+_CBC_FEATURES_META = _PROMPT_DATA["method4_llm"]["components"]["cbc_features"]["features"]
 
-_FEATURE_BLOCK = "\n".join(
-    f"  - {var}: {info['name']} ({info['unit']}) — {info['ra_relevance']}"
-    for var, info in _PROMPT_DATA["method4_llm"]["components"]["cbc_features"]["features"].items()
-)
+
+def _build_feature_block(disease: str) -> str:
+    """
+    Build the feature description block for a prompt, using disease-specific
+    relevance text from conf/disease/<disease>.yaml when available, falling
+    back to the generic ra_relevance entry in prompts.json.
+    """
+    try:
+        dcfg = load_disease_config(disease)
+        relevance_map = dict(dcfg.get("feature_relevance", {}))
+    except Exception:
+        relevance_map = {}
+
+    lines = []
+    for var, info in _CBC_FEATURES_META.items():
+        relevance = relevance_map.get(var, info.get("ra_relevance", ""))
+        lines.append(f"  - {var}: {info['name']} ({info['unit']}) — {relevance}")
+    return "\n".join(lines)
 
 def _load_feature_importances(disease: str) -> dict | None:
     """
@@ -157,6 +173,7 @@ def build_prompt(strategy: str, n_formulas: int, chain_of_thought: bool) -> str:
     """Builds a prompt string. For seeded strategy, loads runtime GP feature importances."""
     cot_section = f"\n{_COT_INSTRUCTION}\n" if chain_of_thought else ""
     format_spec = _FORMAT_SPEC.format(n_formulas=n_formulas)
+    feature_block = _build_feature_block(_CURRENT_DISEASE)
 
     if strategy == "seeded":
         fi = _load_feature_importances(_CURRENT_DISEASE)
@@ -170,7 +187,7 @@ def build_prompt(strategy: str, n_formulas: int, chain_of_thought: bool) -> str:
     template = _PROMPT_DATA["method4_llm"]["prompts"][strategy]["template"]
 
     fmt_kwargs: dict = dict(
-        feature_block=_FEATURE_BLOCK,
+        feature_block=feature_block,
         n_formulas=n_formulas,
         cot_section=cot_section,
         format_spec=format_spec,
@@ -186,7 +203,7 @@ def build_prompt(strategy: str, n_formulas: int, chain_of_thought: bool) -> str:
             f"for this cohort (AUC-PR: {BASelines['single_feat_pr']:.4f}).\n"
             f"- Aim to generate formulas that refine this relationship or combine it with other relevant CBC indices.\n"
         )
-        fmt_kwargs["feature_block"] = baseline_context + "\n" + _FEATURE_BLOCK
+        fmt_kwargs["feature_block"] = baseline_context + "\n" + feature_block
 
     return template.format(**fmt_kwargs).strip()
 

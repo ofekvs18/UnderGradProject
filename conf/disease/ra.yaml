@@ -3,3 +3,19 @@ full_name: "Rheumatoid Arthritis"
 icd_patterns:
   - "714%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Often decreased due to anemia of chronic disease"
+  hgb:      "Reduced in anemia of chronic inflammation common in RA"
+  mch:      "May be reduced in iron-deficiency anemia secondary to RA"
+  mchc:     "Decreased in hypochromic anemias associated with RA"
+  mcv:      "Normocytic or microcytic pattern common in RA anemia"
+  plt:      "Reactive thrombocytosis is a well-documented marker of active RA"
+  rbc:      "Decreased count observed in RA-associated anemia"
+  rdw:      "Elevated RDW is a systemic inflammation marker linked to RA severity"
+  wbc:      "Can be elevated in active RA inflammation or lowered by immunosuppressive treatment"
+  neut_pct: "Elevated in acute inflammation; NLR (neut_pct/lym_pct) is a validated RA severity marker"
+  lym_pct:  "Often reduced relative to neutrophils in RA, producing an elevated NLR"
+  mono_pct: "Elevated in chronic autoimmune inflammation"
+  eos_pct:  "May be altered in autoimmune conditions and drug reactions"
+  baso_pct: "Rarely elevated; limited direct RA relevance"

@@ -4,3 +4,19 @@ icd_patterns:
   - "250_1%"
   - "250_3%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Anemia common in T1D with renal complications (diabetic nephropathy)"
+  hgb:      "Reduced in nephropathy-related anemia; chronic hyperglycemia impairs erythropoiesis"
+  mch:      "May be altered in iron-deficiency or anemia of chronic disease"
+  mchc:     "Decreased in iron-deficiency; can reflect oxidative stress on RBCs in T1D"
+  mcv:      "Variable; normocytic typical; macrocytosis if B12/folate deficiency present"
+  plt:      "Platelet dysfunction and thrombocytosis reported with T1D vascular complications"
+  rbc:      "Reduced in diabetic nephropathy; glycation alters RBC morphology and survival"
+  rdw:      "Elevated RDW associated with T1D complications and oxidative stress"
+  wbc:      "Leukocytosis in DKA; chronic lymphopenia pattern in long-standing T1D"
+  neut_pct: "Elevated in infection and DKA; NLR correlates with T1D cardiovascular risk"
+  lym_pct:  "Reduced in chronic hyperglycemia; autoimmune lymphocyte depletion patterns"
+  mono_pct: "Elevated monocytes in chronic low-grade T1D inflammation"
+  eos_pct:  "Altered in autoimmune context of T1D; associated with atopic comorbidities"
+  baso_pct: "Limited direct T1D relevance"

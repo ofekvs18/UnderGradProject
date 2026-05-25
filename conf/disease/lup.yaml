@@ -4,3 +4,19 @@ icd_patterns:
   - "6954%"
   - "7100%"
 icd_version: 9
+
+feature_relevance:
+  hct:      "Reduced in lupus-related hemolytic anemia or anemia of chronic disease"
+  hgb:      "Low in autoimmune hemolytic anemia; a major SLE manifestation"
+  mch:      "Reduced in hemolytic or iron-deficiency anemia in SLE"
+  mchc:     "Decreased in hemolytic anemia; reflects RBC destruction"
+  mcv:      "Variable; normocytic in hemolytic anemia; macrocytic with B12 deficiency"
+  plt:      "Thrombocytopenia is an SLE classification criterion; immune-mediated platelet destruction"
+  rbc:      "Reduced in autoimmune hemolytic anemia; a core SLE manifestation"
+  rdw:      "Elevated with active hemolytic anemia and mixed-deficiency states in SLE"
+  wbc:      "Leukopenia is an SLE classification criterion; reflects immune dysregulation"
+  neut_pct: "Altered by lupus-driven neutropenia; NETosis links neutrophils to SLE pathogenesis"
+  lym_pct:  "Lymphopenia is an SLE classification criterion; key diagnostic marker"
+  mono_pct: "Elevated monocytes in active SLE; drive interferon production"
+  eos_pct:  "Eosinophilia in lupus overlap syndromes; altered with multi-organ involvement"
+  baso_pct: "Limited direct SLE relevance; may reflect immune dysregulation"
