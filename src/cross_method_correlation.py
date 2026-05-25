@@ -30,7 +30,7 @@ from utils import (
 
 OUT_DIR        = RESULTS_DIR / "cross_method"
 MASTER_SUMMARY = OUT_DIR / "master_correlation_summary.csv"
-METHODS        = ["M1", "M2", "M3", "M4", "Baseline"]
+METHODS        = ["LR", "M1", "M2", "M3", "M4"]
 
 # ── gplearn prefix parser ─────────────────────────────────────────────────────
 
@@ -154,10 +154,23 @@ def _get_m4_formula(disease):
 
 # ── Score vector computation ───────────────────────────────────────────────────
 
-def _get_score_vector(method, formula, test_clean, features, y_test):
+def _get_lr_scores(train_df, test_clean, features):
+    """Fit all-features LR on train, return probability scores on test_clean rows."""
+    from sklearn.linear_model import LogisticRegression
+
+    tr = train_df[features + ["is_case"]].dropna()
+    if tr["is_case"].sum() < 5:
+        return None
+    clf = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42)
+    clf.fit(tr[features].values, tr["is_case"].values)
+    return clf.predict_proba(test_clean[features].values)[:, 1]
+
+
+def _get_score_vector(method, formula, test_clean, features, y_test, train_df=None):
     """Return (scores, flipped) or (None, False)."""
-    if method == "Baseline":
-        return np.full(len(y_test), float(y_test.mean())), False
+    if method == "LR":
+        scores = _get_lr_scores(train_df, test_clean, features)
+        return scores, False
 
     if method == "M3":
         scores = eval_gp_formula(formula, test_clean, features)
@@ -183,16 +196,19 @@ def _correlation_matrix(score_dict):
     n   = len(methods)
     mat = np.full((n, n), np.nan)
 
+    # diagonal is always 1.0 (a method is perfectly correlated with itself)
+    for i in range(n):
+        mat[i, i] = 1.0
+
     for i in range(n):
         si = score_dict[methods[i]]
         if si is None:
             continue
         for j in range(n):
+            if i == j:
+                continue
             sj = score_dict[methods[j]]
             if sj is None:
-                continue
-            if i == j:
-                mat[i, j] = 1.0
                 continue
             if np.std(si) < 1e-12 or np.std(sj) < 1e-12:
                 continue
@@ -251,12 +267,12 @@ def run_for_disease(disease):
         print(f"  ERROR loading data: {e}")
         return
 
-    _, test_df  = get_splits(df)
+    train_df, test_df = get_splits(df)
     test_clean  = test_df.dropna(subset=features + ["is_case"])
     y_test      = test_clean["is_case"].values
     print(f"  Test set: {len(test_clean)} rows, {int(y_test.sum())} positives ({y_test.mean()*100:.2f}%)")
 
-    # Collect formulas
+    # Collect formulas (LR has none — scored directly from model fit)
     getters = {"M1": _get_m1_formula, "M2": _get_m2_formula,
                 "M3": _get_m3_formula, "M4": _get_m4_formula}
     formulas = {}
@@ -269,11 +285,13 @@ def run_for_disease(disease):
     score_dict = {}
     for method in METHODS:
         formula = formulas.get(method)
-        if method != "Baseline" and formula is None:
+        if method != "LR" and formula is None:
             score_dict[method] = None
             print(f"  Score {method}: SKIPPED (no formula)")
             continue
-        scores, flipped = _get_score_vector(method, formula, test_clean, features, y_test)
+        scores, flipped = _get_score_vector(
+            method, formula, test_clean, features, y_test, train_df=train_df
+        )
         score_dict[method] = scores
         status = "OK" if scores is not None else "FAILED"
         print(f"  Score {method}: {status}{' (flipped)' if flipped else ''}")
@@ -309,6 +327,10 @@ def run_for_disease(disease):
 
     row_df = pd.DataFrame([{
         "Disease":    disease,
+        "LR_M1_r":    _r("LR", "M1"),
+        "LR_M2_r":    _r("LR", "M2"),
+        "LR_M3_r":    _r("LR", "M3"),
+        "LR_M4_r":    _r("LR", "M4"),
         "M1_M2_r":    _r("M1", "M2"),
         "M1_M3_r":    _r("M1", "M3"),
         "M1_M4_r":    _r("M1", "M4"),

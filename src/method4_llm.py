@@ -357,10 +357,11 @@ def functional_deduplicate(formula_dicts: list[dict], df: pd.DataFrame) -> list[
     return unique_list
 
 def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_salt: str = "",
-                           per_k_bl: dict = None):
+                           per_k_bl: dict = None, cv_winner=None):
     """
     Updates the global Master Summary by appending the best-performing formula
     for this run (timestamp-stamped; previous entries are never removed).
+    cv_winner: optional Series from cv_df with cv_auc_pr_mean/std columns.
     """
     if results_df.empty:
         return
@@ -383,6 +384,8 @@ def _update_master_summary(results_df: pd.DataFrame, disease_slug: str, split_sa
         "Num_Features_Best": best_k,
         "Baseline_AUC_PR_At_K": bl_pr,
         "Delta_vs_Baseline_K": round(float(best["auc_pr"]) - bl_pr, 4) if bl_pr is not None else None,
+        "CV_AUC_PR_Mean": round(float(cv_winner["cv_auc_pr_mean"]), 4) if cv_winner is not None else None,
+        "CV_AUC_PR_Std": round(float(cv_winner["cv_auc_pr_std"]), 4) if cv_winner is not None else None,
     }])
 
     if MASTER_SUMMARY_CSV.exists():
@@ -627,7 +630,7 @@ def run_evaluate(disease_slug: str, split_salt: str = ""):
                       if row["Baseline_AUC_PR"] is not None else "baseline=N/A")
             print(f"  k={row['K']}: AUC-PR={row['AUC_PR']:.4f}  {bl_str}")
 
-    _update_master_summary(results_df, disease_slug, split_salt, per_k_bl)
+    _update_master_summary(results_df, disease_slug, split_salt, per_k_bl, cv_winner=cv_winner)
     _write_performance_summary(results_df, disease_slug, cv_winner, frozen_test_auc_pr_final)
 
 # MAIN ENTRY POINT

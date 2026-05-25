@@ -19,11 +19,15 @@ Compares four methods for deriving single-formula biomarkers from CBC data using
 
 | # | Script | Method |
 |---|--------|--------|
-| — | `sanity_check.py` | All-features logistic regression baseline |
+| — | `sanity_check.py` | All-features LR baseline + per-k best-subset analysis |
 | 1 | `method_threshold.py` | Threshold optimization (literature + data-driven) |
 | 2 | `method2_random_formula.py` | Random formula search (10 000 candidates, CV-selected) |
-| 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected) |
+| 3 | `method3_gp.py` | Genetic programming (gplearn, CV-selected, optional LLM seeding) |
 | 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B IT) |
+| — | `cross_method_correlation.py` | Pairwise Pearson r between method score vectors |
+| — | `nhanes_evaluate.py` | External validation on NHANES cycles G–J |
+| — | `ehrshot_evaluate.py` | External validation on EHRSHOT (blocked on data access) |
+| — | `dashboard.py` | Streamlit + Plotly interactive results dashboard |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
 
@@ -34,9 +38,12 @@ pip install -r requirements.txt
 # Place data/<disease>_modeling_data.csv (see Data section)
 python src/sanity_check.py --disease ra
 python src/method2_random_formula.py --disease ra
-python src/method3_gp.py --disease ra
+python src/method3_gp.py --disease ra                               # vanilla GP
+python src/method3_gp.py --disease ra \
+    --seed-file data/llm_seeds/ra/gemini_25_pro.csv                 # seeded GP
 python src/method4_llm.py all --disease ra
-python src/compare_methods.py   # → results/methods_comparison.csv
+python src/compare_methods.py              # → results/methods_comparison.csv
+python src/cross_method_correlation.py --disease ra  # → results/cross_method/
 ```
 
 ## Data
@@ -50,6 +57,8 @@ python src/compare_methods.py   # → results/methods_comparison.csv
   ```
 - Target: ~1% positive rate — use imbalanced-aware metrics (AUC-PR primary)
 - Split: pre-computed train/test (80/20, patient-level) — **do not re-split**
+- LLM seed files: `data/llm_seeds/<disease>/{gemini_25_pro,gpt4o_deep_research,scispace_agent}.csv` (gitignored)
+  — populated for `ra`, `crhn`, `psr`, `lup`, `t1d`; none for `t2d`
 
 ## Configuration
 
