@@ -1,0 +1,7 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"sub(plt, mono_pct)",0.0182,True,False
+1,"add(hgb, sub(plt, mono_pct))",0.0183,True,True
+2,"neg(mul(sqrt(add(plt, mchc)), sub(mul(rbc, plt), sub(mul(rbc, plt), add(rbc, mchc)))))",0.0237,True,True
+4,"neg(mul(mul(sqrt(add(plt, mchc)), sub(mul(mul(rbc, plt), div(-0.869, plt)), add(rbc, mchc))), sub(mul(sqrt(mcv), div(-0.869, plt)), add(rbc, mchc))))",0.0325,True,True
+5,"neg(mul(sqrt(add(plt, mchc)), sub(mul(sqrt(mcv), div(-0.869, plt)), mul(mchc, sub(mul(rbc, plt), sub(mul(rbc, plt), add(rbc, mchc)))))))",0.0329,True,True
+10,"neg(mul(sqrt(add(plt, mchc)), sub(mul(sqrt(mcv), div(-0.869, plt)), mul(mchc, sub(mul(rbc, plt), sub(mul(rbc, plt), add(rbc, mchc)))))))",0.0329,False,True

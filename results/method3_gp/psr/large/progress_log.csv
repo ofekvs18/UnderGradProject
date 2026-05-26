@@ -1,0 +1,6 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"sub(mchc, log(plt))",0.0151,True,True
+5,"sub(mchc, log(plt))",0.0151,False,True
+10,"sub(mchc, log(plt))",0.0151,False,True
+15,"sub(mchc, log(plt))",0.0151,False,True
+20,"sub(mchc, log(plt))",0.0151,False,True

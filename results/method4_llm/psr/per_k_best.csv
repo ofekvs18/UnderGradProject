@@ -1,0 +1,6 @@
+K,Best_Formula,AUC_PR,AUC_ROC,N_Formulas_Tested,Baseline_AUC_PR,Delta_vs_Baseline
+2,(mchc - mcv) / (mcv + 0.01),0.0093,0.5584,14,0.0146,-0.0053
+3,plt * (rdw / (hgb + 0.01)),0.0127,0.5053,13,0.0146,-0.0019
+4,(hgb + 0.01) / (hct + 0.01) * (plt + rdw),0.0079,0.5017,2,0.0118,-0.0039
+5,(hgb + mchc) / (hct + 0.01) * (rdw - mcv),0.0104,0.5511,5,0.0111,-0.0007
+6,hct - hgb + mchc / mcv + plt / (wbc + 0.01),0.0086,0.5393,1,0.0117,-0.0031

@@ -1,0 +1,7 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"add(mono_pct, mcv)",0.1426,True,False
+1,"div(add(mono_pct, mcv), sqrt(mchc))",0.153,True,False
+3,"div(div(add(mono_pct, mcv), sqrt(mchc)), sqrt(mchc))",0.1567,True,True
+4,"div(add(mono_pct, add(mono_pct, mcv)), mchc)",0.1585,True,True
+5,"div(add(mono_pct, add(mono_pct, mcv)), mchc)",0.1585,False,True
+10,"div(add(mono_pct, add(mono_pct, mcv)), mchc)",0.1585,False,True

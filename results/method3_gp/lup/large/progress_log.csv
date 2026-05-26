@@ -1,0 +1,6 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"div(add(mul(wbc, mch), rbc), plt)",0.0098,True,False
+5,"div(add(mul(wbc, mch), rbc), plt)",0.0098,False,False
+10,"div(add(mul(wbc, mch), rbc), plt)",0.0098,False,False
+15,"div(add(mul(wbc, mch), rbc), plt)",0.0098,False,False
+20,"div(add(mul(wbc, mch), rbc), plt)",0.0098,False,False

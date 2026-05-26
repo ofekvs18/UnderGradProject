@@ -1,0 +1,38 @@
+Method 1: Threshold Optimization Results
+    =========================================
+
+    CV-Selected Feature: MCHC
+      CV_AUC_PR_Mean: 0.0084  Std: 0.0013
+      CV_AUC_PR_CI95: [0.0060, 0.0109]
+      Frozen_Test_AUC_PR: 0.0076
+
+    Best single feature: RBC (selected by frozen AUC-PR)
+
+    Literature threshold: 4.0 (below)
+      AUC-ROC: 0.5339
+      AUC-PR:  0.0087
+      Precision: 0.0062
+      Recall:    0.6296
+      F1: 0.0122
+      F2: 0.0297
+
+    Data-driven threshold: 4.7900 (above)
+      AUC-ROC: 0.4661
+      AUC-PR:  0.0049
+      Precision: 0.0024
+      Recall:    0.0370
+      F1: 0.0045
+      F2: 0.0095
+      Precision@Recall(0.25): 0.0043
+      Precision@Recall(0.50): 0.0047
+      Precision@Recall(0.75): 0.0054
+
+    Comparison to baseline (all-features logistic regression):
+      Baseline AUC-ROC: 0.687  |  Best feature AUC-ROC: 0.466  |  Diff: -0.221
+      Baseline AUC-PR:  0.011  |  Best feature AUC-PR:  0.005  |  Diff: -0.007
+
+    Key insight:
+      Single-feature thresholds underperform the all-features baseline on both metrics.
+      Data-driven (Youden) thresholds optimize the precision-recall tradeoff but cannot
+      match the predictive power of multi-feature models.
+    

@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+hct,33.0,below,0.5786,0.0126,0.0131,0.4767,0.0256,0.0591,29275,Anemia (low hematocrit) is a common finding in rheumatoid arthritis due to chronic inflammation and iron deficiency.
+hgb,11.0,below,0.569,0.0123,0.0124,0.4667,0.0242,0.0561,29276,Anemia (low hemoglobin) is a common finding in rheumatoid arthritis due to chronic inflammation and iron deficiency.
+mch,27.0,below,0.4627,0.0092,0.008,0.0867,0.0146,0.0292,29244,"Low mean corpuscular hemoglobin (MCH) suggests microcytic anemia, which can be seen in rheumatoid arthritis due to iron deficiency."
+mchc,30.0,below,0.4672,0.0092,0.007,0.02,0.0104,0.0146,29245,"Low mean corpuscular hemoglobin concentration (MCHC) suggests microcytic anemia, which can be seen in rheumatoid arthritis due to iron deficiency."
+mcv,80.0,below,0.4824,0.0096,0.0076,0.0367,0.0126,0.0207,29244,"Low mean corpuscular volume (MCV) suggests microcytic anemia, which can be seen in rheumatoid arthritis due to iron deficiency."
+plt,400.0,above,0.5723,0.0133,0.0162,0.08,0.027,0.0448,29223,Elevated platelet count (PLT) can be seen in rheumatoid arthritis due to inflammation and thrombocytosis.
+rbc,4.0,below,0.5861,0.0141,0.0128,0.7033,0.0251,0.0596,29244,"Low red blood cell count (RBC) suggests anemia, which can be seen in rheumatoid arthritis due to chronic inflammation and iron deficiency."
+rdw,15.0,above,0.6169,0.0132,0.0142,0.35,0.0274,0.0612,29237,"Elevated red cell distribution width (RDW) suggests increased variation in red blood cell size, which can be seen in early inflammatory processes like rheumatoid arthritis."
+wbc,12.0,above,0.4786,0.0099,0.0095,0.1967,0.0181,0.0397,29251,"Elevated white blood cell count (WBC) can indicate inflammation and infection, which may be associated with rheumatoid arthritis."

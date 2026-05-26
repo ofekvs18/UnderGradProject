@@ -1,0 +1,5 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"sub(sub(log(sub(mchc, rbc)), div(sub(hgb, mchc), sqrt(mono_pct))), sqrt(sub(neg(rbc), neg(plt))))",0.0134,True,True
+2,"sub(mul(div(div(sqrt(sqrt(rbc)), log(add(mch, hct))), sub(sub(sqrt(mch), sqrt(mono_pct)), sqrt(sub(baso_pct, mchc)))), div(add(log(mul(hgb, mch)), log(neg(eos_pct))), add(0.141, sqrt(sqrt(eos_pct))))), log(sqrt(mono_pct)))",0.0135,True,True
+5,"sub(mul(div(div(sqrt(sqrt(rbc)), log(add(mch, hct))), sub(sub(sqrt(mch), sqrt(mono_pct)), sqrt(sub(baso_pct, mchc)))), div(add(log(mul(hgb, mch)), log(neg(eos_pct))), add(0.141, sqrt(sqrt(eos_pct))))), log(sqrt(mono_pct)))",0.0135,False,True
+10,"sub(mul(div(div(sqrt(sqrt(rbc)), log(add(mch, hct))), sub(sub(sqrt(mch), sqrt(mono_pct)), sqrt(sub(baso_pct, mchc)))), div(add(log(mul(hgb, mch)), log(neg(eos_pct))), add(0.141, sqrt(sqrt(eos_pct))))), log(sqrt(mono_pct)))",0.0135,False,True

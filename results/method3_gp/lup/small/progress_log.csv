@@ -1,0 +1,3 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"div(neut_pct, sqrt(div(neg(hgb), 0.514)))",0.0143,True,True
+5,"div(neut_pct, sqrt(div(neg(hgb), 0.514)))",0.0143,False,True

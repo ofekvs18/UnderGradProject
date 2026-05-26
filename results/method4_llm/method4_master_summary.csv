@@ -1,0 +1,7 @@
+Timestamp,Disease,Split_Salt,Best_LLM_AUC_PR,Best_LLM_AUC_ROC,Best_LLM_Formula,Winning_Strategy,Winning_Temp,Total_Yield,Num_Features_Best,Baseline_AUC_PR_At_K,Delta_vs_Baseline_K,CV_AUC_PR_Mean,CV_AUC_PR_Std
+2026-05-26 01:35:48,t1d,,0.0133,0.5953,(mchc - mcv) / (mch + 0.01),seeded,0.3,42,3,0.0149,-0.0016,0.0191,0.0062
+2026-05-26 01:48:03,ra,,0.0171,0.5227,(hgb - 0.01) * (plt - 100000) / (hct - 0.01),blind,1.0,48,3,0.0156,0.0015,0.0153,0.004
+2026-05-26 01:48:19,psr,,0.0127,0.5053,plt * (rdw / (hgb + 0.01)),blind,0.7,35,3,0.0146,-0.0019,0.0092,0.0015
+2026-05-26 01:57:40,crhn,,0.0244,0.6001,mch * (1 - mchc) / (mcv + 0.01) * plt,blind,0.7,43,4,0.0153,0.0091,0.0198,0.0056
+2026-05-26 02:00:09,lup,,0.011,0.5897,hgb + 0.1 * (mch - 25) / (mcv + 0.01) * (wbc - 4),seeded,1.0,17,4,0.0059,0.0051,0.0102,0.0108
+2026-05-26 02:27:32,t2d,,0.1262,0.5459,mch / mchc,blind,1.0,39,2,0.1453,-0.0191,0.1307,0.0089

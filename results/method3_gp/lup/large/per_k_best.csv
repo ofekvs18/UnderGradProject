@@ -1,0 +1,10 @@
+K,Best_Formula,AUC_PR,AUC_ROC,Baseline_AUC_PR,Delta_vs_Baseline
+1,sqrt(sqrt(plt)),0.0046,0.5055,0.0043,0.0003
+2,"sub(neg(plt), neut_pct)",0.0067,0.5046,0.0046,0.0021
+3,"log(log(div(div(plt, sqrt(neg(plt))), add(mul(mono_pct, hct), sqrt(hct)))))",0.0084,0.6374,0.0059,0.0025
+4,"div(add(mul(wbc, mch), rbc), plt)",0.0098,0.5616,0.0059,0.0039
+5,"sqrt(sub(sqrt(sqrt(sub(mcv, 0.726))), mul(log(neg(wbc)), sub(div(neut_pct, hct), sqrt(add(mul(mono_pct, mcv), mono_pct))))))",0.0083,0.6832,0.0071,0.0012
+6,"neg(neg(mul(div(neg(plt), sub(hgb, eos_pct)), mul(log(div(mono_pct, mcv)), div(mul(log(div(mul(log(div(mono_pct, mcv)), div(neg(plt), wbc)), mcv)), div(neg(plt), wbc)), wbc)))))",0.0089,0.6429,0.0071,0.0018
+7,"add(neg(sqrt(div(div(rbc, mono_pct), add(rdw, neut_pct)))), sqrt(sub(log(mul(eos_pct, mono_pct)), add(sub(mch, mch), log(mchc)))))",0.008,0.6485,0.0074,0.0006
+8,"mul(div(neg(plt), sub(hgb, eos_pct)), log(sub(sub(log(eos_pct), div(neut_pct, wbc)), sqrt(neg(neg(mul(neg(div(neg(plt), sub(hgb, eos_pct))), mul(neg(sub(rdw, baso_pct)), div(neg(mcv), neg(-0.993))))))))))",0.0047,0.5153,0.0074,-0.0027
+10,"log(sub(mul(sub(add(log(hct), mul(plt, lym_pct)), neg(mul(mchc, rdw))), neg(log(neg(neut_pct)))), add(add(sub(sub(mch, eos_pct), sub(rbc, rdw)), div(mul(wbc, mchc), log(-0.086))), log(log(neg(mchc))))))",0.0069,0.5187,0.0124,-0.0055

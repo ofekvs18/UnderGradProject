@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+hct,30.0,below,0.5508,0.011,0.0121,0.2686,0.0231,0.0512,29287,"Anemia is common in Crohn's disease due to blood loss, malabsorption, and chronic inflammation."
+hgb,10.0,below,0.5319,0.011,0.01,0.2438,0.0192,0.043,29288,"Anemia is common in Crohn's disease due to blood loss, malabsorption, and chronic inflammation."
+mch,25.0,below,0.5255,0.0153,0.0115,0.053,0.0188,0.0307,29255,Low MCH can be seen in microcytic anemia associated with Crohn's disease.
+mchc,28.0,below,0.4332,0.0102,0.0103,0.0035,0.0053,0.0041,29256,Low MCH/MCHC can be seen in microcytic anemia associated with Crohn's disease.
+mcv,80.0,below,0.5719,0.0162,0.0164,0.0848,0.0275,0.0463,29255,Microcytic anemia (low MCV) can be seen in Crohn's disease due to iron deficiency from blood loss or malabsorption.
+plt,300.0,below,0.3728,0.0072,0.0079,0.6749,0.0157,0.0378,29235,"Thrombocytopenia can occur in Crohn's disease due to splenic sequestration, bone marrow suppression, or bleeding."
+rbc,4.0,below,0.5197,0.0102,0.0107,0.6254,0.0211,0.0501,29255,"Anemia is common in Crohn's disease due to blood loss, malabsorption, and chronic inflammation."
+rdw,15.0,above,0.5372,0.0104,0.0111,0.2898,0.0214,0.0481,29248,"Elevated RDW can indicate anemia of chronic inflammation, a common finding in Crohn's disease."
+wbc,12.0,above,0.5205,0.0106,0.0112,0.2473,0.0215,0.0476,29262,"Elevated WBC count can indicate inflammation or infection, which can be associated with Crohn's disease."

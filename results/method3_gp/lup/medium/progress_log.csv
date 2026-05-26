@@ -1,0 +1,4 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"mul(mul(wbc, sqrt(mcv)), sqrt(mono_pct))",0.0083,True,False
+5,"mul(mul(wbc, sqrt(mcv)), sqrt(mono_pct))",0.0083,False,False
+10,"mul(mul(wbc, sqrt(mcv)), sqrt(mono_pct))",0.0083,False,False

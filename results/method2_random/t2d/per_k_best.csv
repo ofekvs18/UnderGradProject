@@ -1,0 +1,15 @@
+K,Best_Formula,AUC_PR,AUC_ROC,N_Formulas_Tested,Baseline_AUC_PR,Delta_vs_Baseline
+1,sqrt(abs(mono_pct)),0.1356,0.6142,56,0.1356,0.0
+2,((mono_pct**2)) + (mcv),0.1461,0.6241,714,0.1453,0.0008
+3,(((mchc**2)) - (sqrt(abs(mch)))) / (abs((mcv**2))+1e-6),0.1437,0.5695,714,0.1483,-0.0046
+4,(((hgb) + (mch)) + (sqrt(abs(mono_pct)))) / (abs((mchc**2))+1e-6),0.1486,0.596,714,0.149,-0.0004
+5,(((((mchc**2)) + (log(abs(wbc)+1))) / (abs(mcv)+1e-6)) - (log(abs(mono_pct)+1))) - (rbc),0.1527,0.6066,714,0.1491,0.0036
+6,(((((sqrt(abs(hct))) + (log(abs(baso_pct)+1))) - (rbc)) + (log(abs(mch)+1))) - (mono_pct)) * (sqrt(abs(eos_pct))),0.1482,0.6267,714,0.1493,-0.0011
+7,((((((sqrt(abs(neut_pct))) + (sqrt(abs(hct)))) + (log(abs(rbc)+1))) + (sqrt(abs(hgb)))) - (mono_pct)) / (abs(log(abs(mch)+1))+1e-6)) + (sqrt(abs(eos_pct))),0.147,0.622,714,0.1578,-0.0108
+8,(((((((log(abs(neut_pct)+1)) * ((hgb**2))) + ((hct**2))) - (mch)) / (abs((mchc**2))+1e-6)) + (mono_pct)) + (mcv)) - (sqrt(abs(rdw))),0.1439,0.594,714,0.1506,-0.0067
+9,(((((((((mch**2)) + (log(abs(neut_pct)+1))) + (wbc)) / (abs(lym_pct)+1e-6)) - (eos_pct)) - (log(abs(mchc)+1))) - (log(abs(rdw)+1))) / (abs(sqrt(abs(plt)))+1e-6)) + ((mono_pct**2)),0.1406,0.6221,714,0.1548,-0.0142
+10,(((((((((sqrt(abs(baso_pct))) * (rbc)) * ((neut_pct**2))) + ((hgb**2))) + ((mcv**2))) - ((mchc**2))) * (sqrt(abs(eos_pct)))) * (mch)) / (abs((mono_pct**2))+1e-6)) + ((wbc**2)),0.145,0.6165,714,0.1546,-0.0096
+11,((((((((((hct) / (abs((baso_pct**2))+1e-6)) / (abs(mcv)+1e-6)) + (rdw)) * (sqrt(abs(lym_pct)))) - ((mono_pct**2))) / (abs((mch**2))+1e-6)) * (eos_pct)) / (abs(log(abs(neut_pct)+1))+1e-6)) * (rbc)) * (log(abs(wbc)+1)),0.1419,0.6178,714,0.1547,-0.0128
+12,((((((((((((mono_pct**2)) * ((hct**2))) / (abs(log(abs(rbc)+1))+1e-6)) + (plt)) / (abs(sqrt(abs(eos_pct)))+1e-6)) * (sqrt(abs(lym_pct)))) - (rdw)) + (log(abs(baso_pct)+1))) * (log(abs(mchc)+1))) * (log(abs(wbc)+1))) / (abs(sqrt(abs(hgb)))+1e-6)) / (abs(log(abs(mcv)+1))+1e-6),0.147,0.6233,714,0.1547,-0.0077
+13,((((((((((((sqrt(abs(rdw))) + (mch)) - ((mono_pct**2))) * (log(abs(hct)+1))) + (neut_pct)) - (sqrt(abs(plt)))) * (lym_pct)) + ((baso_pct**2))) * (wbc)) / (abs(sqrt(abs(rbc)))+1e-6)) * (sqrt(abs(eos_pct)))) / (abs((hgb**2))+1e-6)) / (abs((mcv**2))+1e-6),0.1552,0.6355,714,0.1537,0.0015
+14,(((((((((((((baso_pct) + (neut_pct)) * ((rdw**2))) / (abs((mono_pct**2))+1e-6)) / (abs(log(abs(hgb)+1))+1e-6)) - (mcv)) / (abs(log(abs(wbc)+1))+1e-6)) * (mchc)) * (log(abs(lym_pct)+1))) * (log(abs(plt)+1))) * ((eos_pct**2))) + (sqrt(abs(hct)))) / (abs(rbc)+1e-6)) * (sqrt(abs(mch))),0.1498,0.6273,714,0.1532,-0.0034

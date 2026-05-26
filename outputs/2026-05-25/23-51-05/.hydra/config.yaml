@@ -1,0 +1,121 @@
+disease:
+  name: psr
+  full_name: Psoriasis
+  icd_patterns:
+  - 6961%
+  icd_version: 9
+  feature_relevance:
+    hct: Mild anemia of chronic inflammation in moderate-to-severe psoriasis
+    hgb: Reduced in systemic inflammation associated with severe or erythrodermic
+      psoriasis
+    mch: May be decreased in chronic disease anemia
+    mchc: Decreased in hypochromic anemia of chronic inflammation
+    mcv: Normocytic typical; macrocytosis can occur with methotrexate therapy
+    plt: Thrombocytosis reported in active psoriasis; platelets mediate skin inflammation
+    rbc: Mild reduction in severe systemic disease
+    rdw: Elevated RDW associated with psoriasis severity and systemic inflammation
+    wbc: Leukocytosis correlates with psoriasis disease activity; altered by biologics
+    neut_pct: Elevated in active psoriasis; neutrophils drive skin lesion formation
+    lym_pct: Reduced relative to neutrophils; altered by biologics and immunosuppressants
+    mono_pct: Elevated monocytes contribute to psoriatic inflammation
+    eos_pct: May be elevated in atopic comorbidities common with psoriasis
+    baso_pct: Limited direct psoriasis relevance
+ml:
+  seed: 42
+  baselines:
+    lr_auc_roc: 0.0
+    lr_auc_pr: 0.0
+    m2_best_auc_pr: 0.0
+    gp_best_auc_roc: 0.0
+    gp_best_auc_pr: 0.0
+  method2:
+    n_formulas: 10000
+    bad_frac: 0.1
+  method3:
+    phase1_auc_pr_threshold: 0.016
+    bad_frac: 0.01
+    hall_of_fame: 50
+    n_components: 50
+    fitness:
+      roc_weight: 0.5
+      pr_weight: 2.0
+    active_tiers:
+    - small
+    - medium
+    - large
+    gp_configs:
+      small:
+        population_size: 100
+        generations: 20
+        patience: 5
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+      medium:
+        population_size: 300
+        generations: 50
+        patience: 10
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+      large:
+        population_size: 500
+        generations: 100
+        patience: 20
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+        max_samples: 0.5
+      huge:
+        population_size: 20000
+        generations: 500
+        patience: 40
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+        max_samples: 0.5
+  method4:
+    model_id: google/medgemma-4b-it
+    default_repeats: 4
+    max_new_tokens: 1024
+    do_sample: true
+    functional_corr: 0.999
+    n_formulas_per_call: 5
+    temperatures:
+    - 0.3
+    - 0.7
+    - 1.0
+    cot_min_temperature: 0.7
+pipeline:
+  key_file: /home/ofekvi/.secrets/adc.json
+  project: biomarkers-478606
+  bq_dataset: biomarkers-478606.biomarkers
+  dry_run: false
+split_salt: ''
+index_date:
+  index_window_hours: 24
+  lookback_days: 90

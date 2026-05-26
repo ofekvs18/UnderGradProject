@@ -1,0 +1,121 @@
+disease:
+  name: t2d
+  full_name: Type 2 Diabetes
+  icd_patterns:
+  - 250_0%
+  - 250_2%
+  icd_version: 9
+  feature_relevance:
+    hct: Anemia of chronic disease; reduced with renal involvement in T2D
+    hgb: Low in diabetic nephropathy; reflects chronic erythropoietin deficiency
+    mch: Altered in iron-deficiency or chronic disease anemia
+    mchc: Decreased with iron deficiency; reflects inflammatory and metabolic state
+    mcv: Macrocytosis with metformin-related B12 depletion; common in long-term T2D
+    plt: Thrombocytosis and platelet hyperactivation in metabolic syndrome
+    rbc: Reduced in nephropathy; elevated RBC fragility under chronic hyperglycemia
+    rdw: Elevated RDW strongly associated with T2D and insulin resistance
+    wbc: Leukocytosis associated with obesity-driven chronic inflammation in T2D
+    neut_pct: Elevated NLR linked to insulin resistance and T2D cardiovascular outcomes
+    lym_pct: Reduced lymphocyte percentage in metabolic syndrome and obesity
+    mono_pct: Elevated monocytes in obesity-driven chronic low-grade inflammation
+    eos_pct: Altered in metabolic syndrome; associations with adipose tissue inflammation
+    baso_pct: Limited direct T2D relevance
+ml:
+  seed: 42
+  baselines:
+    lr_auc_roc: 0.0
+    lr_auc_pr: 0.0
+    m2_best_auc_pr: 0.0
+    gp_best_auc_roc: 0.0
+    gp_best_auc_pr: 0.0
+  method2:
+    n_formulas: 10000
+    bad_frac: 0.1
+  method3:
+    phase1_auc_pr_threshold: 0.016
+    bad_frac: 0.01
+    hall_of_fame: 50
+    n_components: 50
+    fitness:
+      roc_weight: 0.5
+      pr_weight: 2.0
+    active_tiers:
+    - small
+    - medium
+    - large
+    gp_configs:
+      small:
+        population_size: 100
+        generations: 20
+        patience: 5
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+      medium:
+        population_size: 300
+        generations: 50
+        patience: 10
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+      large:
+        population_size: 500
+        generations: 100
+        patience: 20
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+        max_samples: 0.5
+      huge:
+        population_size: 20000
+        generations: 500
+        patience: 40
+        parsimony_coefficient: 0.001
+        function_set:
+        - add
+        - sub
+        - mul
+        - div
+        - sqrt
+        - log
+        - neg
+        max_samples: 0.5
+  method4:
+    model_id: google/medgemma-4b-it
+    default_repeats: 4
+    max_new_tokens: 1024
+    do_sample: true
+    functional_corr: 0.999
+    n_formulas_per_call: 5
+    temperatures:
+    - 0.3
+    - 0.7
+    - 1.0
+    cot_min_temperature: 0.7
+pipeline:
+  key_file: /home/ofekvi/.secrets/adc.json
+  project: biomarkers-478606
+  bq_dataset: biomarkers-478606.biomarkers
+  dry_run: false
+split_salt: ''
+index_date:
+  index_window_hours: 24
+  lookback_days: 90

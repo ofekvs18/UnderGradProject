@@ -1,0 +1,11 @@
+formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,num_features
+(((((eos_pct) / (abs(log(abs(lym_pct)+1))+1e-6)) * (sqrt(abs(neut_pct)))) + (mcv)) - (log(abs(hgb)+1))) / (abs((mono_pct**2))+1e-6),0.5982,0.0384,0.0121,0.7867,0.0239,0.0571,0.0124,0.0128,0.0124,6
+((((((sqrt(abs(eos_pct))) * (sqrt(abs(rbc)))) + (mcv)) / (abs(sqrt(abs(mono_pct)))+1e-6)) - (hct)) - (sqrt(abs(rdw)))) - (log(abs(neut_pct)+1)),0.6002,0.0383,0.0122,0.72,0.0239,0.057,0.0106,0.0145,0.0114,7
+((((((((log(abs(baso_pct)+1)) / (abs((rdw**2))+1e-6)) - ((hct**2))) - (log(abs(eos_pct)+1))) / (abs(log(abs(neut_pct)+1))+1e-6)) + ((mcv**2))) - ((wbc**2))) / (abs(sqrt(abs(hgb)))+1e-6)) / (abs((mono_pct**2))+1e-6),0.601,0.0341,0.0125,0.7867,0.0246,0.0588,0.0119,0.0135,0.0127,9
+((((sqrt(abs(plt))) + (mchc)) / (abs(sqrt(abs(rdw)))+1e-6)) + (mcv)) / (abs(log(abs(mono_pct)+1))+1e-6),0.5881,0.0336,0.0125,0.64,0.0245,0.058,0.0114,0.0131,0.0107,5
+((((((((((sqrt(abs(eos_pct))) - (log(abs(neut_pct)+1))) / (abs(hgb)+1e-6)) - (log(abs(baso_pct)+1))) + (log(abs(mchc)+1))) + (sqrt(abs(lym_pct)))) + ((rbc**2))) * (sqrt(abs(wbc)))) - ((mcv**2))) / (abs(sqrt(abs(mono_pct)))+1e-6)) / (abs(sqrt(abs(rdw)))+1e-6),0.5742,0.0332,0.0117,0.5733,0.0229,0.054,0.0093,0.012,0.0112,11
+(((((((mono_pct) * ((neut_pct**2))) / (abs(log(abs(rdw)+1))+1e-6)) * (hgb)) / (abs(sqrt(abs(wbc)))+1e-6)) - (sqrt(abs(mchc)))) * (mcv)) + (sqrt(abs(baso_pct))),0.5721,0.0331,0.0121,0.6,0.0238,0.0561,0.0107,0.0115,0.0118,8
+((mono_pct) * ((rdw**2))) - (log(abs(mcv)+1)),0.6112,0.0323,0.0123,0.6933,0.0241,0.0574,0.0127,0.0141,0.0123,3
+(log(abs(mcv)+1)) / (abs((mono_pct**2))+1e-6),0.599,0.0317,0.0117,0.8133,0.0231,0.0555,0.0116,0.0132,0.0127,2
+(((((neut_pct) + (log(abs(mchc)+1))) - (wbc)) / (abs(log(abs(rdw)+1))+1e-6)) + ((mcv**2))) / (abs((mono_pct**2))+1e-6),0.594,0.0316,0.0119,0.7867,0.0235,0.0561,0.0115,0.013,0.012,6
+((((((((((sqrt(abs(wbc))) + (sqrt(abs(neut_pct)))) - (hct)) / (abs((rbc**2))+1e-6)) * ((rdw**2))) / (abs(mch)+1e-6)) - (lym_pct)) - (sqrt(abs(baso_pct)))) - ((mcv**2))) - (sqrt(abs(plt)))) / (abs((mono_pct**2))+1e-6),0.594,0.0316,0.0119,0.7867,0.0234,0.0561,0.0116,0.0129,0.012,11

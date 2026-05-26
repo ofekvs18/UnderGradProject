@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 32.0,
+    "direction": "below",
+    "source": "Anemia (low Hct) is a common complication of Type 2 Diabetes, particularly in those with long-standing disease."
+  },
+  "hgb": {
+    "threshold": 11.0,
+    "direction": "below",
+    "source": "Anemia (low Hgb) is a common complication of Type 2 Diabetes, particularly in those with long-standing disease."
+  },
+  "mch": {
+    "threshold": 25.0,
+    "direction": "below",
+    "source": "Low MCH can be seen in iron deficiency anemia, which is a common complication of Type 2 Diabetes."
+  },
+  "mchc": {
+    "threshold": 28.0,
+    "direction": "below",
+    "source": "Low MCH can be seen in iron deficiency anemia, which is a common complication of Type 2 Diabetes."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytosis (low MCV) can be seen in iron deficiency anemia, which is a common complication of Type 2 Diabetes."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytosis (high platelet count) can be associated with Type 2 Diabetes, particularly in those with chronic kidney disease."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Anemia (low RBC count) is a common complication of Type 2 Diabetes, particularly in those with long-standing disease."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated RDW can indicate increased red blood cell production variability, which may be seen in early stages of Type 2 Diabetes."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated WBC count can indicate infection or inflammation, which may be associated with Type 2 Diabetes."
+  }
+}

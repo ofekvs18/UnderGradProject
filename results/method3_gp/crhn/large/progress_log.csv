@@ -1,0 +1,7 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"mul(mchc, plt)",0.0191,True,True
+1,"neg(sqrt(neg(mul(mul(mchc, plt), neg(mchc)))))",0.0244,True,True
+5,"neg(sqrt(neg(mul(mul(mchc, plt), neg(mchc)))))",0.0244,False,True
+10,"neg(sqrt(neg(mul(mul(mchc, plt), neg(mchc)))))",0.0244,False,True
+15,"neg(sqrt(neg(mul(mul(mchc, plt), neg(mchc)))))",0.0244,False,True
+20,"neg(sqrt(neg(mul(mul(mchc, plt), neg(mchc)))))",0.0244,False,True
