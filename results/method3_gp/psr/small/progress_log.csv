@@ -1,3 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(sub(log(sub(mchc, rbc)), div(sub(hgb, mchc), sqrt(mono_pct))), sqrt(sub(neg(rbc), neg(plt))))",0.0134,True,True
-5,"sub(sub(log(sub(mchc, rbc)), div(sub(hgb, mchc), sqrt(mono_pct))), sqrt(sub(neg(rbc), neg(plt))))",0.0134,False,True

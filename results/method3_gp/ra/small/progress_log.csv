@@ -1,3 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"log(neg(add(neut_pct, baso_pct)))",0.0182,True,True
-5,"log(neg(add(neut_pct, baso_pct)))",0.0182,False,True

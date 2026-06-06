@@ -1,7 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(mchc, rbc)",0.0144,True,False
-1,"sqrt(neg(sub(mono_pct, sqrt(rbc))))",0.0162,True,False
-5,"sqrt(neg(sub(mono_pct, sqrt(rbc))))",0.0162,False,False
-10,"sqrt(neg(sub(mono_pct, sqrt(rbc))))",0.0162,False,False
-15,"sqrt(neg(sub(mono_pct, sqrt(rbc))))",0.0162,False,False
-20,"sqrt(neg(sub(mono_pct, sqrt(rbc))))",0.0162,False,False

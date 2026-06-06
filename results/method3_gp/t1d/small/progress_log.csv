@@ -1,5 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(mchc, -0.376)",0.0139,True,False
-1,"sub(sub(mchc, -0.376), mono_pct)",0.0146,True,False
-3,"mul(log(add(lym_pct, -0.247)), mul(sub(mchc, -0.376), mul(plt, div(add(hgb, mono_pct), mul(mono_pct, hgb)))))",0.0148,True,False
-5,"mul(log(add(lym_pct, -0.247)), mul(sub(mchc, -0.376), mul(plt, div(add(hgb, mono_pct), mul(mono_pct, hgb)))))",0.0148,False,False

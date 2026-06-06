@@ -1,8 +1,0 @@
-Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(mchc, neut_pct)",0.0195,True,True
-4,"div(add(neg(mono_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0335,True,True
-5,"div(add(div(baso_pct, lym_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0351,True,True
-10,"div(add(div(baso_pct, lym_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0351,False,True
-15,"div(add(div(baso_pct, lym_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0351,False,True
-20,"div(add(div(baso_pct, lym_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0351,False,True
-25,"div(add(div(baso_pct, lym_pct), sqrt(plt)), sqrt(add(sub(mono_pct, add(neg(log(sub(hct, mchc))), baso_pct)), log(sub(hct, mchc)))))",0.0351,False,True

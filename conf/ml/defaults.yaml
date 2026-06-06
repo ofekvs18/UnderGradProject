@@ -23,8 +23,8 @@ method3:
   hall_of_fame: 50
   n_components: 50
   fitness:
-    roc_weight: 0.5
-    pr_weight: 2.0
+    roc_weight: 2.0  # primary signal — 3× less noisy than AUC-PR at low prevalence
+    pr_weight: 0.5
   active_tiers: [small, medium, large]
   gp_configs:
     small:

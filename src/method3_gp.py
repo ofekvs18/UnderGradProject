@@ -2,8 +2,9 @@
 Issue #17 / Method 3: Genetic Programming with gplearn.
 
 Uses SymbolicTransformer to evolve formula-based biomarkers from CBC data.
-Custom fitness = 0.5*AUC-ROC + 2.0*(AUC-PR/prevalence). The AUC-PR/prevalence
-term is a lift score (random baseline = 1.0), making cross-disease fitness comparable.
+Custom fitness = 0.5*AUC-ROC + 2.0*(AUC-PR/prevalence) averaged over 3 held-out
+CV folds (StratifiedKFold). Averaging over folds prevents GP from optimising
+label noise on the full training set — a key failure mode at ~1% prevalence.
 Hall-of-fame programs are evaluated via program.execute(X) directly —
 no formula string parsing.
 
@@ -25,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, average_precision_score, precision_recall_curve
+from sklearn.model_selection import StratifiedKFold
 from gplearn.genetic import SymbolicTransformer
 from gplearn.fitness import make_fitness
 from functools import partial
@@ -88,6 +90,49 @@ def _combined_auc(y, y_pred, sample_weight, prevalence=None):
     except Exception:
         return 0.0
 
+
+def _cv_combined_auc(y, y_pred, sample_weight, fold_val_indices, prevalence):
+    """
+    CV fitness: same formula as _combined_auc but averaged over held-out folds.
+    Prevents GP from optimising noise on the full training set.
+    fold_val_indices: list of index arrays (into y / y_pred) for each val fold.
+    Falls back to full-array evaluation when called with gplearn's tiny validation
+    arrays (make_fitness passes a 2-element dummy to check the return type).
+    """
+    # gplearn validation probe — fold indices would be out of bounds
+    if len(y) < max(len(idx) for idx in fold_val_indices):
+        return _combined_auc(y, y_pred, sample_weight, prevalence=prevalence)
+
+    roc_w = _ml.method3.fitness.roc_weight
+    pr_w  = _ml.method3.fitness.pr_weight
+
+    fold_scores = []
+    for val_idx in fold_val_indices:
+        y_v = y[val_idx]
+        p_v = np.asarray(y_pred[val_idx], dtype=float)
+        if y_v.sum() < 5:
+            continue
+        bad = ~np.isfinite(p_v)
+        if bad.mean() > BAD_FRAC:
+            continue
+        if bad.any():
+            p_v = p_v.copy()
+            p_v[bad] = np.nanmedian(p_v[~bad]) if (~bad).any() else 0.0
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                auc_roc = roc_auc_score(y_v, p_v)
+                auc_pr  = average_precision_score(y_v, p_v)
+            if auc_roc < 0.5:
+                auc_roc = 1.0 - auc_roc
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    auc_pr = average_precision_score(y_v, -p_v)
+            fold_scores.append(roc_w * auc_roc + pr_w * (auc_pr / prevalence))
+        except Exception:
+            pass
+
+    return float(np.mean(fold_scores)) if fold_scores else 0.0
 
 
 def evaluate_program(program, X_train, y_train, X_test, y_test, features=None):
@@ -303,6 +348,8 @@ def main():
         help="Override population_size for all active tiers.")
     parser.add_argument("--gen", type=int, default=None,
         help="Override generations for all active tiers.")
+    parser.add_argument("--patience", type=int, default=None,
+        help="Override patience for all active tiers (useful for diagnostics).")
     args = parser.parse_args()
 
     # 1. Load Configurations
@@ -335,6 +382,11 @@ def main():
     X_train, y_train = tr_clean[features].values, tr_clean["is_case"].values
     X_test, y_test = te_clean[features].values, te_clean["is_case"].values
 
+    # Pre-compute 3-fold val indices for CV fitness (used inside SymbolicTransformer)
+    _skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=SEED)
+    fitness_val_indices = [val_idx for _, val_idx in _skf.split(X_train, y_train)]
+    print(f"CV fitness: 3 folds, val sizes {[len(i) for i in fitness_val_indices]}")
+
     # Load per-k LR baselines (computed by sanity_check.py)
     per_k_bl = load_per_k_baselines(disease.name, args.split_salt)
     if per_k_bl:
@@ -361,7 +413,7 @@ def main():
 
     for tier_name in ml.method3.active_tiers:
         tier_cfg = ml.method3.gp_configs[tier_name]
-        patience = tier_cfg.get("patience", 10)
+        patience = args.patience if args.patience is not None else tier_cfg.get("patience", 10)
         # CLI overrides for quick experiments
         pop_size = args.pop if args.pop else tier_cfg.population_size
         n_gens   = args.gen if args.gen else tier_cfg.generations
@@ -374,14 +426,15 @@ def main():
         print(f"{'='*60}")
 
         prevalence = float(y_train.mean())
+        _fvi = fitness_val_indices  # capture for closure
         def _fitness(x1, x2, w):
-            return _combined_auc(x1, x2, w, prevalence=prevalence)
+            return _cv_combined_auc(x1, x2, w, _fvi, prevalence)
 
         combined_auc_fitness = make_fitness(
                 function=_fitness,
                 greater_is_better=True
             )
-        print(f"  Fitness: roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
+        print(f"  Fitness (3-fold CV): roc_w={_ml.method3.fitness.roc_weight} * AUC-ROC + "
               f"pr_w={_ml.method3.fitness.pr_weight} * (AUC-PR / prevalence={prevalence:.4f})")
         gp = SymbolicTransformer(
             population_size=pop_size,

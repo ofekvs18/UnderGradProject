@@ -1,6 +1,0 @@
-disease,method,variant,formula,formula_display,auc_pr,auc_roc
-lup,m1,lit,rbc < 4.0,rbc < 4.0,0.0079,0.6317
-lup,m1,dd,rbc < 4.17,rbc < 4.17,0.0079,0.6317
-lup,m2,random,((((((((hgb**2)) + (log(abs(lym_pct)+1))) - (hct)) * (log(abs(wbc)+1))) / (abs(rbc)+1e-6)) * (sqrt(abs(mchc)))) - (log(abs(plt)+1))) + (sqrt(abs(rdw))),((((((((hgb**2)) + (log(abs(lym_pct)+1))) - (hct)) * (log(abs(wbc)+1))) / (abs(rbc)+1e-6)) * (sqrt(abs(mchc)))) - (log(abs(plt)+1))) + (sqrt(abs(rdw))),0.0443,0.5771
-lup,m3,gp,"div(sqrt(add(add(sqrt(sub(sub(wbc, hgb), sub(plt, neut_pct))), log(neg(mul(wbc, mcv)))), sub(plt, neut_pct))), sub(sub(sub(wbc, hgb), sub(plt, neut_pct)), sub(plt, mono_pct)))",sqrt(((sqrt(((wbc - hgb) - (plt - neut_pct))) + log((-(wbc * mcv)))) + (plt - neut_pct))) / (((wbc - hgb) - (plt - neut_pct)) - (plt - mono_pct)),0.0143,0.5622
-lup,m4,llm,hgb + 0.1 * (mch - 25) / (mcv + 0.01) * (wbc - 4),hgb + 0.1 * (mch - 25) / (mcv + 0.01) * (wbc - 4),0.011,0.5897
