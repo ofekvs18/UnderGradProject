@@ -652,40 +652,24 @@ Update the data section:
 
 Once all 7 code changes above are made and committed:
 
-**Purge locally:**
+**Purge and resubmit** (preserves `data/nhanes/` XPT files — slow to re-download):
 ```bash
-# Delete all generated data — CSVs are stale (9-feature schema)
-rm -rf data/
-
-# Delete all results — computed on stale data
-rm -rf results/
-rm -rf cluster_results/
-
-# Recreate empty directories so git doesn't break
-mkdir data results
+bash run_all.sh --purge
 ```
+Deletes `data/*` (except `data/nhanes/`), `results/`, `cluster_results/`, then submits all jobs. Prompts for `YES` before deleting.
 
-**Rerun BigQuery pipeline for all 6 diseases:**
+Optional: sanity-check locally before cluster submission:
 ```bash
 for disease in ra t1d t2d crhn psr lup; do
     python src/run_pipeline.py disease=$disease
-done
-```
-
-This regenerates all `data/<disease>_modeling_data.csv` with the 14-feature schema.
-
-**Sanity check locally before cluster submission:**
-```bash
-for disease in ra t1d t2d crhn psr lup; do
     python src/sanity_check.py --disease $disease
 done
 ```
+Pass criterion: best single-feature AUC-PR < 0.85 for all diseases.
 
-Pass criterion: best single-feature AUC-PR < 0.85 for all diseases (leakage check still holds).
-
-**Submit cluster jobs:**
+If BQ credentials are not set up via ADC:
 ```bash
-bash run_all.sh
+EHRSHOT_KEY_FILE=.secrets/bq_sa.json bash run_all.sh --purge
 ```
 
 ---

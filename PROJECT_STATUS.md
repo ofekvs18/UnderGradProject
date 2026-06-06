@@ -14,7 +14,8 @@ _Last updated: 2026-06-06 (synced to issues.md)_
 
 ### Infrastructure & scripts
 - SLURM split into GPU-only (`medgemma_generate.sbatch`) and CPU-only (`pipeline_cpu.sbatch`)
-- `run_all.sh` rewritten: paired GPU+CPU jobs per disease with `afterok` dependency; NHANES evaluate for ra/crhn/psr/lup only; `--dry-run` flag
+- `run_all.sh` rewritten: GPU+CPU+POST jobs per disease with `afterok` chain; `--dry-run`, `--purge` flags; `--purge` now preserves `data/nhanes/` (XPT files)
+- `post_compute.sbatch` / `src/post_compute.py`: 8-step post pipeline — MIMIC CIs, NHANES data+eval+CIs, EHRSHOT BQ extraction+eval, dashboard, forest plot; controlled by `SKIP_NHANES`, `SKIP_EHRSHOT`, `NHANES_DIR`, `EHRSHOT_KEY_FILE` env vars
 - `run_full_pipeline.py` end-to-end chain fixed (8 steps, M4 `all` subcommand, cluster warnings)
 
 ### MIMIC-IV experiments
@@ -62,30 +63,24 @@ _Last updated: 2026-06-06 (synced to issues.md)_
 
 All 7 code changes for the 14-feature expansion are complete. The remaining work is to regenerate all data and results with the new schema.
 
-**Purge locally:**
+**Purge and resubmit in one step** (preserves `data/nhanes/` XPT files):
 ```bash
-rm -rf data/ results/ cluster_results/
-mkdir data results
+bash run_all.sh --purge
 ```
+This deletes `data/*` (except `data/nhanes/`), `results/`, and `cluster_results/`, then immediately submits all jobs. Prompts for confirmation before deleting.
 
-**Rerun BigQuery pipeline for all 6 diseases:**
+If you need to rerun the MIMIC extraction locally first (sanity check before cluster submission):
 ```bash
 for disease in ra t1d t2d crhn psr lup; do
     python src/run_pipeline.py disease=$disease
-done
-```
-
-**Sanity check before cluster submission:**
-```bash
-for disease in ra t1d t2d crhn psr lup; do
     python src/sanity_check.py --disease $disease
 done
 ```
 Pass: best single-feature AUC-PR < 0.85 for all diseases.
 
-**Submit cluster jobs:**
+**Set BQ credentials if not using ADC:**
 ```bash
-bash run_all.sh
+EHRSHOT_KEY_FILE=.secrets/bq_sa.json bash run_all.sh --purge
 ```
 
 ---
@@ -104,7 +99,7 @@ Pass: best single-feature AUC-PR < 0.85 for all diseases.
 ```bash
 bash run_all.sh
 ```
-Submits 12 jobs (1 GPU + 1 CPU per disease); NHANES evaluate runs automatically for ra/crhn/psr/lup.
+Submits 18 jobs (1 GPU + 1 CPU + 1 POST per disease). POST jobs run NHANES eval (ra/crhn/psr/lup) and EHRSHOT eval (all 6 diseases) automatically.
 
 **Step 3 — Pull and validate after cluster finishes:**
 ```bash
@@ -175,31 +170,26 @@ print(sample)
 
 ---
 
-### 4. Verify `ehrshot_sanity.py` / `ehrshot_evaluate.py` read the BigQuery cohorts  `[local]`
+### 4. Verify `ehrshot_sanity.py` reads the BigQuery cohorts  `[local]`
 
-`src/ehrshot_bq_data.py` writes `data/<slug>_ehrshot_data.csv` for all 6 diseases. The downstream `ehrshot_sanity.py` and `ehrshot_evaluate.py` were written against the **parquet-based** `ehrshot_data.py` output. They appear to share the same path and 17-column schema, so they *should* be compatible — but this is **not yet verified**.
-
-Before relying on EHRSHOT evaluation results, confirm both scripts actually load `data/<slug>_ehrshot_data.csv` and the expected columns; adjust path/format handling if they assume the parquet pipeline. Validate on RA first:
+`ehrshot_bq_data.py` + `ehrshot_evaluate.py` now run automatically in the POST cluster job (step 5–6 of `post_compute.py`). However, `ehrshot_sanity.py` is not yet wired into the pipeline — run it manually once after the first cluster rerun to confirm the BigQuery CSVs are valid:
 ```bash
-python src/ehrshot_sanity.py --disease ra
-python src/ehrshot_evaluate.py --disease ra
+for disease in ra crhn t1d t2d psr lup; do
+    python src/ehrshot_sanity.py --disease $disease
+done
 ```
+The sanity script was written for the parquet path; confirm it reads `data/<slug>_ehrshot_data.csv` (BigQuery output) and adjust if needed.
 
 ---
 
 ## Blocked — do not start
 
-### EHRSHOT sanity + evaluation (UNBLOCKED — cohorts now extracted)
-Data access resolved: EHRSHOT is in BigQuery (`EHRSHOTS_DATA`) and `src/ehrshot_bq_data.py` has produced `data/<slug>_ehrshot_data.csv` for all 6 diseases (see "External validation (EHRSHOT, BigQuery)" above).
+### EHRSHOT evaluation (now automated)
+`ehrshot_bq_data.py` + `ehrshot_evaluate.py` are wired into the POST cluster job (steps 5–6 of `post_compute.py`) and run automatically for all 6 diseases after each cluster submission. No manual intervention needed.
 
-Remaining work — run sanity checks and evaluation on the extracted CSVs:
-```bash
-for disease in ra crhn t1d t2d psr lup; do
-    python src/ehrshot_sanity.py --disease $disease
-    python src/ehrshot_evaluate.py --disease $disease
-done
-```
-Note: `ehrshot_sanity.py` / `ehrshot_evaluate.py` were written for the parquet path; confirm they read `data/<slug>_ehrshot_data.csv` (the BigQuery output) and adjust paths/format if needed. Prevalence is intentionally high (3.7%–57.5%) due to the random control index-date design — do NOT treat high prevalence as a label-inversion bug here.
+`ehrshot_sanity.py` remains manual — see item 4 above.
+
+Prevalence is intentionally high (3.7%–57.5%) due to the random control index-date design — do NOT treat high prevalence as a label-inversion bug.
 
 ### Other blocked items
 

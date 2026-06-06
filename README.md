@@ -26,7 +26,7 @@ Compares four methods for deriving single-formula biomarkers from CBC data using
 | 4 | `method4_llm.py` | LLM-generated formulas (Med-Gemma 4B IT) |
 | — | `cross_method_correlation.py` | Pairwise Pearson r between method score vectors |
 | — | `nhanes_evaluate.py` | External validation on NHANES cycles G–J |
-| — | `ehrshot_evaluate.py` | External validation on EHRSHOT (blocked on data access) |
+| — | `ehrshot_evaluate.py` | External validation on EHRSHOT (BigQuery, all 6 diseases) |
 | — | `dashboard.py` | Streamlit + Plotly interactive results dashboard |
 
 Full results: [`results/experiment_log.md`](results/experiment_log.md)
@@ -72,6 +72,15 @@ python src/cross_method_correlation.py --disease ra  # → results/cross_method/
 ## Cluster
 
 ```bash
-bash run_all.sh                  # submit all jobs
+bash run_all.sh                  # submit all jobs (18 total: GPU+CPU+POST per disease)
+bash run_all.sh --purge          # wipe data/* (keeps data/nhanes/) + results/, then submit
+bash run_all.sh --dry-run        # preview sbatch commands without submitting
 squeue --me -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R"  # monitor
+```
+
+POST jobs run 8 steps automatically: MIMIC CIs → NHANES data+eval+CIs → EHRSHOT BQ+eval → dashboard → forest plot.
+
+Override defaults with env vars:
+```bash
+NHANES_DIR=/path/to/nhanes EHRSHOT_KEY_FILE=.secrets/bq_sa.json bash run_all.sh
 ```

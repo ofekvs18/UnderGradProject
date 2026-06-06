@@ -43,6 +43,29 @@ External-validation cohort extracted from the `EHRSHOTS_DATA` BigQuery dataset (
 - Cohorts extracted for all 6 diseases. Prevalence runs high (3.7%–57.5%) because controls get a random index date and are dropped if they lack a CBC in the lookback window; AUC-ROC is unaffected, but AUC-PR / precision@recall are prevalence-sensitive.
 - Distinct from `src/ehrshot_data.py` + `conf/ehrshot.yaml`, which read the local MEDS-parquet timeline.
 
+## Cluster pipeline
+`run_all.sh` submits 3 SLURM jobs per disease in an `afterok` chain:
+1. **GPU** (`medgemma_generate.sbatch`) — MedGemma LLM generation
+2. **CPU** (`pipeline_cpu.sbatch`) — MIMIC data extraction + M1–M4 + cross-method correlation
+3. **POST** (`post_compute.sbatch`) — calls `src/post_compute.py` for 8 steps:
+   - Step 1: MIMIC bootstrap CIs
+   - Steps 2–4: NHANES data prep → evaluate → CIs (skipped for t1d/t2d)
+   - Steps 5–6: EHRSHOT BQ extraction → evaluate (all 6 diseases)
+   - Steps 7–8: dashboard data + forest plot
+
+Key env vars (set before calling `run_all.sh`):
+```bash
+NHANES_DIR=data/nhanes          # path to downloaded NHANES XPT files (default)
+EHRSHOT_KEY_FILE=               # GCP service-account JSON; unset = use ADC
+SPLIT_SALT=                     # optional reproducibility salt
+```
+
+**Purge and rerun** — preserves `data/nhanes/` (XPT files are slow to re-download):
+```bash
+bash run_all.sh --purge         # interactive confirmation required
+bash run_all.sh --purge --dry-run  # preview what would be deleted
+```
+
 ## GitHub
 - Repo: `ofekvs18/UnderGradProject`
 - Git root: `biomarker-pipeline/` folder
@@ -55,7 +78,7 @@ biomarker-pipeline/
 ├── STANDARDS.md           # project standards
 ├── PROJECT_STATUS.md      # running status of all TODOs and experiments
 ├── requirements.txt
-├── run_all.sh             # submit all SLURM jobs (GPU + CPU, paired with afterok)
+├── run_all.sh             # submit all SLURM jobs (GPU + CPU + POST per disease, afterok chain)
 ├── conf/
 │   ├── ml/defaults.yaml          # method hyperparameters (seed, baselines, GP tiers)
 │   ├── disease/<slug>.yaml       # per-disease ICD patterns + feature_relevance for LLM prompts
@@ -63,6 +86,7 @@ biomarker-pipeline/
 │   ├── ehrshot.yaml              # EHRSHOT MEDS-parquet concept codes (validation cohort)
 │   └── ehrshot_bq.yaml           # EHRSHOT BigQuery OMOP config: dataset, concept IDs, per-disease ICD patterns
 ├── data/                  # gitignored
+│   ├── nhanes/                   # downloaded NHANES XPT files (preserved by --purge)
 │   └── llm_seeds/<disease>/      # LLM-generated seed formula CSVs (gitignored)
 ├── docs/                  # standards and design docs
 │   └── llm_seed_standard.md      # naming convention for LLM seed files (Issue #26)
