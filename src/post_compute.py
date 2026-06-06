@@ -2,16 +2,21 @@
 post_compute.py — Orchestrate all post-training steps for one disease.
 
 Steps (in order):
-  1. mimic_compute_ci   — Bootstrap CIs on MIMIC-IV test set
-  2. nhanes_evaluate    — Evaluate best formulas on NHANES external set
-  3. nhanes_compute_ci  — Bootstrap CIs on NHANES (stratified)
-  4. build_dashboard_data — Aggregate master summaries into dashboard CSV
-  5. plot_ci_forest     — Forest plot of AUC-PR CIs
+  1. mimic_compute_ci    — Bootstrap CIs on MIMIC-IV test set
+  2. nhanes_data         — Build NHANES modeling CSV from XPT files  [--skip-nhanes]
+  3. nhanes_evaluate     — Evaluate best formulas on NHANES external set  [--skip-nhanes]
+  4. nhanes_compute_ci   — Bootstrap CIs on NHANES  [--skip-nhanes]
+  5. ehrshot_bq_data     — Extract EHRSHOT cohort from BigQuery  [--skip-ehrshot]
+  6. ehrshot_evaluate    — Evaluate best formulas on EHRSHOT  [--skip-ehrshot]
+  7. build_dashboard_data — Aggregate master summaries into dashboard CSV
+  8. plot_ci_forest      — Forest plot of AUC-PR CIs
 
 Usage:
     python src/post_compute.py --disease ra
     python src/post_compute.py --disease ra --n-bootstrap 1000 --skip-nhanes
-    python src/post_compute.py --disease ra --steps 1 3 5   # run specific steps only
+    python src/post_compute.py --disease ra --skip-ehrshot
+    python src/post_compute.py --disease ra --ehrshot-key-file .secrets/bq_sa.json
+    python src/post_compute.py --disease ra --steps 1 7 8   # run specific steps only
 
 Designed to be called from run_all.sh or an sbatch job array.
 """
@@ -27,39 +32,71 @@ PYTHON = sys.executable
 
 STEPS = [
     {
-        "id":     1,
-        "name":   "mimic_compute_ci",
-        "script": "src/mimic_compute_ci.py",
-        "args":   lambda d, ns: ["--disease", d, "--n-bootstrap", str(ns.n_bootstrap)],
-        "nhanes": False,
+        "id":      1,
+        "name":    "mimic_compute_ci",
+        "script":  "src/mimic_compute_ci.py",
+        "args":    lambda d, ns: ["--disease", d, "--n-bootstrap", str(ns.n_bootstrap)],
+        "nhanes":  False,
+        "ehrshot": False,
     },
     {
-        "id":     2,
-        "name":   "nhanes_evaluate",
-        "script": "src/nhanes_evaluate.py",
-        "args":   lambda d, ns: ["--disease", d],
-        "nhanes": True,
+        "id":      2,
+        "name":    "nhanes_data",
+        "script":  "src/nhanes_data.py",
+        "args":    lambda d, ns: ["--disease", d, "--nhanes-dir", ns.nhanes_dir],
+        "nhanes":  True,
+        "ehrshot": False,
     },
     {
-        "id":     3,
-        "name":   "nhanes_compute_ci",
-        "script": "src/nhanes_compute_ci.py",
-        "args":   lambda d, ns: ["--disease", d, "--n-bootstrap", str(ns.n_bootstrap)],
-        "nhanes": True,
+        "id":      3,
+        "name":    "nhanes_evaluate",
+        "script":  "src/nhanes_evaluate.py",
+        "args":    lambda d, ns: ["--disease", d],
+        "nhanes":  True,
+        "ehrshot": False,
     },
     {
-        "id":     4,
-        "name":   "build_dashboard_data",
-        "script": "src/build_dashboard_data.py",
-        "args":   lambda d, ns: ["--disease", d],
-        "nhanes": False,
+        "id":      4,
+        "name":    "nhanes_compute_ci",
+        "script":  "src/nhanes_compute_ci.py",
+        "args":    lambda d, ns: ["--disease", d, "--n-bootstrap", str(ns.n_bootstrap)],
+        "nhanes":  True,
+        "ehrshot": False,
     },
     {
-        "id":     5,
-        "name":   "plot_ci_forest",
-        "script": "src/plot_ci_forest.py",
-        "args":   lambda d, ns: ["--disease", d],
-        "nhanes": False,
+        "id":      5,
+        "name":    "ehrshot_bq_data",
+        "script":  "src/ehrshot_bq_data.py",
+        "args":    lambda d, ns: (
+            ["--disease", d, "--key-file", ns.ehrshot_key_file]
+            if ns.ehrshot_key_file else ["--disease", d]
+        ),
+        "nhanes":  False,
+        "ehrshot": True,
+    },
+    {
+        "id":      6,
+        "name":    "ehrshot_evaluate",
+        "script":  "src/ehrshot_evaluate.py",
+        "args":    lambda d, ns: ["--disease", d],
+        "nhanes":  False,
+        "ehrshot": True,
+    },
+    {
+        "id":      7,
+        "name":    "build_dashboard_data",
+        "script":  "src/build_dashboard_data.py",
+        "args":    lambda d, ns: ["--disease", d],
+        "nhanes":  False,
+        "ehrshot": False,
+    },
+    {
+        "id":      8,
+        "name":    "plot_ci_forest",
+        "script":  "src/plot_ci_forest.py",
+        "args":    lambda d, ns: ["--disease", d],
+        "nhanes":  False,
+        "ehrshot": False,
     },
 ]
 
@@ -88,18 +125,26 @@ def main():
     parser.add_argument("--n-bootstrap", type=int, default=500,
                         help="Bootstrap iterations for CI steps (default: 500)")
     parser.add_argument("--skip-nhanes", action="store_true",
-                        help="Skip NHANES steps (2, 3) — useful when NHANES data is absent")
+                        help="Skip NHANES steps (2–4) — useful when NHANES data is absent")
+    parser.add_argument("--nhanes-dir", default="data/nhanes",
+                        help="Root directory containing NHANES XPT files (default: data/nhanes)")
+    parser.add_argument("--skip-ehrshot", action="store_true",
+                        help="Skip EHRSHOT steps (5–6) — useful when BQ credentials are absent")
+    parser.add_argument("--ehrshot-key-file", default="",
+                        help="Path to GCP service-account JSON for BigQuery (default: ADC)")
     parser.add_argument("--steps", type=int, nargs="+",
-                        help="Run only these step IDs, e.g. --steps 1 4 5")
+                        help="Run only these step IDs, e.g. --steps 1 7 8")
     ns = parser.parse_args()
 
     active_steps = [
         s for s in STEPS
         if (ns.steps is None or s["id"] in ns.steps)
         and not (ns.skip_nhanes and s["nhanes"])
+        and not (ns.skip_ehrshot and s["ehrshot"])
     ]
 
     print(f"\npost_compute: disease={ns.disease}  n_bootstrap={ns.n_bootstrap}")
+    print(f"skip_nhanes={ns.skip_nhanes}  skip_ehrshot={ns.skip_ehrshot}")
     print(f"Steps to run: {[s['id'] for s in active_steps]}")
 
     results = {}

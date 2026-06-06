@@ -1,6 +1,7 @@
 # Data (large files, not tracked)
 data/
 
+outputs/
 
 # Service account keys — NEVER commit
 .secrets/
