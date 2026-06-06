@@ -1,0 +1,60 @@
+# EHRSHOT BigQuery OMOP dataset configuration
+#
+# Used by src/ehrshot_bq_data.py to extract CBC cohorts from
+# the EHRSHOTS_DATA BigQuery dataset (OMOP CDM format).
+
+# BigQuery dataset name containing the OMOP tables
+bq_dataset: "EHRSHOTS_DATA"
+
+# GCP project ID (null = infer from credentials)
+bq_project: null
+
+# Service account key file path (null = Application Default Credentials)
+key_file: null
+
+# Disease ICD code patterns matched against condition_source_value.
+#
+# IMPORTANT: EHRSHOT stores DOTTED ICD-9 (e.g. "714.0", "250.11") and is mostly
+# ICD-10 (e.g. "M05.9", "E11.9") — unlike MIMIC's dotless ICD-9. The shared
+# conf/disease/<slug>.yaml patterns (dotless ICD-9) DO NOT work here, so EHRSHOT
+# uses its own patterns covering BOTH vocabularies. SQL LIKE wildcards:
+#   %  = any sequence of characters
+#   _  = exactly one character (used to skip the 4th ICD-9 digit in diabetes)
+# Diabetes ICD-9 5th digit encodes type: 1/3 = type 1, 0/2 = type 2.
+disease_icd_patterns:
+  ra:   ["714%", "M05%", "M06%"]                 # Rheumatoid arthritis
+  crhn: ["555%", "K50%"]                         # Crohn's disease
+  t1d:  ["250._1%", "250._3%", "E10%"]           # Type 1 diabetes (5th digit 1/3 + E10)
+  t2d:  ["250._0%", "250._2%", "E11%"]           # Type 2 diabetes (5th digit 0/2 + E11)
+  psr:  ["696.1%", "L40%"]                       # Psoriasis
+  lup:  ["695.4%", "710.0%", "M32%", "L93%"]     # Lupus (DLE 695.4/L93, SLE 710.0/M32)
+
+# OMOP measurement_concept_id for each CBC feature.
+# These are the integer concept IDs used in measurement.measurement_concept_id.
+# Verify against your local OMOP vocabulary if measurements are not found.
+cbc_concept_ids:
+  # Standard CBC — verified against measurement_source_value in EHRSHOTS_DATA
+  hct:      3023314   # 4544-3 | Hematocrit [Volume Fraction] in Blood
+  hgb:      3000963   # 718-7  | Hemoglobin [Mass/volume] in Blood
+  mch:      3012030   # 785-6  | MCH [Entitic mass]
+  mchc:     3009744   # 786-4  | MCHC [Mass/volume]
+  mcv:      3023599   # 787-2  | MCV [Entitic volume]
+  plt:      3024929   # 777-3  | Platelets [#/volume] in Blood
+  rbc:      3020416   # 789-8  | Erythrocytes [#/volume] in Blood
+  rdw:      3019897   # 788-0  | Erythrocyte distribution width
+  wbc:      3006696   # 20584-9| Leukocytes [#/volume] in Blood
+  # Differential percentages (auto-diff sourced)
+  neut_pct: 3008342   # 770-8  | Neutrophils/100 leukocytes in Blood
+  lym_pct:  3037511   # 736-9  | Lymphocytes/100 leukocytes in Blood
+  mono_pct: 3011948   # 5905-5 | Monocytes/100 leukocytes in Blood
+  eos_pct:  3010457   # 713-8  | Eosinophils/100 leukocytes in Blood
+  baso_pct: 3013869   # 706-2  | Basophils/100 leukocytes in Blood
+
+# How far back before index date to look for CBC measurements (days)
+cbc_lookback_days: 365
+
+# Random seed for control index-date sampling and patient-level split
+seed: 42
+
+# Fraction of patients held out as test set
+test_frac: 0.20

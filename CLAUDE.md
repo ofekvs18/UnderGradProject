@@ -35,6 +35,14 @@ Quick reference:
 - ~1% positive rate — always use imbalanced-aware metrics
 - Disease slugs: `ra`, `crhn`, `t1d`, `t2d`, `psr`, `lup`
 
+## EHRSHOT validation cohort (BigQuery)
+External-validation cohort extracted from the `EHRSHOTS_DATA` BigQuery dataset (OMOP CDM: `condition_occurrence`, `measurement`, `visit_occurrence`).
+- Run: `python src/ehrshot_bq_data.py --disease <slug>` → writes `data/<slug>_ehrshot_data.csv` in the standard 17-column format. Auth via ADC or `--key-file`.
+- Config: `conf/ehrshot_bq.yaml` holds the dataset name, OMOP `measurement_concept_id` per CBC feature, and **EHRSHOT-specific** `disease_icd_patterns`.
+- **Gotcha:** EHRSHOT stores **dotted** ICD-9 (`714.0`, `250.11`) and is mostly **ICD-10** (`E11.9`, `M05.9`) — unlike MIMIC's dotless ICD-9. The `conf/disease/<slug>.yaml` patterns DO NOT work here; always use `disease_icd_patterns` in `conf/ehrshot_bq.yaml` (covers both vocabularies per disease).
+- Cohorts extracted for all 6 diseases. Prevalence runs high (3.7%–57.5%) because controls get a random index date and are dropped if they lack a CBC in the lookback window; AUC-ROC is unaffected, but AUC-PR / precision@recall are prevalence-sensitive.
+- Distinct from `src/ehrshot_data.py` + `conf/ehrshot.yaml`, which read the local MEDS-parquet timeline.
+
 ## GitHub
 - Repo: `ofekvs18/UnderGradProject`
 - Git root: `biomarker-pipeline/` folder
@@ -52,7 +60,8 @@ biomarker-pipeline/
 │   ├── ml/defaults.yaml          # method hyperparameters (seed, baselines, GP tiers)
 │   ├── disease/<slug>.yaml       # per-disease ICD patterns + feature_relevance for LLM prompts
 │   ├── nhanes.yaml               # NHANES CBC variable names (validation cohort)
-│   └── ehrshot.yaml              # EHRSHOT concept IDs (validation cohort)
+│   ├── ehrshot.yaml              # EHRSHOT MEDS-parquet concept codes (validation cohort)
+│   └── ehrshot_bq.yaml           # EHRSHOT BigQuery OMOP config: dataset, concept IDs, per-disease ICD patterns
 ├── data/                  # gitignored
 │   └── llm_seeds/<disease>/      # LLM-generated seed formula CSVs (gitignored)
 ├── docs/                  # standards and design docs
@@ -81,7 +90,8 @@ biomarker-pipeline/
     ├── nhanes_data.py            # download + extract NHANES CBC cycles G–J
     ├── nhanes_sanity.py          # NHANES sanity checks
     ├── nhanes_evaluate.py        # evaluate pipeline formulas on NHANES cohort
-    ├── ehrshot_data.py           # extract EHRSHOT CBC features
+    ├── ehrshot_data.py           # extract EHRSHOT CBC features (MEDS parquet timeline)
+    ├── ehrshot_bq_data.py        # extract EHRSHOT cohort from BigQuery OMOP tables (EHRSHOTS_DATA)
     ├── ehrshot_sanity.py         # EHRSHOT sanity checks
     └── ehrshot_evaluate.py       # evaluate pipeline formulas on EHRSHOT cohort
 ```

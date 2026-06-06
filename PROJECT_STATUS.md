@@ -1,5 +1,5 @@
 # Project Status
-_Last updated: 2026-05-24_
+_Last updated: 2026-06-06 (synced to issues.md)_
 
 ---
 
@@ -21,14 +21,28 @@ _Last updated: 2026-05-24_
 - All 6 diseases (ra, t1d, t2d, crhn, psr, lup) have M1–M4 results in `results/` and `cluster_results/`
 - Sanity check master summary with LR baselines for all 6 diseases
 - `results/sanity_check/per_k_baselines.csv` — 9 rows for RA, Formula column populated
-- Cross-method correlation done for all 6 diseases (`results/cross_method/`)
+- Cross-method correlation done for all 6 diseases (`results/cross_method/`) — Issue #25
 - M4 `top_cv` files copied into `results/method4_llm/*/method4_top_cv.csv` for all 6 diseases
 - Literature threshold JSONs for all 6 diseases
+- **Nested CV for M2, M3, M4 (Issue #24)** — CV winner selection on `train_df` only; frozen test evaluated once. `CV_AUC_PR_Mean`/`CV_AUC_PR_Std` columns in all method master summaries.
+- **LLM seed files (Issue #26)** — `data/llm_seeds/<disease>/` naming standard; seed CSVs for ra, crhn, psr, lup, t1d. No seeds for t2d (vanilla GP only).
+- **Seeded-GP warm start (Issue #27)** — `--seed-file` / `--seed-fraction` flags in `method3_gp.py`; `SEED_VAR_MAP` + `translate_seed_expression()` in `utils.py`; `Seed_File` / `Seed_Count_Used` columns in M3 master.
+- **Seeded-GP vs vanilla comparison on Crohn's (Issue #28)** — 4 runs (vanilla + 3 LLM agents), pop=500, gen=100, seed=42. Results logged in `results/experiment_log.md`.
+- **Seeded-GP generalisation (Issue #29)** — closed as negative result; no seeded run beat vanilla across all diseases. Documented in `experiment_log.md`.
+- **14-feature expansion code changes (Issue #30, Steps 1–7)** — SQL pivot, `CBC_FEATURE_LIST`, `SEED_VAR_MAP`, `method4_llm.py` prompts, `conf/ml/defaults.yaml` baselines reset, `conf/ehrshot_bq.yaml`, `conf/nhanes.yaml`, `STANDARDS.md`, `CLAUDE.md` all updated for 14 features (9 standard + 5 differential).
 
 ### External validation (NHANES)
 - t1d/t2d removed from `conf/nhanes.yaml` — `nhanes_data.py --disease t1d` exits with "No case definition"
 - MCQ195 confirmed present in all 4 NHANES cycles (G–J); RA keeps G–J
 - NHANES data extracted and evaluated for ra, crhn, psr, lup
+
+### External validation (EHRSHOT, BigQuery)
+- EHRSHOT loaded into BigQuery dataset `EHRSHOTS_DATA` (OMOP CDM: condition_occurrence, measurement, visit_occurrence)
+- New `src/ehrshot_bq_data.py` + `conf/ehrshot_bq.yaml` extract cohorts directly from BigQuery (distinct from the parquet-based `ehrshot_data.py`)
+- OMOP `measurement_concept_id` verified against `measurement_source_value` — the initial config IDs were wrong (e.g. 3000963 = HGB not WBC); all 14 corrected
+- **EHRSHOT uses dotted ICD-9 + ICD-10**, so MIMIC's dotless `conf/disease/*.yaml` patterns failed (psr/lup matched 0 cases; t1d leaked type-2). Added per-disease `disease_icd_patterns` covering both vocabularies
+- Cohorts extracted for all 6 diseases: ra (1,156), crhn (1,022), t1d (1,241), t2d (1,665), psr (1,216), lup (1,115). Prevalence 3.7%–57.5%
+- **Next:** run `ehrshot_sanity.py` / `ehrshot_evaluate.py` on these CSVs (may need path/format alignment with the BigQuery output)
 
 ### Outputs
 - CI forest plot: `results/figures/ci_forest_auc_pr.png`
@@ -44,28 +58,39 @@ _Last updated: 2026-05-24_
 
 ## What needs to be done
 
-### 1. Nested CV for M2, M3, M4 — Issue #24  `[local, do first]`
+### 1. Issue #30 Step 8 — Full data purge and cluster rerun  `[cluster]`
 
-CV currently exists only for the LR baseline. Add nested CV on `train_df` for winner selection. M2 and M4 pools scored on train only; frozen test evaluated once for the winner.
+All 7 code changes for the 14-feature expansion are complete. The remaining work is to regenerate all data and results with the new schema.
 
-**Files:** `src/method2_random_formula.py`, `src/method3_gp.py`, `src/method4_llm.py`
-
-Validate on RA before cluster submission:
+**Purge locally:**
 ```bash
-python src/method2_random_formula.py --disease ra
-python -c "
-import pandas as pd
-df = pd.read_csv('results/method2_random/ra/top_formulas_cv.csv')
-assert 'cv_auc_pr_mean' in df.columns, 'CV column missing from M2 output'
-assert df['frozen_test_auc_pr'].notna().any(), 'Frozen test never evaluated'
-print('M2 CV OK — winner AUC-PR:', df['frozen_test_auc_pr'].max())
-"
+rm -rf data/ results/ cluster_results/
+mkdir data results
 ```
-Repeat for M3 and M4.
+
+**Rerun BigQuery pipeline for all 6 diseases:**
+```bash
+for disease in ra t1d t2d crhn psr lup; do
+    python src/run_pipeline.py disease=$disease
+done
+```
+
+**Sanity check before cluster submission:**
+```bash
+for disease in ra t1d t2d crhn psr lup; do
+    python src/sanity_check.py --disease $disease
+done
+```
+Pass: best single-feature AUC-PR < 0.85 for all diseases.
+
+**Submit cluster jobs:**
+```bash
+bash run_all.sh
+```
 
 ---
 
-### 2. All-disease cluster run  `[cluster, after #1]`
+### 2. All-disease cluster run  `[cluster, after Issue #30 rerun]`
 
 **Step 1 — Sanity check locally:**
 ```bash
@@ -150,48 +175,31 @@ print(sample)
 
 ---
 
-## Blocked — do not start
+### 4. Verify `ehrshot_sanity.py` / `ehrshot_evaluate.py` read the BigQuery cohorts  `[local]`
 
-### EHRSHOT external validation
-Scripts are fully implemented and ready. Blocked on dataset access only.
+`src/ehrshot_bq_data.py` writes `data/<slug>_ehrshot_data.csv` for all 6 diseases. The downstream `ehrshot_sanity.py` and `ehrshot_evaluate.py` were written against the **parquet-based** `ehrshot_data.py` output. They appear to share the same path and 17-column schema, so they *should* be compatible — but this is **not yet verified**.
 
-When EHRSHOT is available:
-
-**1. Verify OMOP concept IDs** (do this before running anything — wrong IDs produce silent empty columns):
-```python
-import pandas as pd
-cbc_omop = {
-    "wbc": "OMOP/3000963", "rbc": "OMOP/3000905", "hgb": "OMOP/3024731",
-    "hct": "OMOP/3009542", "mcv": "OMOP/3015182", "mch": "OMOP/3012030",
-    "mchc": "OMOP/3010813", "plt": "OMOP/3007461", "rdw": "OMOP/3014111",
-}
-events = pd.read_parquet("path/to/ehrshot/data/meds_events.parquet")
-for feat, code in cbc_omop.items():
-    n = (events["code"] == code).sum()
-    print(f"{feat}: {code} → {n:,} events")
-# Any feature with 0 events needs the concept ID corrected in conf/ehrshot.yaml
-```
-
-**2. Verify ICD prefix format:**
-```python
-icd_events = events[events["code"].str.startswith("ICD")]
-print(icd_events["code"].value_counts().head(20))
-# Expected: "ICD9CM/714.0" — update conf/ehrshot.yaml if format differs
-```
-
-**3. Extract, sanity-check, and evaluate:**
+Before relying on EHRSHOT evaluation results, confirm both scripts actually load `data/<slug>_ehrshot_data.csv` and the expected columns; adjust path/format handling if they assume the parquet pipeline. Validate on RA first:
 ```bash
-python src/ehrshot_data.py --ehrshot-dir /path/to/ehrshot --disease ra
 python src/ehrshot_sanity.py --disease ra
 python src/ehrshot_evaluate.py --disease ra
+```
 
-for disease in crhn psr lup; do
-    python src/ehrshot_data.py --ehrshot-dir /path/to/ehrshot --disease $disease
+---
+
+## Blocked — do not start
+
+### EHRSHOT sanity + evaluation (UNBLOCKED — cohorts now extracted)
+Data access resolved: EHRSHOT is in BigQuery (`EHRSHOTS_DATA`) and `src/ehrshot_bq_data.py` has produced `data/<slug>_ehrshot_data.csv` for all 6 diseases (see "External validation (EHRSHOT, BigQuery)" above).
+
+Remaining work — run sanity checks and evaluation on the extracted CSVs:
+```bash
+for disease in ra crhn t1d t2d psr lup; do
     python src/ehrshot_sanity.py --disease $disease
     python src/ehrshot_evaluate.py --disease $disease
 done
 ```
-Expected RA prevalence: ~0.5–2%. If 0%: ICD prefix wrong. If 50%: label logic inverted.
+Note: `ehrshot_sanity.py` / `ehrshot_evaluate.py` were written for the parquet path; confirm they read `data/<slug>_ehrshot_data.csv` (the BigQuery output) and adjust paths/format if needed. Prevalence is intentionally high (3.7%–57.5%) due to the random control index-date design — do NOT treat high prevalence as a label-inversion bug here.
 
 ### Other blocked items
 
@@ -209,4 +217,4 @@ Expected RA prevalence: ~0.5–2%. If 0%: ICD prefix wrong. If 50%: label logic 
 - CBC-only signal is weak for low-prevalence diseases; GP achieves only 0.0179 AUC-PR for RA.
 - GP plateaus at ~gen 65 for RA; further scaling has diminishing returns.
 - T2D `huge` GP tier skipped — converged at gen 40 with no further improvement.
-- EHRSHOT OMOP concept IDs unverified — external validation pending data access.
+- EHRSHOT control prevalence is high (random index-date sampling drops controls without a CBC in the lookback window); report AUC-ROC alongside AUC-PR for the EHRSHOT cohort.
