@@ -1,0 +1,2 @@
+Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Winning_Strategy,Winning_Temp
+2026-06-07 23:16:04,psr,m4,llm,(hgb - mchc) / (hct + 0.01) * (plt + 0.1),(hgb - mchc) / (hct + 0.01) * (plt + 0.1),0.6161,0.0354,0.0225,0.6719,0.0436,0.0994,0.0328,0.0261,0.0254,blind,1.0

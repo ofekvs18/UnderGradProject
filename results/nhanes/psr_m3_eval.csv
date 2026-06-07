@@ -1,0 +1,4 @@
+Timestamp,Disease,method,Variant,formula_display,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Config_Used
+2026-06-07 23:16:04,psr,m3,gp,neut_pct + rdw,"add(neut_pct, rdw)",0.6644,0.0382,0.0294,0.7969,0.0568,0.1283,0.0419,0.0329,0.0295,small
+2026-06-07 23:16:04,psr,m3,gp,mchc + hgb,"add(mchc, hgb)",0.561,0.025,0.0239,0.5938,0.0459,0.1029,0.0313,0.0243,0.0192,medium
+2026-06-07 23:16:04,psr,m3,gp,sqrt(log(mcv)) * (log(log(log(mchc))) * log((log(mcv) + (log(mcv) + hct)))),"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5835,0.0313,0.0205,0.8281,0.04,0.0933,0.0276,0.0252,0.0223,large
