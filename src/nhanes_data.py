@@ -40,7 +40,7 @@ sys.path.insert(0, "src")
 from utils import load_disease_config, ensure_dir, DATA_DIR
 
 NHANES_CONF = Path("conf") / "nhanes.yaml"
-NHANES_BASE_URL = "https://wwwn.cdc.gov/Nchs/Nhanes"
+NHANES_BASE_URL = "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public"
 _XPT_MAGIC = b"HEADER RECORD*******LIBRARY HEADER RECORD"
 
 
@@ -61,7 +61,9 @@ def _validate_xpt(path):
 
 def _download_xpt(year_range, filename, dest):
     """Download a NHANES XPT file from the CDC website. Returns True on success."""
-    url = f"{NHANES_BASE_URL}/{year_range}/{filename}"
+    start_year = year_range.split("-")[0]  # "2011-2012" -> "2011"
+    url_filename = filename[:-3] + "xpt"   # "CBC_G.XPT" -> "CBC_G.xpt"
+    url = f"{NHANES_BASE_URL}/{start_year}/DataFiles/{url_filename}"
     try:
         print(f"    Downloading {url} ...")
         urllib.request.urlretrieve(url, str(dest))
