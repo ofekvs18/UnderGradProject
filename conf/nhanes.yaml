@@ -25,7 +25,7 @@ cbc_vars:
   plt:  LBXPLTSI   # Platelets [1000 cells/µL]
   rdw:  LBXRDW     # Red Cell Distribution Width [%]
   # neut_pct–baso_pct added in Issue #30. Verify variable names against CBC codebook for cycles G–J before running nhanes_data.py
-  neut_pct:  LBXNE    # Neutrophils percent [%]
+  neut_pct:  LBXNEPCT # Neutrophils percent [%]
   lym_pct:   LBXLYPCT # Lymphocyte percent [%]
   mono_pct:  LBXMOPCT # Monocyte percent [%]
   eos_pct:   LBXEOPCT # Eosinophils percent [%]

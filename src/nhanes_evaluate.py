@@ -161,8 +161,11 @@ def evaluate_formula_on_nhanes(formula, train_df, test_df, features):
     Threshold is fitted via Youden's index on train, applied to test.
     Returns a metrics dict or None if evaluation fails.
     """
-    tr = train_df[features + ["is_case"]].dropna()
-    te = test_df[features + ["is_case"]].dropna()
+    # Only require non-null on features that have at least some valid data;
+    # avoids dropping all rows when a feature is entirely absent from this cohort.
+    available = [f for f in features if train_df[f].notna().any()]
+    tr = train_df[features + ["is_case"]].dropna(subset=available + ["is_case"])
+    te = test_df[features + ["is_case"]].dropna(subset=available + ["is_case"])
 
     score_tr = eval_formula_scores_extended(formula, tr, features)
     score_te = eval_formula_scores_extended(formula, te, features)
