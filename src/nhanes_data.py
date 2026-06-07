@@ -28,6 +28,7 @@ conf/nhanes.yaml.  Verify questionnaire codes against NHANES codebooks
 
 import argparse
 import sys
+import urllib.request
 import warnings
 from pathlib import Path
 
@@ -39,6 +40,8 @@ sys.path.insert(0, "src")
 from utils import load_disease_config, ensure_dir, DATA_DIR
 
 NHANES_CONF = Path("conf") / "nhanes.yaml"
+NHANES_BASE_URL = "https://wwwn.cdc.gov/Nchs/Nhanes"
+_XPT_MAGIC = b"HEADER RECORD*******LIBRARY HEADER RECORD"
 
 
 def load_nhanes_config():
@@ -47,11 +50,34 @@ def load_nhanes_config():
     return OmegaConf.load(NHANES_CONF)
 
 
-def find_component_file(nhanes_dir, cycle_letter, filename_template):
+def _validate_xpt(path):
+    """Return True if path starts with the SAS XPORT magic bytes."""
+    try:
+        with open(path, "rb") as f:
+            return f.read(len(_XPT_MAGIC)) == _XPT_MAGIC
+    except OSError:
+        return False
+
+
+def _download_xpt(year_range, filename, dest):
+    """Download a NHANES XPT file from the CDC website. Returns True on success."""
+    url = f"{NHANES_BASE_URL}/{year_range}/{filename}"
+    try:
+        print(f"    Downloading {url} ...")
+        urllib.request.urlretrieve(url, str(dest))
+        return True
+    except Exception as exc:
+        print(f"    Download failed: {exc}")
+        return False
+
+
+def find_component_file(nhanes_dir, cycle_letter, filename_template, year_range=None):
     """
     Locate a NHANES component file for a given cycle.
     Tries flat layout first, then cycle-subdirectory layout.
-    Returns Path or None if not found.
+    If year_range is given and the file is missing or corrupt, attempts to
+    download it from the CDC NHANES website.
+    Returns Path or None if not found/downloadable.
     """
     filename = filename_template.format(cycle_letter)
     candidates = [
@@ -61,7 +87,23 @@ def find_component_file(nhanes_dir, cycle_letter, filename_template):
     ]
     for c in candidates:
         if c.exists():
-            return c
+            if _validate_xpt(c):
+                return c
+            # File exists but header is wrong — likely a corrupted/HTML download
+            print(f"  WARNING: {c.name} exists but is not a valid XPT file (corrupted download?)")
+            if year_range:
+                print(f"  Attempting to re-download ...")
+                if _download_xpt(year_range, filename, c) and _validate_xpt(c):
+                    print(f"  Re-download OK: {c.name}")
+                    return c
+                print(f"  Re-download failed or still invalid — skipping {c.name}")
+            return None
+    # File not found — attempt download to flat layout
+    if year_range:
+        dest = nhanes_dir / filename
+        if _download_xpt(year_range, filename, dest) and _validate_xpt(dest):
+            print(f"  Downloaded OK: {filename}")
+            return dest
     return None
 
 
@@ -87,9 +129,9 @@ def load_cbc_across_cycles(nhanes_dir, cycles, cbc_file_tpl, cbc_vars):
 
     frames = []
     for cycle_letter, year_range in cycles.items():
-        path = find_component_file(nhanes_dir, cycle_letter, cbc_file_tpl)
+        path = find_component_file(nhanes_dir, cycle_letter, cbc_file_tpl, year_range=year_range)
         if path is None:
-            print(f"  [cycle {cycle_letter} / {year_range}] CBC file not found — skipped")
+            print(f"  [cycle {cycle_letter} / {year_range}] CBC file not found or invalid — skipped")
             continue
         df = load_xpt(path)
         if df is None:
@@ -139,7 +181,8 @@ def load_questionnaire_conditions(nhanes_dir, cycles, q_file_tpl, variable, valu
     values_set = set(values)
 
     for cycle_letter in cycles:
-        path = find_component_file(nhanes_dir, cycle_letter, q_file_tpl)
+        year_range = cycles[cycle_letter] if isinstance(cycles, dict) else None
+        path = find_component_file(nhanes_dir, cycle_letter, q_file_tpl, year_range=year_range)
         if path is None:
             continue
         df = load_xpt(path)
