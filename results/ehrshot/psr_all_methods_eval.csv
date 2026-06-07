@@ -1,0 +1,8 @@
+Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Best_Lit_Feature,Best_DD_Feature,Config_Used,Winning_Strategy,Winning_Temp
+2026-06-07 07:45:50,psr,m1,lit,rbc < 4.0,0.5545,0.0754,0.0789,0.6923,0.1417,0.2711,0.0789,0.0789,0.0674,rbc,mch,,,
+2026-06-07 07:45:50,psr,m1,dd,mch > 30.8,0.6049,0.0867,0.0988,0.6154,0.1702,0.3008,0.0988,0.0674,0.0674,rbc,mch,,,
+2026-06-07 07:45:50,psr,m2,random,(((sqrt(abs(mch))) / (abs(mcv)+1e-6)) * ((neut_pct**2))) - (sqrt(abs(mono_pct))),0.5534,0.0774,0.0732,0.4615,0.1263,0.2239,0.0882,0.0759,0.0863,,,,,
+2026-06-07 07:45:50,psr,m3,gp,"add(neut_pct, rdw)",0.5684,0.0863,0.0615,0.3077,0.1026,0.1709,0.075,0.0833,0.0744,,,small,,
+2026-06-07 07:45:50,psr,m3,gp,"add(mchc, hgb)",0.5553,0.0764,0.0725,0.3846,0.122,0.2066,0.0606,0.0805,0.0859,,,medium,,
+2026-06-07 07:45:50,psr,m3,gp,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5154,0.076,0.0633,0.3846,0.1087,0.1908,0.0426,0.0641,0.0709,,,large,,
+2026-06-07 07:45:50,psr,m4,llm,(hgb - mchc) / (hct + 0.01) * (plt + 0.1),0.5201,0.0961,0.0732,0.4615,0.1263,0.2239,0.0851,0.0732,0.0781,,,,blind,1.0

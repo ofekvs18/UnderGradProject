@@ -1,0 +1,2 @@
+Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75
+2026-06-07 07:45:55,t2d,m2,random,((((((((((((sqrt(abs(rdw))) + (mch)) - ((mono_pct**2))) * (log(abs(hct)+1))) + (neut_pct)) - (sqrt(abs(plt)))) * (lym_pct)) + ((baso_pct**2))) * (wbc)) / (abs(sqrt(abs(rbc)))+1e-6)) * (sqrt(abs(eos_pct)))) / (abs((hgb**2))+1e-6)) / (abs((mcv**2))+1e-6),0.5317,0.5904,0.6107,0.5652,0.5871,0.5738,0.5424,0.622,0.641

@@ -1,0 +1,3 @@
+Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Best_Lit_Feature,Best_DD_Feature
+2026-06-07 07:45:55,t2d,m1,lit,mcv < 80.0,0.5146,0.6012,0.0,0.0,0.0,0.0,0.6016,0.6016,0.6016,mcv,mchc
+2026-06-07 07:45:55,t2d,m1,dd,mchc > 33.4,0.5756,0.6346,0.66,0.6149,0.6367,0.6234,0.66,0.66,0.5941,mcv,mchc

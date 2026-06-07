@@ -1,0 +1,2 @@
+Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Winning_Strategy,Winning_Temp
+2026-06-07 07:45:55,t2d,m4,llm,(mchc - 27) / (mch + 0.1) * (rdw / 20),0.5306,0.624,0.7143,0.0621,0.1143,0.076,0.6338,0.6209,0.5963,seeded,1.0

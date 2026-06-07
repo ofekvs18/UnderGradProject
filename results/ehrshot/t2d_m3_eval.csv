@@ -1,0 +1,4 @@
+Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,Config_Used
+2026-06-07 07:45:55,t2d,m3,gp,"mul(log(mono_pct), mul(div(neut_pct, mono_pct), add(sqrt(mch), div(neut_pct, mono_pct))))",0.5844,0.6484,0.6268,0.5528,0.5875,0.5662,0.6275,0.626,0.651,small
+2026-06-07 07:45:55,t2d,m3,gp,"div(add(add(mono_pct, add(mcv, mono_pct)), mono_pct), mchc)",0.5354,0.6273,0.6207,0.1118,0.1895,0.1337,0.6286,0.6259,0.6066,medium
+2026-06-07 07:45:55,t2d,m3,gp,"mul(sub(mchc, mono_pct), sub(sqrt(div(add(mch, add(mch, add(mch, mcv))), rdw)), sqrt(mchc)))",0.5088,0.6059,1.0,0.0062,0.0123,0.0078,0.6316,0.6144,0.6101,large
