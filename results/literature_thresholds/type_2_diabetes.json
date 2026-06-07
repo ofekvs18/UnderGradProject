@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 32.0,
+    "direction": "below",
+    "source": "Anemia (low hematocrit) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+  },
+  "hgb": {
+    "threshold": 11.0,
+    "direction": "below",
+    "source": "Anemia (low hemoglobin) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+  },
+  "mch": {
+    "threshold": 27.0,
+    "direction": "below",
+    "source": "Low MCH can indicate iron deficiency anemia, which is a common complication of diabetes."
+  },
+  "mchc": {
+    "threshold": 30.0,
+    "direction": "below",
+    "source": "Low MCH can indicate iron deficiency anemia, which is a common complication of diabetes."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytosis (low MCV) can be a sign of iron deficiency anemia, which is a common complication of diabetes."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytosis (elevated platelet count) can be seen in diabetes, potentially due to increased platelet activation or inflammation."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Anemia (low RBC count) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated RDW can indicate increased red blood cell production variability, which may be seen in early stages of diabetes or other conditions affecting erythropoiesis."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated white blood cell count can be associated with inflammation, which is often present in individuals with diabetes and its complications."
+  }
+}

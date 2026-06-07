@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 33.0,
+    "direction": "below",
+    "source": "Similar to hemoglobin, a low hematocrit can indicate anemia associated with RA."
+  },
+  "hgb": {
+    "threshold": 11.0,
+    "direction": "below",
+    "source": "Anemia is frequently observed in RA, particularly anemia of chronic disease, which can be detected by a low hemoglobin level."
+  },
+  "mch": {
+    "threshold": 25.0,
+    "direction": "below",
+    "source": "Low mean corpuscular hemoglobin (MCH) can also be associated with microcytic anemia in RA."
+  },
+  "mchc": {
+    "threshold": 30.0,
+    "direction": "below",
+    "source": "Low mean corpuscular hemoglobin concentration (MCHC) can be seen in microcytic anemia in RA."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytosis (low MCV) can be seen in RA, particularly in the context of anemia of chronic disease."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytosis is sometimes observed in RA, potentially due to inflammation or other factors."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Low red blood cell count can indicate anemia associated with RA."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated RDW is a common finding in RA, reflecting increased red blood cell variation in size, often due to chronic inflammation."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated white blood cell count can be seen in RA, reflecting inflammation and immune activation."
+  }
+}

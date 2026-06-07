@@ -1,0 +1,10 @@
+feature,literature_threshold,literature_direction,literature_precision,literature_recall,datadriven_threshold,datadriven_direction,datadriven_precision,datadriven_recall,auc_roc,auc_pr
+rbc,4.0,below,0.005,0.7523,4.17,below,0.0049,0.8807,0.6318,0.0079
+hgb,10.0,below,0.0062,0.3909,11.5,below,0.0051,0.6727,0.648,0.0067
+hct,30.0,below,0.007,0.4,37.8,below,0.0047,0.8727,0.654,0.0063
+rdw,15.0,above,0.0053,0.3578,14.3,above,0.0053,0.5596,0.6291,0.0057
+mcv,80.0,below,0.0082,0.1101,88.0,below,0.0042,0.4128,0.5208,0.0052
+mch,28.0,below,0.0052,0.2569,28.1,below,0.0052,0.2844,0.5097,0.0046
+plt,400.0,above,0.0061,0.0826,271.0,above,0.0036,0.2477,0.4828,0.0041
+mchc,32.0,below,0.0035,0.211,34.9,below,0.0037,0.8991,0.4953,0.0036
+wbc,12.0,above,0.0034,0.1927,5.7,below,0.0078,0.3945,0.4158,0.0036

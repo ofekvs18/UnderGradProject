@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 30.0,
+    "direction": "below",
+    "source": "Similar to Hgb, low Hct indicates anemia, a frequent finding in Crohn's disease."
+  },
+  "hgb": {
+    "threshold": 10.0,
+    "direction": "below",
+    "source": "Anemia is common in Crohn's disease due to blood loss from intestinal inflammation and malabsorption."
+  },
+  "mch": {
+    "threshold": 25.0,
+    "direction": "below",
+    "source": "Low MCH indicates smaller red blood cells, consistent with microcytic anemia seen in Crohn's disease."
+  },
+  "mchc": {
+    "threshold": 28.0,
+    "direction": "below",
+    "source": "Low MCHc indicates decreased hemoglobin concentration per red blood cell, also consistent with microcytic anemia."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytic anemia (low MCV) can be seen in Crohn's disease due to iron deficiency from blood loss or malabsorption."
+  },
+  "plt": {
+    "threshold": 400000.0,
+    "direction": "below",
+    "source": "Thrombocytopenia (low platelet count) can occur in Crohn's disease due to splenic sequestration or bone marrow suppression."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Low RBC count indicates anemia, a frequent finding in Crohn's disease."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated RDW can indicate increased red blood cell production variability, which may be seen in inflammatory conditions like Crohn's disease."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated WBC count can reflect inflammation and infection, which are associated with Crohn's disease."
+  }
+}

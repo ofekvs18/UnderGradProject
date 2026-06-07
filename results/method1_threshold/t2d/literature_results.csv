@@ -1,0 +1,10 @@
+feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
+hct,32.0,below,0.5497,0.138,0.149,0.3618,0.211,0.2814,29195,"Anemia (low hematocrit) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+hgb,11.0,below,0.5348,0.1321,0.1427,0.4241,0.2135,0.3041,29197,"Anemia (low hemoglobin) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+mch,27.0,below,0.5241,0.1323,0.131,0.1118,0.1207,0.1152,29166,"Low MCH can indicate iron deficiency anemia, which is a common complication of diabetes."
+mchc,30.0,below,0.439,0.1087,0.0759,0.0164,0.027,0.0195,29167,"Low MCH can indicate iron deficiency anemia, which is a common complication of diabetes."
+mcv,80.0,below,0.5643,0.1492,0.1506,0.0587,0.0845,0.0669,29166,"Microcytosis (low MCV) can be a sign of iron deficiency anemia, which is a common complication of diabetes."
+plt,400.0,above,0.5,0.1275,0.1191,0.0463,0.0667,0.0528,29145,"Thrombocytosis (elevated platelet count) can be seen in diabetes, potentially due to increased platelet activation or inflammation."
+rbc,4.0,below,0.5257,0.1304,0.1391,0.6139,0.2268,0.3649,29166,"Anemia (low RBC count) is a common complication of diabetes, particularly in individuals with poor glycemic control."
+rdw,15.0,above,0.5807,0.1436,0.1481,0.2854,0.195,0.2407,29159,"Elevated RDW can indicate increased red blood cell production variability, which may be seen in early stages of diabetes or other conditions affecting erythropoiesis."
+wbc,12.0,above,0.4965,0.1239,0.1183,0.1984,0.1482,0.1747,29174,"Elevated white blood cell count can be associated with inflammation, which is often present in individuals with diabetes and its complications."

@@ -1,0 +1,5 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"sub(mchc, neut_pct)",0.0195,True,True
+2,"div(mul(neg(mchc), div(plt, mul(mono_pct, hgb))), sqrt(add(sqrt(mono_pct), log(sub(hct, mchc)))))",0.0305,True,True
+5,"div(mul(neg(mchc), div(plt, mul(mono_pct, hgb))), sqrt(add(sqrt(mono_pct), log(sub(hct, mchc)))))",0.0305,False,True
+10,"div(mul(neg(mchc), div(plt, mul(mono_pct, hgb))), sqrt(add(sqrt(mono_pct), log(sub(hct, mchc)))))",0.0305,False,True

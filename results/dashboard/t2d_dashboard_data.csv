@@ -1,0 +1,6 @@
+disease,method,variant,formula,formula_display,auc_pr,auc_roc
+t2d,m1,lit,mcv < 80.0,mcv < 80.0,0.1492,0.5643
+t2d,m1,dd,mchc > 33.4,mchc > 33.4,0.1516,0.561
+t2d,m2,random,((((((((((((sqrt(abs(rdw))) + (mch)) - ((mono_pct**2))) * (log(abs(hct)+1))) + (neut_pct)) - (sqrt(abs(plt)))) * (lym_pct)) + ((baso_pct**2))) * (wbc)) / (abs(sqrt(abs(rbc)))+1e-6)) * (sqrt(abs(eos_pct)))) / (abs((hgb**2))+1e-6)) / (abs((mcv**2))+1e-6),((((((((((((sqrt(abs(rdw))) + (mch)) - ((mono_pct**2))) * (log(abs(hct)+1))) + (neut_pct)) - (sqrt(abs(plt)))) * (lym_pct)) + ((baso_pct**2))) * (wbc)) / (abs(sqrt(abs(rbc)))+1e-6)) * (sqrt(abs(eos_pct)))) / (abs((hgb**2))+1e-6)) / (abs((mcv**2))+1e-6),0.1552,0.6355
+t2d,m3,gp,"mul(sub(mchc, mono_pct), sub(sqrt(div(add(mch, add(mch, add(mch, mcv))), rdw)), sqrt(mchc)))",(mchc - mono_pct) * (sqrt(((mch + (mch + (mch + mcv))) / rdw)) - sqrt(mchc)),0.1704,0.6505
+t2d,m4,llm,(mchc - 27) / (mch + 0.1) * (rdw / 20),(mchc - 27) / (mch + 0.1) * (rdw / 20),0.1422,0.5997

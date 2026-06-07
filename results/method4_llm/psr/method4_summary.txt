@@ -1,0 +1,31 @@
+METHOD 4 PERFORMANCE SUMMARY: PSR
+        ==================================================
+        Generated at: 2026-06-07 02:30:47
+
+        SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
+        ---------------------------------------
+        Cohort Prevalence : 0.0057
+        Best Single Feat  : mch (AUC-PR: 0.0134)
+        All-Feature LR    : AUC-PR: 0.0115 | AUC-ROC: 0.6869
+
+        LLM PERFORMANCE (Method 4)
+        ---------------------------------------
+        Total Evaluated   : 44
+        Winner Formula    : (hgb - mchc) / (hct + 0.01) * (plt + 0.1)
+        Winner AUC-PR     : 0.0137 (Beat All-Feat LR: YES)
+        Winner AUC-ROC    : 0.5047
+
+        HEAD-TO-HEAD
+        ---------------------------------------
+        Beat Best Single Feat? : YES
+        Beat All-Feature LR?   : YES
+        Strategy of Winner     : blind (Temp: 1.0)
+
+CV WINNER (selected by 5-fold CV on train_df)
+---------------------------------------
+CV_AUC_PR_Mean    : 0.0088
+CV_AUC_PR_CI95    : [0.0041, 0.0135]
+Frozen_Test_AUC_PR: 0.0102 (Beat All-Feat LR: NO)
+CV Winner Formula : sqrt(rdw * (plt + 0.01)) / (hct + 0.01)
+
+        [Master Summary updated at results/method4_llm/method4_master_summary.csv]

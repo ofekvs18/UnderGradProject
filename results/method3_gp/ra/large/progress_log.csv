@@ -1,0 +1,7 @@
+Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
+0,"sub(mchc, neut_pct)",0.0195,True,True
+3,"add(mul(neg(add(mul(div(mono_pct, neut_pct), sub(mono_pct, 0.347)), log(sub(hct, mchc)))), mul(mono_pct, mchc)), add(add(neut_pct, plt), neg(0.361)))",0.0202,True,True
+5,"add(mul(neg(add(mul(div(mono_pct, neut_pct), sub(mono_pct, 0.347)), log(sub(hct, mchc)))), mul(mono_pct, mchc)), add(add(neut_pct, plt), neg(0.361)))",0.0202,False,True
+10,"add(mul(neg(add(mul(div(mono_pct, neut_pct), sub(mono_pct, 0.347)), log(sub(hct, mchc)))), mul(mono_pct, mchc)), add(add(neut_pct, plt), neg(0.361)))",0.0202,False,True
+15,"add(mul(neg(add(mul(div(mono_pct, neut_pct), sub(mono_pct, 0.347)), log(sub(hct, mchc)))), mul(mono_pct, mchc)), add(add(neut_pct, plt), neg(0.361)))",0.0202,False,True
+20,"add(mul(neg(add(mul(div(mono_pct, neut_pct), sub(mono_pct, 0.347)), log(sub(hct, mchc)))), mul(mono_pct, mchc)), add(add(neut_pct, plt), neg(0.361)))",0.0202,False,True

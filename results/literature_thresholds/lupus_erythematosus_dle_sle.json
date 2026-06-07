@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 30.0,
+    "direction": "below",
+    "source": "Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."
+  },
+  "hgb": {
+    "threshold": 10.0,
+    "direction": "below",
+    "source": "Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."
+  },
+  "mch": {
+    "threshold": 28.0,
+    "direction": "below",
+    "source": "Macrocytosis (increased MCV) can be seen in SLE, particularly in cases associated with drug-induced hematologic abnormalities or vitamin B12 deficiency."
+  },
+  "mchc": {
+    "threshold": 32.0,
+    "direction": "below",
+    "source": "Macrocytosis (increased MCV) can be seen in SLE, particularly in cases associated with drug-induced hematologic abnormalities or vitamin B12 deficiency."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Macrocytosis (increased MCV) can be seen in SLE, particularly in cases associated with drug-induced hematologic abnormalities or vitamin B12 deficiency."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytopenia is common in SLE due to autoimmune destruction of platelets."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Anemia is a frequent finding in SLE, often due to chronic inflammation and autoimmune hemolysis."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated red cell distribution width (RDW) is common in SLE due to increased variation in red blood cell size (anisocytosis)."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Leukocytosis can occur in SLE due to inflammation and immune complex formation."
+  }
+}

@@ -1,0 +1,38 @@
+Method 1: Threshold Optimization Results
+    =========================================
+
+    CV-Selected Feature: PLT
+      CV_AUC_PR_Mean: 0.0163  Std: 0.0030
+      CV_AUC_PR_CI95: [0.0105, 0.0222]
+      Frozen_Test_AUC_PR: 0.0190
+
+    Best single feature: MCV (selected by frozen AUC-PR)
+
+    Literature threshold: 80.0 (below)
+      AUC-ROC: 0.5719
+      AUC-PR:  0.0162
+      Precision: 0.0164
+      Recall:    0.0848
+      F1: 0.0275
+      F2: 0.0463
+
+    Data-driven threshold: 87.0000 (below)
+      AUC-ROC: 0.5719
+      AUC-PR:  0.0162
+      Precision: 0.0137
+      Recall:    0.4276
+      F1: 0.0265
+      F2: 0.0606
+      Precision@Recall(0.25): 0.0145
+      Precision@Recall(0.50): 0.0122
+      Precision@Recall(0.75): 0.0105
+
+    Comparison to baseline (all-features logistic regression):
+      Baseline AUC-ROC: 0.653  |  Best feature AUC-ROC: 0.572  |  Diff: -0.081
+      Baseline AUC-PR:  0.018  |  Best feature AUC-PR:  0.016  |  Diff: -0.002
+
+    Key insight:
+      Single-feature thresholds underperform the all-features baseline on both metrics.
+      Data-driven (Youden) thresholds optimize the precision-recall tradeoff but cannot
+      match the predictive power of multi-feature models.
+    

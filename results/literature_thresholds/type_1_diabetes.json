@@ -1,0 +1,47 @@
+{
+  "hct": {
+    "threshold": 30.0,
+    "direction": "below",
+    "source": "Low HCT is a common finding in T1D due to chronic inflammation and impaired erythropoiesis."
+  },
+  "hgb": {
+    "threshold": 10.0,
+    "direction": "below",
+    "source": "Anemia is a common finding in T1D due to chronic inflammation and impaired erythropoiesis."
+  },
+  "mch": {
+    "threshold": 25.0,
+    "direction": "below",
+    "source": "Low MCH can be seen in T1D due to iron deficiency or impaired erythropoiesis."
+  },
+  "mchc": {
+    "threshold": 28.0,
+    "direction": "below",
+    "source": "Low MCH can be seen in T1D due to iron deficiency or impaired erythropoiesis."
+  },
+  "mcv": {
+    "threshold": 80.0,
+    "direction": "below",
+    "source": "Microcytosis (low MCV) can be seen in T1D due to iron deficiency or impaired erythropoiesis."
+  },
+  "plt": {
+    "threshold": 400.0,
+    "direction": "above",
+    "source": "Thrombocytosis can be seen in T1D due to increased platelet production."
+  },
+  "rbc": {
+    "threshold": 4.0,
+    "direction": "below",
+    "source": "Low RBC count is a common finding in T1D due to chronic inflammation and impaired erythropoiesis."
+  },
+  "rdw": {
+    "threshold": 15.0,
+    "direction": "above",
+    "source": "Elevated RDW can indicate increased red blood cell production variability, which can be seen in early T1D."
+  },
+  "wbc": {
+    "threshold": 12.0,
+    "direction": "above",
+    "source": "Elevated WBC count can indicate infection or inflammation, which can be associated with T1D."
+  }
+}

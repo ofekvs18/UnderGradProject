@@ -1,0 +1,6 @@
+method,label,formula,auc_pr,auc_roc,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
+m1,M1: Threshold,plt > 237.0,0.0154,0.6079,0.0079,0.0135,0.4877,0.606
+m2,M2: Random Search,(((((eos_pct) / (abs(log(abs(lym_pct)+1))+1e-6)) * (sqrt(abs(neut_pct)))) + (mcv)) - (log(abs(hgb)+1))) / (abs((mono_pct**2))+1e-6),0.0385,0.6019,0.0102,0.0815,0.5422,0.6583
+m3,M3: Genetic Programming,"mul(log(log(add(lym_pct, -0.247))), mul(div(neut_pct, mono_pct), mul(lym_pct, mul(mul(lym_pct, mul(div(neut_pct, mono_pct), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))), mul(div(neut_pct, mono_pct), add(hgb, mono_pct))))))",0.0144,0.6162,0.0103,0.0259,0.5544,0.6748
+m4,M4: LLM,(mch - 28) * (mchc - 32) * (mcv - 80) * (plt - 150),0.0133,0.5816,0.0094,0.0207,0.5142,0.6461
+lr_baseline,LR Baseline (all features),,0.0167,,,,,

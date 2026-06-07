@@ -1,0 +1,11 @@
+formula,auc_roc,auc_pr,precision,recall,f1,f2,precision_at_recall_25,precision_at_recall_50,precision_at_recall_75,num_features
+(((sqrt(abs(mch))) / (abs(mcv)+1e-6)) * ((neut_pct**2))) - (sqrt(abs(mono_pct))),0.5606,0.04,0.0102,0.2353,0.0196,0.0436,0.0087,0.0071,0.007,4
+((((((rdw**2)) - (mchc)) / (abs(mch)+1e-6)) * ((plt**2))) * (log(abs(eos_pct)+1))) + (neut_pct),0.5094,0.0396,0.0068,0.6275,0.0135,0.0328,0.0074,0.0065,0.0059,6
+(((((((((((log(abs(rdw)+1)) + ((hct**2))) + (sqrt(abs(mcv)))) + (mch)) / (abs(sqrt(abs(mono_pct)))+1e-6)) / (abs(log(abs(lym_pct)+1))+1e-6)) - ((neut_pct**2))) - (log(abs(hgb)+1))) - ((mchc**2))) + (sqrt(abs(plt)))) - (eos_pct)) - (log(abs(wbc)+1)),0.5684,0.034,0.0122,0.2549,0.0232,0.0511,0.0094,0.0071,0.0068,12
+(((mchc) + (sqrt(abs(mcv)))) * (neut_pct)) - (sqrt(abs(lym_pct))),0.5721,0.034,0.0071,0.4118,0.0139,0.0331,0.0103,0.0077,0.0069,4
+((mchc) * (log(abs(neut_pct)+1))) - (lym_pct),0.5652,0.0333,0.0075,0.549,0.0147,0.0354,0.0114,0.0078,0.0069,3
+((((((((log(abs(hgb)+1)) + ((mch**2))) - (log(abs(mchc)+1))) + ((mcv**2))) * ((hct**2))) / (abs(eos_pct)+1e-6)) + (sqrt(abs(wbc)))) / (abs(log(abs(lym_pct)+1))+1e-6)) - ((plt**2)),0.5664,0.0326,0.0077,0.6667,0.0151,0.0366,0.0083,0.0074,0.0071,9
+(((((log(abs(hgb)+1)) / (abs(log(abs(rbc)+1))+1e-6)) * ((neut_pct**2))) + (rdw)) / (abs(log(abs(baso_pct)+1))+1e-6)) * ((mchc**2)),0.5706,0.0318,0.0104,0.3333,0.0202,0.0463,0.0111,0.0072,0.0069,6
+(((((((((log(abs(mono_pct)+1)) - (sqrt(abs(lym_pct)))) - ((rbc**2))) - (plt)) + (log(abs(mcv)+1))) / (abs(sqrt(abs(hct)))+1e-6)) * ((rdw**2))) * ((hgb**2))) - (sqrt(abs(mchc)))) - ((mch**2)),0.5018,0.0317,0.0063,0.5686,0.0126,0.0304,0.0074,0.0067,0.0063,10
+((mchc) + (sqrt(abs(hct)))) * (neut_pct),0.5701,0.0313,0.0081,0.451,0.016,0.0379,0.0106,0.0075,0.0067,3
+((((((((((lym_pct**2)) * ((mch**2))) - (log(abs(rbc)+1))) - (log(abs(hgb)+1))) + (sqrt(abs(mcv)))) - (sqrt(abs(rdw)))) + (baso_pct)) * ((plt**2))) * (sqrt(abs(eos_pct)))) + (sqrt(abs(wbc))),0.5337,0.0294,0.0067,0.4706,0.0133,0.0318,0.0076,0.0069,0.0067,10

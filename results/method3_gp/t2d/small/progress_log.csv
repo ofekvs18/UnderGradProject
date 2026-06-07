@@ -1,8 +1,4 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
 0,"mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))",0.1373,True,False
 1,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,True,False
-2,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,False,False
-3,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,False,False
-4,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,False,False
 5,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,False,False
-6,"log(add(mul(mono_pct, hct), neg(mcv)))",0.1492,False,False
