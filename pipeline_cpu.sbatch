@@ -47,6 +47,21 @@ run_step "sanity check"      $PYTHON -u src/sanity_check.py          --disease "
 run_step "method1 threshold" $PYTHON -u src/method_threshold.py      --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method2 random"    $PYTHON -u src/method2_random_formula.py --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "method3 GP"        $PYTHON -u src/method3_gp.py             --disease "$DISEASE" --split-salt "$SPLIT_SALT"
+
+# Seeded GP: run for each LLM seed file that exists for this disease
+SEED_DIR="data/llm_seeds/$DISEASE"
+if [[ -d "$SEED_DIR" ]]; then
+    for seed_file in "$SEED_DIR"/*.csv; do
+        [[ -f "$seed_file" ]] || continue
+        seed_name=$(basename "$seed_file" .csv)
+        run_step "method3 GP seeded ($seed_name)" \
+            $PYTHON -u src/method3_gp.py \
+            --disease "$DISEASE" --split-salt "$SPLIT_SALT" \
+            --seed-file "$seed_file"
+    done
+else
+    echo "  No seed files for $DISEASE — skipping seeded GP"
+fi
 run_step "method4 evaluate"  $PYTHON -u src/method4_llm.py evaluate   --disease "$DISEASE" --split-salt "$SPLIT_SALT"
 run_step "cross-method corr" $PYTHON -u src/cross_method_correlation.py --disease "$DISEASE"
 run_step "compare methods"   $PYTHON -u src/compare_methods.py
