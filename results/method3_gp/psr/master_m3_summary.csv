@@ -2,3 +2,12 @@ Timestamp,Disease,Split_Salt,Config_Used,Best_GP_Formula,Best_GP_AUC_PR,Best_GP_
 2026-06-07 02:30:33,psr,,small,"add(neut_pct, rdw)",0.0134,0.5768,2,0.0146,-0.0012,0,5,True,0.013492,0.013289,-0.012554,0.039539,False,,none,0
 2026-06-07 02:30:33,psr,,medium,"add(mchc, hgb)",0.0117,0.5595,2,0.0146,-0.0029,0,10,True,0.016675,0.010517,-0.003938,0.037288,True,0.0079,none,0
 2026-06-07 02:30:33,psr,,large,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.0151,0.6061,3,0.0146,0.0005,0,20,True,0.015977,0.01055,-0.004701,0.036655,False,,none,0
+2026-06-08 00:08:53,psr,,small,"add(neut_pct, rdw)",0.0134,0.5768,2,0.0146,-0.0012,0,5,True,0.013492,0.013289,-0.012554,0.039539,False,,gemini_25_pro.csv,30
+2026-06-08 00:08:53,psr,,medium,"add(mchc, hgb)",0.0117,0.5595,2,0.0146,-0.0029,0,10,True,0.016675,0.010517,-0.003938,0.037288,True,0.0079,gemini_25_pro.csv,90
+2026-06-08 00:08:53,psr,,large,"mul(sqrt(sub(log(mcv), div(hgb, hgb))), mul(log(log(log(mchc))), log(add(mul(log(log(mcv)), log(mchc)), add(log(mchc), hct)))))",0.0151,0.6061,4,0.0118,0.0033,0,20,True,0.016025,0.010647,-0.004843,0.036892,False,,gemini_25_pro.csv,150
+2026-06-08 00:20:49,psr,,small,"add(neut_pct, rdw)",0.0134,0.5768,2,0.0146,-0.0012,0,5,True,0.013492,0.013289,-0.012554,0.039539,False,,gpt4o_deep_research.csv,30
+2026-06-08 00:20:49,psr,,medium,"add(mchc, hgb)",0.0117,0.5595,2,0.0146,-0.0029,0,10,True,0.016675,0.010517,-0.003938,0.037288,True,0.0079,gpt4o_deep_research.csv,90
+2026-06-08 00:20:49,psr,,large,"mul(sqrt(sub(log(mcv), log(log(mcv)))), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.0151,0.6061,3,0.0146,0.0005,0,20,True,0.016012,0.01063,-0.004823,0.036848,False,,gpt4o_deep_research.csv,96
+2026-06-08 00:33:03,psr,,small,"add(neut_pct, rdw)",0.0134,0.5768,2,0.0146,-0.0012,0,5,True,0.013492,0.013289,-0.012554,0.039539,False,,scispace_agent.csv,30
+2026-06-08 00:33:03,psr,,medium,"add(mchc, hgb)",0.0117,0.5595,2,0.0146,-0.0029,0,10,True,0.016675,0.010517,-0.003938,0.037288,False,,scispace_agent.csv,90
+2026-06-08 00:33:03,psr,,large,"mul(log(mchc), mul(log(mul(log(log(mul(log(log(log(mchc))), log(add(sqrt(hct), add(log(mch), hct)))))), log(mch))), add(add(mcv, add(mcv, mch)), hct)))",0.0151,0.6061,4,0.0118,0.0033,0,20,True,0.017846,0.01213,-0.00593,0.041621,True,0.0091,scispace_agent.csv,150
