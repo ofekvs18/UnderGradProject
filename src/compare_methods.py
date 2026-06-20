@@ -82,12 +82,30 @@ def load_m3() -> pd.DataFrame | None:
     df = _load(RESULTS_DIR / "method3_gp" / "master_gp_summary.csv")
     if df is None:
         return None
+    df = df[df["Seed_File"].fillna("none") == "none"]  # non-seeded only
+    if df.empty:
+        return None
     best = _best_per_group(df, "Best_GP_AUC_PR")
     best = best.rename(columns={
         "Best_GP_Formula": "M3_Best_Formula",
         "Best_GP_AUC_PR":  "M3_Best_AUC_PR",
     })
     return best[["Disease", "Split_Salt", "M3_Best_Formula", "M3_Best_AUC_PR"]]
+
+
+def load_m5() -> pd.DataFrame | None:
+    df = _load(RESULTS_DIR / "method3_gp" / "master_gp_summary.csv")
+    if df is None:
+        return None
+    df = df[df["Seed_File"].fillna("none") != "none"]  # seeded only
+    if df.empty:
+        return None
+    best = _best_per_group(df, "Best_GP_AUC_PR")
+    best = best.rename(columns={
+        "Best_GP_Formula": "M5_Best_Formula",
+        "Best_GP_AUC_PR":  "M5_Best_AUC_PR",
+    })
+    return best[["Disease", "Split_Salt", "M5_Best_Formula", "M5_Best_AUC_PR"]]
 
 
 def load_m4() -> pd.DataFrame | None:
@@ -110,9 +128,10 @@ def build_comparison() -> pd.DataFrame:
         "Method2_Random":    ("M2_Best_Formula", "M2_Best_AUC_PR"),
         "Method3_GP":        ("M3_Best_Formula", "M3_Best_AUC_PR"),
         "Method4_LLM":       ("M4_Best_Formula", "M4_Best_AUC_PR"),
+        "Method5_Seeded_GP": ("M5_Best_Formula", "M5_Best_AUC_PR"),
     }
 
-    loaders = [load_m1, load_m2, load_m3, load_m4]
+    loaders = [load_m1, load_m2, load_m3, load_m4, load_m5]
     frames = [fn() for fn in loaders]
     frames = [f for f in frames if f is not None]
 

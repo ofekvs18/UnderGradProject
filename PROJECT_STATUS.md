@@ -30,6 +30,7 @@ _Last updated: 2026-06-06 (synced to issues.md)_
 - **Seeded-GP warm start (Issue #27)** — `--seed-file` / `--seed-fraction` flags in `method3_gp.py`; `SEED_VAR_MAP` + `translate_seed_expression()` in `utils.py`; `Seed_File` / `Seed_Count_Used` columns in M3 master.
 - **Seeded-GP vs vanilla comparison on Crohn's (Issue #28)** — 4 runs (vanilla + 3 LLM agents), pop=500, gen=100, seed=42. Results logged in `results/experiment_log.md`.
 - **Seeded-GP generalisation (Issue #29)** — closed as negative result; no seeded run beat vanilla across all diseases. Documented in `experiment_log.md`.
+- **M3/M5 split in compare_methods.py** — `load_m3()` now filters to non-seeded runs only (`Seed_File == "none"`); `load_m5()` selects seeded runs, producing `M5_Best_Formula`/`M5_Best_AUC_PR` columns. T2D has no M5 (no seeds). `bootstrap_ci`, `get_scores`, `is_gp_sexpr`, `eval_gp_sexpr` moved from `mimic_compute_ci.py` to `utils.py`.
 - **14-feature expansion code changes (Issue #30, Steps 1–7)** — SQL pivot, `CBC_FEATURE_LIST`, `SEED_VAR_MAP`, `method4_llm.py` prompts, `conf/ml/defaults.yaml` baselines reset, `conf/ehrshot_bq.yaml`, `conf/nhanes.yaml`, `STANDARDS.md`, `CLAUDE.md` all updated for 14 features (9 standard + 5 differential).
 
 ### External validation (NHANES)
@@ -49,6 +50,15 @@ _Last updated: 2026-06-06 (synced to issues.md)_
 - CI forest plot: `results/figures/ci_forest_auc_pr.png`
 - Dashboard data and PNG for RA: `results/dashboard/`
 - S01 sprint report written
+- **Matched-LR baseline**: `results/matched_lr_baseline.csv` — for each disease × method (M2/M3/M4/M5), a logistic regression trained on the exact same features as the winning formula. Columns: winning `formula`, `formula_auc_pr/roc` + 95% bootstrap CIs, `lr_formula` (explicit linear combination), LR `auc_pr/roc` + bootstrap CIs, `lift`, `prevalence`. Seeded GP (M5) now tracked separately from vanilla GP (M3).
+- **Updated presentation v2**: `docs/Can-a-Routine-CBC-Predict-Chronic-Disease_v2.pptx` (10 slides):
+  - Title: added Dr. Seffi Cohen + Dr. Liat Friedman Antwarg as co-advisors alongside Prof. Noa Dagan
+  - New Slide 3: RA disease background — diagnosis gap, why CBC reflects RA biology, link to winning formula
+  - Slide 6 (Methods): reframed as "3 Methods + 2 Baselines" — M1 becomes B1 (threshold), B2 = matched-LR
+  - Slide 7 (Results): renamed "Method Comparison"; matched-LR bar replaces 14-feature LR bar; formula annotated with clinical intuition (mono/neut ratio = immune imbalance, hct−mchc = anemia signal)
+  - New Slide 8: all-disease AUC-PR Lift chart (6 diseases × M1–M4, MIMIC test set)
+  - Slide 9 (External Validation): EHRSHOT lift table for all 6 diseases + NHANES AUC-PR note
+  - Regenerate with: `../.venv/Scripts/python.exe src/matched_lr_baseline.py && ../.venv/Scripts/python.exe src/update_pptx.py`
 
 ### Design decisions locked
 - T2D `huge` GP tier skipped — converged at AUC-PR 0.1934 by gen 40, no further improvement. Document in thesis.

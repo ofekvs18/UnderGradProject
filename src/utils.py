@@ -236,6 +236,131 @@ def evaluate_formula_full(formula, train_df, test_df, features):
     }
 
 
+# ── gplearn S-expression evaluator + bootstrap CI ────────────────────────────
+
+def _split_top_args(s):
+    depth, args, cur = 0, [], []
+    for c in s:
+        if c == "(":
+            depth += 1
+            cur.append(c)
+        elif c == ")":
+            depth -= 1
+            cur.append(c)
+        elif c == "," and depth == 0:
+            args.append("".join(cur).strip())
+            cur = []
+        else:
+            cur.append(c)
+    if cur:
+        args.append("".join(cur).strip())
+    return args
+
+
+def eval_gp_sexpr(expr, df, features):
+    """Recursively evaluate a gplearn S-expression against a DataFrame row-set."""
+    expr = expr.strip()
+    if expr in features:
+        return df[expr].values.astype(float)
+    try:
+        val = float(expr)
+        return np.full(len(df), val)
+    except ValueError:
+        pass
+    m = re.match(r"^(\w+)\((.*)\)$", expr, re.DOTALL)
+    if not m:
+        raise ValueError(f"Cannot parse S-expr token: {expr[:60]!r}")
+    fname, args_str = m.group(1), m.group(2)
+    args = [eval_gp_sexpr(a, df, features) for a in _split_top_args(args_str)]
+    SAFE_DIV = 1e-8
+    if fname == "add":
+        return args[0] + args[1]
+    if fname == "sub":
+        return args[0] - args[1]
+    if fname == "mul":
+        return args[0] * args[1]
+    if fname == "div":
+        denom = np.where(np.abs(args[1]) < SAFE_DIV, SAFE_DIV, args[1])
+        return args[0] / denom
+    if fname == "neg":
+        return -args[0]
+    if fname == "sqrt":
+        return np.sqrt(np.abs(args[0]))
+    if fname == "log":
+        return np.log1p(np.abs(args[0]))
+    if fname == "abs":
+        return np.abs(args[0])
+    raise ValueError(f"Unknown gplearn function: {fname}")
+
+
+def is_gp_sexpr(formula: str) -> bool:
+    return bool(re.match(r"^\s*(mul|div|add|sub|neg|sqrt|log|abs)\s*\(", formula))
+
+
+def get_scores(formula, test_df, features):
+    """
+    Evaluate a formula (Python or gplearn S-expression) on test_df.
+    Returns (scores, y_true) or (None, None). Flips scores if AUC-ROC < 0.5.
+    """
+    from sklearn.metrics import roc_auc_score as _roc
+    te = test_df[features + ["is_case"]].dropna()
+    y = te["is_case"].values
+    if is_gp_sexpr(formula):
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                scores = eval_gp_sexpr(formula, te, features).astype(float)
+        except Exception as exc:
+            print(f"  [WARN] S-expr eval failed: {exc}")
+            return None, None
+    else:
+        scores = eval_formula_scores(formula, te, features)
+        if scores is None:
+            return None, None
+    bad = ~np.isfinite(scores)
+    if bad.mean() > 0.10:
+        return None, None
+    if bad.any():
+        scores[bad] = np.nanmedian(scores[~bad]) if (~bad).any() else 0.0
+    try:
+        if float(_roc(y, scores)) < 0.5:
+            scores = -scores
+    except Exception:
+        pass
+    return scores, y
+
+
+def bootstrap_ci(y_true, scores, n_bootstrap=500, seed=42):
+    """
+    Percentile bootstrap 95% CI for AUC-PR and AUC-ROC.
+    Returns (pr_lo, pr_hi, roc_lo, roc_hi) or None if too few valid samples.
+    """
+    from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
+    rng = np.random.default_rng(seed)
+    n = len(y_true)
+    auc_prs, auc_rocs = [], []
+    for _ in range(n_bootstrap):
+        idx = rng.integers(0, n, size=n)
+        yb, sb = y_true[idx], scores[idx]
+        if yb.sum() < 2 or (1 - yb).sum() < 2:
+            continue
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                auc_prs.append(float(_aps(yb, sb)))
+                auc_rocs.append(float(_roc(yb, sb)))
+        except Exception:
+            pass
+    if len(auc_prs) < 20:
+        return None
+    return (
+        float(np.percentile(auc_prs, 2.5)),
+        float(np.percentile(auc_prs, 97.5)),
+        float(np.percentile(auc_rocs, 2.5)),
+        float(np.percentile(auc_rocs, 97.5)),
+    )
+
+
 # ── Per-k feature count utilities ────────────────────────────────────────────
 
 def count_formula_features(formula: str, features) -> int:
