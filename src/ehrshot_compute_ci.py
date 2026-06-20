@@ -1,19 +1,19 @@
 """
-nhanes_compute_ci.py — Bootstrap 95% CIs for NHANES external validation results.
+ehrshot_compute_ci.py — Bootstrap 95% CIs for EHRSHOT external validation results.
 
-For each method, finds the best formula (by AUC-PR) from the NHANES evaluation
-CSVs and runs stratified percentile bootstrap on the NHANES test split.
+For each method, finds the best formula (by AUC-PR) from the EHRSHOT evaluation
+CSVs and runs stratified percentile bootstrap on the EHRSHOT test split.
 
 Stratified bootstrap (resample within positives and negatives separately) is
-used because NHANES prevalence is very low — naive resampling frequently
-produces bootstrap samples with zero positives, which crash AUC computation.
+used to ensure every bootstrap sample has at least one positive — important for
+diseases with small EHRSHOT cohorts.
 
 Writes:
-  results/nhanes/{disease}_ci_data.csv  — one row per method, for forest plot
+  results/ehrshot/{disease}_ci_data.csv  — one row per method, for forest plot
 
 Usage:
-    python src/nhanes_compute_ci.py --disease ra
-    python src/nhanes_compute_ci.py --disease ra --n-bootstrap 1000
+    python src/ehrshot_compute_ci.py --disease ra
+    python src/ehrshot_compute_ci.py --disease ra --n-bootstrap 1000
 """
 
 import argparse
@@ -33,7 +33,7 @@ CI_HI = 97.5
 SEED = 42
 
 
-# ── Formula evaluation (mirrors nhanes_evaluate.py) ───────────────────────────
+# ── Formula evaluation ────────────────────────────────────────────────────────
 
 def eval_formula_scores(formula, df, features, bad_frac=0.10):
     local = {f: df[f].values.astype(float) for f in features if f in df.columns}
@@ -85,8 +85,7 @@ def bootstrap_ci_stratified(y_true, scores, n_bootstrap=N_BOOTSTRAP, seed=SEED):
     Percentile bootstrap 95% CI for AUC-PR and AUC-ROC with stratification.
 
     Resamples positives and negatives independently so every bootstrap sample
-    has the same class counts as the original, preventing zero-positive crashes
-    at low prevalence.
+    has the same class counts as the original.
 
     Returns (pr_lo, pr_hi, roc_lo, roc_hi) or None if too few valid samples.
     """
@@ -136,10 +135,10 @@ METHOD_LABEL = {
 
 def get_best_formula(disease_name, method_key):
     """
-    Read the per-method NHANES eval CSV and return the single row with the
+    Read the per-method EHRSHOT eval CSV and return the single row with the
     highest AUC-PR.  Returns None if the file is missing or empty.
     """
-    path = RESULTS_DIR / "nhanes" / f"{disease_name}_{method_key}_eval.csv"
+    path = RESULTS_DIR / "ehrshot" / f"{disease_name}_{method_key}_eval.csv"
     if not path.exists():
         return None
     df = pd.read_csv(path)
@@ -148,12 +147,12 @@ def get_best_formula(disease_name, method_key):
         return None
     row = df.sort_values("auc_pr", ascending=False).iloc[0]
     return {
-        "method":   method_key,
-        "label":    METHOD_LABEL.get(method_key, method_key),
-        "formula":  str(row["formula"]),
-        "auc_pr":   float(row["auc_pr"]),
-        "auc_roc":  float(row["auc_roc"]),
-        "variant":  str(row.get("Variant", "")),
+        "method":  method_key,
+        "label":   METHOD_LABEL.get(method_key, method_key),
+        "formula": str(row["formula"]),
+        "auc_pr":  float(row["auc_pr"]),
+        "auc_roc": float(row["auc_roc"]),
+        "variant": str(row.get("Variant", "")),
     }
 
 
@@ -161,7 +160,7 @@ def get_best_formula(disease_name, method_key):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Stratified bootstrap CIs for NHANES external validation"
+        description="Stratified bootstrap CIs for EHRSHOT external validation"
     )
     parser.add_argument("--disease", default="ra")
     parser.add_argument("--n-bootstrap", type=int, default=N_BOOTSTRAP)
@@ -169,11 +168,11 @@ def main():
 
     disease = load_disease_config(args.disease)
 
-    data_path = DATA_DIR / f"{args.disease}_nhanes_data.csv"
+    data_path = DATA_DIR / f"{args.disease}_ehrshot_data.csv"
     if not data_path.exists():
         sys.exit(
             f"ERROR: {data_path} not found.\n"
-            f"Run: python src/nhanes_data.py --nhanes-dir <path> --disease {args.disease}"
+            f"Run: python src/ehrshot_bq_data.py --disease {args.disease}"
         )
 
     df = pd.read_csv(data_path)
@@ -185,7 +184,7 @@ def main():
     n_pos = int(test_df["is_case"].sum())
     n_tot = len(test_df)
     print(f"Disease : {disease.name}")
-    print(f"NHANES test set: {n_tot:,} rows, {n_pos} positives  "
+    print(f"EHRSHOT test set: {n_tot:,} rows, {n_pos} positives  "
           f"(prevalence={n_pos/n_tot:.3%})")
     print(f"Bootstrap iterations: {args.n_bootstrap}  [stratified]\n")
 
@@ -194,7 +193,7 @@ def main():
     for method_key in ("m1", "m2", "m3", "m4", "m5"):
         best = get_best_formula(disease.name, method_key)
         if best is None:
-            print(f"[{method_key}] no NHANES eval found — skipped")
+            print(f"[{method_key}] no EHRSHOT eval found — skipped")
             continue
 
         formula = best["formula"]
@@ -207,7 +206,6 @@ def main():
             print(f"  [WARN] formula evaluation failed — skipped\n")
             continue
 
-        # Re-compute point estimate with our evaluator for consistency
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -219,17 +217,17 @@ def main():
 
         ci = bootstrap_ci_stratified(y, scores, n_bootstrap=args.n_bootstrap)
         row = {
-            "method":   method_key,
-            "label":    best["label"],
-            "formula":  formula,
-            "auc_pr":   eval_auc_pr,
-            "auc_roc":  eval_auc_roc,
-            "variant":  best["variant"],
+            "method":  method_key,
+            "label":   best["label"],
+            "formula": formula,
+            "auc_pr":  eval_auc_pr,
+            "auc_roc": eval_auc_roc,
+            "variant": best["variant"],
         }
         if ci:
             row.update({
-                "AUC_PR_CI_Low":  round(ci[0], 4),
-                "AUC_PR_CI_High": round(ci[1], 4),
+                "AUC_PR_CI_Low":   round(ci[0], 4),
+                "AUC_PR_CI_High":  round(ci[1], 4),
                 "AUC_ROC_CI_Low":  round(ci[2], 4),
                 "AUC_ROC_CI_High": round(ci[3], 4),
             })
@@ -242,10 +240,10 @@ def main():
         ci_rows.append(row)
 
     if not ci_rows:
-        print("No results produced. Check that NHANES eval CSVs exist for this disease.")
+        print("No results produced. Check that EHRSHOT eval CSVs exist for this disease.")
         return
 
-    out_dir = RESULTS_DIR / "nhanes"
+    out_dir = RESULTS_DIR / "ehrshot"
     ensure_dir(out_dir)
     out_path = out_dir / f"{disease.name}_ci_data.csv"
     pd.DataFrame(ci_rows).to_csv(out_path, index=False)

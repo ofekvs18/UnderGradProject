@@ -2,21 +2,22 @@
 post_compute.py — Orchestrate all post-training steps for one disease.
 
 Steps (in order):
-  1. mimic_compute_ci    — Bootstrap CIs on MIMIC-IV test set
+  1. mimic_compute_ci    — Bootstrap CIs on MIMIC-IV test set (M1–M5 + LR)
   2. nhanes_data         — Build NHANES modeling CSV from XPT files  [--skip-nhanes]
   3. nhanes_evaluate     — Evaluate best formulas on NHANES external set  [--skip-nhanes]
-  4. nhanes_compute_ci   — Bootstrap CIs on NHANES  [--skip-nhanes]
+  4. nhanes_compute_ci   — Bootstrap CIs on NHANES (M1–M5)  [--skip-nhanes]
   5. ehrshot_bq_data     — Extract EHRSHOT cohort from BigQuery  [--skip-ehrshot]
   6. ehrshot_evaluate    — Evaluate best formulas on EHRSHOT  [--skip-ehrshot]
-  7. build_dashboard_data — Aggregate master summaries into dashboard CSV
-  8. plot_ci_forest      — Forest plot of AUC-PR CIs
+  7. ehrshot_compute_ci  — Bootstrap CIs on EHRSHOT (M1–M5)  [--skip-ehrshot]
+  8. build_dashboard_data — Aggregate master summaries into dashboard CSV
+  9. plot_ci_forest      — Forest plot of AUC-PR CIs
 
 Usage:
     python src/post_compute.py --disease ra
     python src/post_compute.py --disease ra --n-bootstrap 1000 --skip-nhanes
     python src/post_compute.py --disease ra --skip-ehrshot
     python src/post_compute.py --disease ra --ehrshot-key-file .secrets/bq_sa.json
-    python src/post_compute.py --disease ra --steps 1 7 8   # run specific steps only
+    python src/post_compute.py --disease ra --steps 1 8 9   # run specific steps only
 
 Designed to be called from run_all.sh or an sbatch job array.
 """
@@ -84,6 +85,14 @@ STEPS = [
     },
     {
         "id":      7,
+        "name":    "ehrshot_compute_ci",
+        "script":  "src/ehrshot_compute_ci.py",
+        "args":    lambda d, ns: ["--disease", d, "--n-bootstrap", str(ns.n_bootstrap)],
+        "nhanes":  False,
+        "ehrshot": True,
+    },
+    {
+        "id":      8,
         "name":    "build_dashboard_data",
         "script":  "src/build_dashboard_data.py",
         "args":    lambda d, ns: ["--disease", d],
@@ -91,7 +100,7 @@ STEPS = [
         "ehrshot": False,
     },
     {
-        "id":      8,
+        "id":      9,
         "name":    "plot_ci_forest",
         "script":  "src/plot_ci_forest.py",
         "args":    lambda d, ns: ["--disease", d],

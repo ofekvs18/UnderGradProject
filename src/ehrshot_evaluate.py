@@ -35,6 +35,8 @@ from utils import (
 )
 
 # ── Master summary specs: path + which column(s) hold the formula ─────────────
+# row_filter: optional callable (DataFrame → DataFrame) applied after disease filter.
+# M3 = vanilla GP only (Seed_File == "none"); M5 = seeded GP (Seed_File != "none").
 METHOD_SPECS = {
     "m1": {
         "path":     RESULTS_DIR / "method1_threshold" / "master_m1_summary.csv",
@@ -47,14 +49,25 @@ METHOD_SPECS = {
         "label":    "Method 2 (Random)",
     },
     "m3": {
-        "path":     RESULTS_DIR / "method3_gp" / "master_gp_summary.csv",
-        "formulas": [("Best_GP_Formula", "gp")],
-        "label":    "Method 3 (GP)",
+        "path":       RESULTS_DIR / "method3_gp" / "master_gp_summary.csv",
+        "formulas":   [("Best_GP_Formula", "gp")],
+        "label":      "Method 3 (GP)",
+        "row_filter": lambda df: (
+            df[df["Seed_File"].fillna("none") == "none"] if "Seed_File" in df.columns else df
+        ),
     },
     "m4": {
         "path":     RESULTS_DIR / "method4_llm" / "method4_master_summary.csv",
         "formulas": [("Best_LLM_Formula", "llm")],
         "label":    "Method 4 (LLM)",
+    },
+    "m5": {
+        "path":       RESULTS_DIR / "method3_gp" / "master_gp_summary.csv",
+        "formulas":   [("Best_GP_Formula", "seeded_gp")],
+        "label":      "Method 5 (Seeded GP)",
+        "row_filter": lambda df: (
+            df[df["Seed_File"].fillna("none") != "none"] if "Seed_File" in df.columns else df.iloc[0:0]
+        ),
     },
 }
 
@@ -200,6 +213,8 @@ def main():
 
         summary_df = pd.read_csv(spec["path"])
         disease_rows = summary_df[summary_df["Disease"] == args.disease]
+        if "row_filter" in spec:
+            disease_rows = spec["row_filter"](disease_rows)
         if disease_rows.empty:
             print(f"[SKIP] {spec['label']}: no rows for disease '{args.disease}'")
             continue

@@ -155,87 +155,104 @@ def main():
             print(f"[m2] CI skipped")
         ci_rows.append(row)
 
-    # ── M3 ────────────────────────────────────────────────────────────────────
+    # ── M3 / M5 (GP — vanilla and seeded) ────────────────────────────────────
     m3_master = RESULTS_DIR / "method3_gp" / "master_gp_summary.csv"
     m3_out_dir = RESULTS_DIR / "method3_gp" / disease.name
     ensure_dir(m3_out_dir)
 
     if m3_master.exists():
         m3_df = pd.read_csv(m3_master)
-        m3_dis = m3_df[m3_df["Disease"] == disease.name].copy().reset_index(drop=True)
+        all_dis = m3_df[m3_df["Disease"] == disease.name].copy()
 
-        m3_dis["auc_pr"] = m3_dis["Best_GP_AUC_PR"]
-        m3_dis["auc_roc"] = m3_dis["Best_GP_AUC_ROC"]
-        m3_dis["AUC_PR_CI_Low"] = np.nan
-        m3_dis["AUC_PR_CI_High"] = np.nan
-        m3_dis["AUC_ROC_CI_Low"] = np.nan
-        m3_dis["AUC_ROC_CI_High"] = np.nan
+        seed_col = (
+            all_dis["Seed_File"].fillna("none")
+            if "Seed_File" in all_dis.columns
+            else pd.Series("none", index=all_dis.index)
+        )
 
-        # Only consider CV-selected rows to avoid test-set peeking across tiers.
-        # Among those, pick the one with the best Frozen_Test_AUC_PR_Final.
-        cv_sel = m3_dis[m3_dis["CV_Selected"] == True].copy()
-        if cv_sel.empty:
-            cv_sel = m3_dis  # fallback: no CV_Selected flag set
-        cv_sel = cv_sel.sort_values("Frozen_Test_AUC_PR_Final", ascending=False)
-        m3_dis_eval = cv_sel  # only bootstrap-eval the selected rows
+        # Process vanilla GP (M3) and seeded GP (M5) as separate CI entries.
+        gp_slices = [
+            ("m3", "M3: Genetic Programming", all_dis[seed_col == "none"].copy(), "master_summary.csv"),
+            ("m5", "M5: Seeded GP",            all_dis[seed_col != "none"].copy(), "master_summary_m5.csv"),
+        ]
 
-        print(f"\n[m3] {len(m3_dis)} total row(s), {len(cv_sel)} CV-selected row(s) for {disease.name}")
-        best_m3 = None
-
-        for i, row in m3_dis_eval.iterrows():
-            formula_s = str(row["Best_GP_Formula"])
-            tier = row.get("Config_Used", f"row{i}")
-            seed_label = str(row.get("Seed_File", "none"))
-            print(f"  [{tier}/{seed_label}] formula length: {len(formula_s)} chars")
-            scores, y = get_scores(formula_s, test_df, features)
-            if scores is None:
-                print(f"  [{tier}/{seed_label}] evaluation failed — CI set to NaN")
-                continue
-            ci = bootstrap_ci(y, scores, n_bootstrap=args.n_bootstrap)
-            if ci is None:
-                print(f"  [{tier}/{seed_label}] bootstrap failed — too few valid samples")
+        for method_key, method_label, m_dis, out_fname in gp_slices:
+            if m_dis.empty:
+                print(f"\n[{method_key}] no rows for {disease.name} — skipping")
                 continue
 
-            # Re-evaluate point estimate with our evaluator for consistency with bootstrap CI.
-            # gplearn's program.execute() may differ slightly from our S-expr evaluator for
-            # complex formulae, which can put the stored point estimate outside the CI bounds.
-            from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    eval_auc_pr = round(float(_aps(y, scores)), 4)
-                    eval_auc_roc = round(float(_roc(y, scores)), 4)
-            except Exception:
-                eval_auc_pr = round(float(row["Best_GP_AUC_PR"]), 4)
-                eval_auc_roc = round(float(row["Best_GP_AUC_ROC"]), 4)
+            m_dis = m_dis.reset_index(drop=True)
+            m_dis["auc_pr"] = m_dis["Best_GP_AUC_PR"]
+            m_dis["auc_roc"] = m_dis["Best_GP_AUC_ROC"]
+            m_dis["AUC_PR_CI_Low"] = np.nan
+            m_dis["AUC_PR_CI_High"] = np.nan
+            m_dis["AUC_ROC_CI_Low"] = np.nan
+            m_dis["AUC_ROC_CI_High"] = np.nan
 
-            m3_dis.at[i, "auc_pr"] = eval_auc_pr
-            m3_dis.at[i, "auc_roc"] = eval_auc_roc
-            m3_dis.at[i, "AUC_PR_CI_Low"] = round(ci[0], 4)
-            m3_dis.at[i, "AUC_PR_CI_High"] = round(ci[1], 4)
-            m3_dis.at[i, "AUC_ROC_CI_Low"] = round(ci[2], 4)
-            m3_dis.at[i, "AUC_ROC_CI_High"] = round(ci[3], 4)
-            print(f"  [{tier}/{seed_label}] AUC-PR={eval_auc_pr:.4f}  CI=[{ci[0]:.4f}, {ci[1]:.4f}]")
+            # Only consider CV-selected rows to avoid test-set peeking across tiers.
+            # Among those, pick the one with the best Frozen_Test_AUC_PR_Final.
+            cv_sel = m_dis[m_dis["CV_Selected"] == True].copy()
+            if cv_sel.empty:
+                cv_sel = m_dis  # fallback: no CV_Selected flag set
+            cv_sel = cv_sel.sort_values("Frozen_Test_AUC_PR_Final", ascending=False)
 
-            # Pick best among CV-selected rows by Frozen_Test_AUC_PR_Final (already sorted desc)
-            if best_m3 is None:
-                best_m3 = {
-                    "method": "m3", "label": "M3: Genetic Programming",
-                    "formula": formula_s,
-                    "auc_pr": eval_auc_pr,
-                    "auc_roc": eval_auc_roc,
-                    "AUC_PR_CI_Low": round(ci[0], 4), "AUC_PR_CI_High": round(ci[1], 4),
-                    "AUC_ROC_CI_Low": round(ci[2], 4), "AUC_ROC_CI_High": round(ci[3], 4),
-                }
+            print(f"\n[{method_key}] {len(m_dis)} total row(s), {len(cv_sel)} CV-selected row(s) for {disease.name}")
+            best_gp = None
 
-        m3_out = m3_out_dir / "master_summary.csv"
-        m3_dis.to_csv(m3_out, index=False)
-        print(f"  Wrote M3 per-disease summary: {m3_out}")
+            for i, row in cv_sel.iterrows():
+                formula_s = str(row["Best_GP_Formula"])
+                tier = row.get("Config_Used", f"row{i}")
+                seed_label = str(row.get("Seed_File", "none"))
+                print(f"  [{tier}/{seed_label}] formula length: {len(formula_s)} chars")
+                scores, y = get_scores(formula_s, test_df, features)
+                if scores is None:
+                    print(f"  [{tier}/{seed_label}] evaluation failed — CI set to NaN")
+                    continue
+                ci = bootstrap_ci(y, scores, n_bootstrap=args.n_bootstrap)
+                if ci is None:
+                    print(f"  [{tier}/{seed_label}] bootstrap failed — too few valid samples")
+                    continue
 
-        if best_m3:
-            ci_rows.append(best_m3)
+                # Re-evaluate point estimate with our evaluator for consistency with bootstrap CI.
+                # gplearn's program.execute() may differ slightly from our S-expr evaluator for
+                # complex formulae, which can put the stored point estimate outside the CI bounds.
+                from sklearn.metrics import average_precision_score as _aps, roc_auc_score as _roc
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        eval_auc_pr = round(float(_aps(y, scores)), 4)
+                        eval_auc_roc = round(float(_roc(y, scores)), 4)
+                except Exception:
+                    eval_auc_pr = round(float(row["Best_GP_AUC_PR"]), 4)
+                    eval_auc_roc = round(float(row["Best_GP_AUC_ROC"]), 4)
+
+                m_dis.at[i, "auc_pr"] = eval_auc_pr
+                m_dis.at[i, "auc_roc"] = eval_auc_roc
+                m_dis.at[i, "AUC_PR_CI_Low"] = round(ci[0], 4)
+                m_dis.at[i, "AUC_PR_CI_High"] = round(ci[1], 4)
+                m_dis.at[i, "AUC_ROC_CI_Low"] = round(ci[2], 4)
+                m_dis.at[i, "AUC_ROC_CI_High"] = round(ci[3], 4)
+                print(f"  [{tier}/{seed_label}] AUC-PR={eval_auc_pr:.4f}  CI=[{ci[0]:.4f}, {ci[1]:.4f}]")
+
+                # Pick best among CV-selected rows by Frozen_Test_AUC_PR_Final (already sorted desc)
+                if best_gp is None:
+                    best_gp = {
+                        "method": method_key, "label": method_label,
+                        "formula": formula_s,
+                        "auc_pr": eval_auc_pr,
+                        "auc_roc": eval_auc_roc,
+                        "AUC_PR_CI_Low": round(ci[0], 4), "AUC_PR_CI_High": round(ci[1], 4),
+                        "AUC_ROC_CI_Low": round(ci[2], 4), "AUC_ROC_CI_High": round(ci[3], 4),
+                    }
+
+            out_path = m3_out_dir / out_fname
+            m_dis.to_csv(out_path, index=False)
+            print(f"  Wrote {method_key} per-disease summary: {out_path}")
+
+            if best_gp:
+                ci_rows.append(best_gp)
     else:
-        print(f"[m3] master_gp_summary.csv not found")
+        print(f"[m3/m5] master_gp_summary.csv not found")
 
     # ── M4 ────────────────────────────────────────────────────────────────────
     m4 = get_m4_best(disease.name)
