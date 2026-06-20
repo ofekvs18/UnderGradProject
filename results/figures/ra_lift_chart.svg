@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="460"
+     font-family="Arial, Helvetica, sans-serif">
+
+  <!-- ── Background ─────────────────────────────────────────── -->
+  <rect width="720" height="460" fill="white"/>
+
+  <!-- ── Plot-area fill ──────────────────────────────────────── -->
+  <rect x="70" y="45" width="600" height="330" fill="#faf8fb" rx="6"/>
+
+  <!-- ── Dashed border ────────────────────────────────────────── -->
+  <rect x="70" y="45" width="600" height="330" fill="none"
+        stroke="#c8a4cc" stroke-width="1.4" stroke-dasharray="6,4" rx="8"/>
+
+  <!-- ── Horizontal grid lines ─────────────────────────────────
+       y=0.5 → 323.4  y=1.0 → 271.9  y=1.5 → 220.3
+       y=2.0 → 168.8  y=2.5 → 117.2  y=3.0 → 65.6          -->
+  <line x1="70" y1="323.4" x2="670" y2="323.4" stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="70" y1="271.9" x2="670" y2="271.9" stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="70" y1="220.3" x2="670" y2="220.3" stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="70" y1="168.8" x2="670" y2="168.8" stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="70" y1="117.2" x2="670" y2="117.2" stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="70" y1="65.6"  x2="670" y2="65.6"  stroke="#ddd0e8" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ── LR baseline reference dashed line at lift=1.4927 (SVG y=221.1) ── -->
+  <line x1="70" y1="221.1" x2="670" y2="221.1"
+        stroke="#7A2E6E" stroke-width="1.2" stroke-dasharray="8,5" opacity="0.45"/>
+
+  <!-- ── Bars ──────────────────────────────────────────────────
+       bar_width=70, centers: 120 220 320 420 520 620          -->
+
+  <!-- LR Baseline  lift=1.4927  top=221.1  h=153.9 -->
+  <rect x="85"  y="221.1" width="70" height="153.9" fill="#7A2E6E" rx="3"/>
+
+  <!-- M1 Threshold  lift=1.3756  top=233.1  h=141.9 -->
+  <rect x="185" y="233.1" width="70" height="141.9" fill="#954E8B" rx="3"/>
+
+  <!-- M2 Random  lift=1.3171  top=239.2  h=135.8 -->
+  <rect x="285" y="239.2" width="70" height="135.8" fill="#AE72A8" rx="3"/>
+
+  <!-- M3 GP  lift=1.5902  top=211.0  h=164.0 -->
+  <rect x="385" y="211.0" width="70" height="164.0" fill="#C69CC1" rx="3"/>
+
+  <!-- M3 GP Seeded  lift=1.7561  top=193.9  h=181.1 -->
+  <rect x="485" y="193.9" width="70" height="181.1" fill="#D7B8D6" rx="3"/>
+
+  <!-- M4 LLM  lift=1.4537  top=225.1  h=149.9 -->
+  <rect x="585" y="225.1" width="70" height="149.9" fill="#E3CBE3" rx="3"/>
+
+  <!-- ── Error bars  (color #5A2058, cap half-width=8px) ────────
+
+       M1: hi=0 so only downward whisker from bar-top(233.1) → 300.5
+           Upper cap at bar-top 233.1, lower cap at 300.5
+
+       M2: top=169.8  bot=281.4
+       M3: top= 69.1  bot=261.3
+       LLM: top=135.5  bot=270.4                               -->
+
+  <!-- M1 (center_x=220) -->
+  <line x1="220" y1="233.1" x2="220" y2="300.5" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="212" y1="233.1" x2="228" y2="233.1" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="212" y1="300.5" x2="228" y2="300.5" stroke="#5A2058" stroke-width="1.7"/>
+
+  <!-- M2 (center_x=320) -->
+  <line x1="320" y1="169.8" x2="320" y2="281.4" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="312" y1="169.8" x2="328" y2="169.8" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="312" y1="281.4" x2="328" y2="281.4" stroke="#5A2058" stroke-width="1.7"/>
+
+  <!-- M3 GP (center_x=420) -->
+  <line x1="420" y1="69.1"  x2="420" y2="261.3" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="412" y1="69.1"  x2="428" y2="69.1"  stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="412" y1="261.3" x2="428" y2="261.3" stroke="#5A2058" stroke-width="1.7"/>
+
+  <!-- M4 LLM (center_x=620) -->
+  <line x1="620" y1="135.5" x2="620" y2="270.4" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="612" y1="135.5" x2="628" y2="135.5" stroke="#5A2058" stroke-width="1.7"/>
+  <line x1="612" y1="270.4" x2="628" y2="270.4" stroke="#5A2058" stroke-width="1.7"/>
+
+  <!-- ── Value labels (above bar top or above CI upper cap) ──── -->
+  <!-- LR: above bar top 221.1 -->
+  <text x="120" y="213" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.49×</text>
+  <!-- M1: no upper whisker, above bar top 233.1 -->
+  <text x="220" y="225" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.38×</text>
+  <!-- M2: above CI upper cap 169.8 -->
+  <text x="320" y="162" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.32×</text>
+  <!-- M3: above CI upper cap 69.1 -->
+  <text x="420" y="62"  text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.59×</text>
+  <!-- M3 Seeded: above bar top 193.9 (no CI) -->
+  <text x="520" y="186" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.76×</text>
+  <!-- M4 LLM: above CI upper cap 135.5 -->
+  <text x="620" y="128" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#3d1848">1.45×</text>
+
+  <!-- ── LR Baseline annotation ──────────────────────────────── -->
+  <text x="76" y="217" font-size="9.5" fill="#7A2E6E" font-style="italic">LR Baseline: 1.49×</text>
+
+  <!-- ── X-axis bottom rule ──────────────────────────────────── -->
+  <line x1="70" y1="375" x2="670" y2="375" stroke="#ccc0d0" stroke-width="0.8"/>
+
+  <!-- ── X-axis labels ─────────────────────────────────────────
+       two-line labels, line 1 at y=390, line 2 at y=404        -->
+  <text x="120" y="390" text-anchor="middle" font-size="11" fill="#555">LR</text>
+  <text x="120" y="404" text-anchor="middle" font-size="11" fill="#555">Baseline</text>
+
+  <text x="220" y="390" text-anchor="middle" font-size="11" fill="#555">M1</text>
+  <text x="220" y="404" text-anchor="middle" font-size="11" fill="#555">Threshold</text>
+
+  <text x="320" y="390" text-anchor="middle" font-size="11" fill="#555">M2</text>
+  <text x="320" y="404" text-anchor="middle" font-size="11" fill="#555">Random</text>
+
+  <text x="420" y="390" text-anchor="middle" font-size="11" fill="#555">M3</text>
+  <text x="420" y="404" text-anchor="middle" font-size="11" fill="#555">GP</text>
+
+  <text x="520" y="390" text-anchor="middle" font-size="11" fill="#555">M3 GP</text>
+  <text x="520" y="404" text-anchor="middle" font-size="11" fill="#555">Seeded</text>
+
+  <text x="620" y="390" text-anchor="middle" font-size="11" fill="#555">M4</text>
+  <text x="620" y="404" text-anchor="middle" font-size="11" fill="#555">LLM</text>
+
+  <!-- ── X-axis title ──────────────────────────────────────────── -->
+  <text x="370" y="432" text-anchor="middle" font-size="13" fill="#444">Method</text>
+
+  <!-- ── Right Y-axis tick labels ──────────────────────────────── -->
+  <text x="677" y="375"   font-size="10" fill="#888" dominant-baseline="middle">0</text>
+  <text x="677" y="323.4" font-size="10" fill="#888" dominant-baseline="middle">0.5</text>
+  <text x="677" y="271.9" font-size="10" fill="#888" dominant-baseline="middle">1</text>
+  <text x="677" y="220.3" font-size="10" fill="#888" dominant-baseline="middle">1.5</text>
+  <text x="677" y="168.8" font-size="10" fill="#888" dominant-baseline="middle">2</text>
+  <text x="677" y="117.2" font-size="10" fill="#888" dominant-baseline="middle">2.5</text>
+  <text x="677" y="65.6"  font-size="10" fill="#888" dominant-baseline="middle">3</text>
+
+  <!-- ── Right Y-axis title (rotated) ─────────────────────────── -->
+  <text transform="translate(712,210) rotate(-90)"
+        text-anchor="middle" font-size="12" fill="#666">AUC-PR Lift (×)</text>
+
+  <!-- ── Footnote ─────────────────────────────────────────────── -->
+  <text x="370" y="450" text-anchor="middle" font-size="9" fill="#aaa" font-style="italic">
+    M3 GP Seeded: best frozen-test run (gpt4o seeds, no bootstrap CI).
+    Error bars = 95 % bootstrap CI on held-out test set.
+  </text>
+
+</svg>

@@ -128,14 +128,15 @@ def build_dashboard_data(disease: str) -> pd.DataFrame:
         m2 = pd.read_csv(m2_path)
         m2_dis = m2[m2["Disease"] == disease]
         if not m2_dis.empty:
-            r = _best_row(m2_dis, "Best_Random_AUC_PR")
+            # Use CV-selected formula + frozen test AUC-PR — not train-set best (overfit)
+            r = _best_row(m2_dis, "CV_Winner_Frozen_Test_AUC_PR")
             if r is not None:
-                formula = str(r["Best_Random_Formula"])
+                formula = str(r["CV_Winner_Formula"])
                 rows.append({
                     "disease": disease, "method": "m2", "variant": "random",
                     "formula": formula, "formula_display": formula,
-                    "auc_pr": float(r["Best_Random_AUC_PR"]),
-                    "auc_roc": float(r["Best_Random_AUC_ROC"]),
+                    "auc_pr": float(r["CV_Winner_Frozen_Test_AUC_PR"]),
+                    "auc_roc": float("nan"),
                 })
         print(f"[m2] {len([r for r in rows if r['method'] == 'm2'])} row(s) loaded")
     else:
@@ -147,15 +148,19 @@ def build_dashboard_data(disease: str) -> pd.DataFrame:
         m3 = pd.read_csv(m3_path)
         m3_dis = m3[m3["Disease"] == disease]
         if not m3_dis.empty:
-            r = _best_row(m3_dis, "Best_GP_AUC_PR")
+            # Only use CV-selected rows; pick best by Frozen_Test_AUC_PR_Final
+            cv_sel = m3_dis[m3_dis["CV_Selected"] == True]
+            if cv_sel.empty:
+                cv_sel = m3_dis  # fallback
+            r = _best_row(cv_sel, "Frozen_Test_AUC_PR_Final")
             if r is not None:
                 formula = str(r["Best_GP_Formula"])
                 formula_display = gp_prefix_to_infix(formula)
                 rows.append({
                     "disease": disease, "method": "m3", "variant": "gp",
                     "formula": formula, "formula_display": formula_display,
-                    "auc_pr": float(r["Best_GP_AUC_PR"]),
-                    "auc_roc": float(r["Best_GP_AUC_ROC"]),
+                    "auc_pr": float(r["Frozen_Test_AUC_PR_Final"]),
+                    "auc_roc": float(r.get("Best_GP_AUC_ROC", float("nan"))),
                 })
                 print(f"[m3] formula_display: {formula_display[:80]}")
         print(f"[m3] {len([r for r in rows if r['method'] == 'm3'])} row(s) loaded")

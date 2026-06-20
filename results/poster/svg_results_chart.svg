@@ -1,0 +1,82 @@
+<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" font-family="Calibri, Arial, sans-serif">
+  <rect width="700" height="380" fill="#FAFAFA" rx="8"/>
+
+  <!-- Title -->
+  <text x="350" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#2C3E50">AUC-PR Lift — Rheumatoid Arthritis</text>
+  <text x="350" y="46" text-anchor="middle" font-size="11" fill="#7F8C8D">Higher lift = better performance relative to disease prevalence</text>
+
+  <!-- Chart area -->
+  <!-- Grid lines -->
+  <g stroke="#E0E0E0" stroke-width="1">
+    <line x1="200" y1="70" x2="660" y2="70"/>
+    <line x1="200" y1="110" x2="660" y2="110"/>
+    <line x1="200" y1="150" x2="660" y2="150"/>
+    <line x1="200" y1="190" x2="660" y2="190"/>
+    <line x1="200" y1="230" x2="660" y2="230"/>
+    <line x1="200" y1="270" x2="660" y2="270"/>
+    <line x1="200" y1="310" x2="660" y2="310"/>
+  </g>
+
+  <!-- Y-axis labels (Lift values: 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6) -->
+  <!-- Scale: 1.0 = y=310, 1.6 = y=70; each 0.1 = 40px -->
+  <g text-anchor="end" font-size="11" fill="#7F8C8D">
+    <text x="190" y="314">1.0x</text>
+    <text x="190" y="274">1.1x</text>
+    <text x="190" y="234">1.2x</text>
+    <text x="190" y="194">1.3x</text>
+    <text x="190" y="154">1.4x</text>
+    <text x="190" y="114">1.5x</text>
+    <text x="190" y="74">1.6x</text>
+  </g>
+
+  <!-- Baseline reference line at 1.49x = y = 310 - (0.49*400) = 310 - 196 = 114 -->
+  <line x1="200" y1="114" x2="660" y2="114" stroke="#7F8C8D" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="665" y="118" font-size="10" fill="#7F8C8D">LR Baseline 1.49x</text>
+
+  <!-- Bars (horizontal from left at x=200) -->
+  <!-- Scale: lift 1.0 = 0px, lift 1.6 = 460px (total scale range 0.6 = 460px, so 1px = 0.6/460) -->
+  <!-- Actually: y = 310 - (lift - 1.0) * 400 -->
+  <!-- Bar width from x=200, bar centers at different y positions -->
+
+  <!-- Method positions: 5 methods, spaced evenly -->
+  <!-- Bar chart: vertical bars, 5 methods -->
+  <!-- x positions: 230, 310, 390, 470, 550, bar width=60 -->
+
+  <!-- M3: GP 1.59x → y = 310 - 0.59*400 = 310-236 = 74, height = 310-74 = 236 -->
+  <rect x="222" y="74" width="70" height="236" rx="4" fill="#E8773D"/>
+  <text x="257" y="68" text-anchor="middle" font-size="11" font-weight="bold" fill="#E8773D">1.59x</text>
+  <text x="257" y="338" text-anchor="middle" font-size="10" fill="#2C3E50">GP</text>
+  <text x="257" y="352" text-anchor="middle" font-size="9" fill="#7F8C8D">4 features</text>
+
+  <!-- LR Baseline: 1.49x → y = 310 - 0.49*400 = 310-196 = 114, height=196 -->
+  <rect x="312" y="114" width="70" height="196" rx="4" fill="#7F8C8D"/>
+  <text x="347" y="108" text-anchor="middle" font-size="11" font-weight="bold" fill="#7F8C8D">1.49x</text>
+  <text x="347" y="338" text-anchor="middle" font-size="10" fill="#2C3E50">LR Baseline</text>
+  <text x="347" y="352" text-anchor="middle" font-size="9" fill="#7F8C8D">14 features</text>
+
+  <!-- M4: LLM 1.45x → y = 310 - 0.45*400 = 310-180 = 130, height=180 -->
+  <rect x="402" y="130" width="70" height="180" rx="4" fill="#1A7A8A"/>
+  <text x="437" y="124" text-anchor="middle" font-size="11" font-weight="bold" fill="#1A7A8A">1.45x</text>
+  <text x="437" y="338" text-anchor="middle" font-size="10" fill="#2C3E50">LLM</text>
+  <text x="437" y="352" text-anchor="middle" font-size="9" fill="#7F8C8D">3 features</text>
+
+  <!-- M1: Threshold 1.38x → y = 310 - 0.38*400 = 310-152 = 158, height=152 -->
+  <rect x="492" y="158" width="70" height="152" rx="4" fill="#2C3E50"/>
+  <text x="527" y="152" text-anchor="middle" font-size="11" font-weight="bold" fill="#2C3E50">1.38x</text>
+  <text x="527" y="338" text-anchor="middle" font-size="10" fill="#2C3E50">Threshold</text>
+  <text x="527" y="352" text-anchor="middle" font-size="9" fill="#7F8C8D">1 feature</text>
+
+  <!-- M2: Random 1.32x → y = 310 - 0.32*400 = 310-128 = 182, height=128 -->
+  <rect x="582" y="182" width="70" height="128" rx="4" fill="#BDC3C7"/>
+  <text x="617" y="176" text-anchor="middle" font-size="11" font-weight="bold" fill="#7F8C8D">1.32x</text>
+  <text x="617" y="338" text-anchor="middle" font-size="10" fill="#2C3E50">Random</text>
+  <text x="617" y="352" text-anchor="middle" font-size="9" fill="#7F8C8D">7 features</text>
+
+  <!-- X axis -->
+  <line x1="200" y1="310" x2="660" y2="310" stroke="#2C3E50" stroke-width="1.5"/>
+  <line x1="200" y1="70" x2="200" y2="310" stroke="#2C3E50" stroke-width="1.5"/>
+
+  <!-- GP winner badge -->
+  <rect x="222" y="40" width="70" height="22" rx="4" fill="#E8773D"/>
+  <text x="257" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="white">🏆 Winner</text>
+</svg>

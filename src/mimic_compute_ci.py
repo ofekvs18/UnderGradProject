@@ -197,12 +197,13 @@ def get_m2_best(disease_name):
     dis = df[df["Disease"] == disease_name]
     if dis.empty:
         return None
-    r = dis.sort_values("Best_Random_AUC_PR", ascending=False).iloc[0]
+    # Use CV-selected formula evaluated on frozen test — not train-set best (overfit)
+    r = dis.sort_values("CV_Winner_Frozen_Test_AUC_PR", ascending=False).iloc[0]
     return {
         "method": "m2", "label": "M2: Random Search",
-        "formula": str(r["Best_Random_Formula"]),
-        "auc_pr": float(r["Best_Random_AUC_PR"]),
-        "auc_roc": float(r["Best_Random_AUC_ROC"]),
+        "formula": str(r["CV_Winner_Formula"]),
+        "auc_pr": float(r["CV_Winner_Frozen_Test_AUC_PR"]),
+        "auc_roc": float("nan"),
     }
 
 
@@ -304,20 +305,29 @@ def main():
         m3_dis["AUC_ROC_CI_Low"] = np.nan
         m3_dis["AUC_ROC_CI_High"] = np.nan
 
-        print(f"\n[m3] {len(m3_dis)} tier row(s) found for {disease.name}")
+        # Only consider CV-selected rows to avoid test-set peeking across tiers.
+        # Among those, pick the one with the best Frozen_Test_AUC_PR_Final.
+        cv_sel = m3_dis[m3_dis["CV_Selected"] == True].copy()
+        if cv_sel.empty:
+            cv_sel = m3_dis  # fallback: no CV_Selected flag set
+        cv_sel = cv_sel.sort_values("Frozen_Test_AUC_PR_Final", ascending=False)
+        m3_dis_eval = cv_sel  # only bootstrap-eval the selected rows
+
+        print(f"\n[m3] {len(m3_dis)} total row(s), {len(cv_sel)} CV-selected row(s) for {disease.name}")
         best_m3 = None
 
-        for i, row in m3_dis.iterrows():
+        for i, row in m3_dis_eval.iterrows():
             formula_s = str(row["Best_GP_Formula"])
             tier = row.get("Config_Used", f"row{i}")
-            print(f"  [{tier}] formula length: {len(formula_s)} chars")
+            seed_label = str(row.get("Seed_File", "none"))
+            print(f"  [{tier}/{seed_label}] formula length: {len(formula_s)} chars")
             scores, y = get_scores(formula_s, test_df, features)
             if scores is None:
-                print(f"  [{tier}] evaluation failed — CI set to NaN")
+                print(f"  [{tier}/{seed_label}] evaluation failed — CI set to NaN")
                 continue
             ci = bootstrap_ci(y, scores, n_bootstrap=args.n_bootstrap)
             if ci is None:
-                print(f"  [{tier}] bootstrap failed — too few valid samples")
+                print(f"  [{tier}/{seed_label}] bootstrap failed — too few valid samples")
                 continue
 
             # Re-evaluate point estimate with our evaluator for consistency with bootstrap CI.
@@ -339,9 +349,10 @@ def main():
             m3_dis.at[i, "AUC_PR_CI_High"] = round(ci[1], 4)
             m3_dis.at[i, "AUC_ROC_CI_Low"] = round(ci[2], 4)
             m3_dis.at[i, "AUC_ROC_CI_High"] = round(ci[3], 4)
-            print(f"  [{tier}] AUC-PR={eval_auc_pr:.4f}  CI=[{ci[0]:.4f}, {ci[1]:.4f}]")
+            print(f"  [{tier}/{seed_label}] AUC-PR={eval_auc_pr:.4f}  CI=[{ci[0]:.4f}, {ci[1]:.4f}]")
 
-            if best_m3 is None or eval_auc_pr > best_m3["auc_pr"]:
+            # Pick best among CV-selected rows by Frozen_Test_AUC_PR_Final (already sorted desc)
+            if best_m3 is None:
                 best_m3 = {
                     "method": "m3", "label": "M3: Genetic Programming",
                     "formula": formula_s,

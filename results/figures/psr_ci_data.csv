@@ -1,6 +1,6 @@
 method,label,formula,auc_pr,auc_roc,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
-m1,M1: Threshold,mch > 30.8,0.0134,0.5269,0.0048,0.0086,0.4454,0.5868
-m2,M2: Random Search,(((sqrt(abs(mch))) / (abs(mcv)+1e-6)) * ((neut_pct**2))) - (sqrt(abs(mono_pct))),0.04,0.5606,0.0074,0.1014,0.4759,0.6362
-m3,M3: Genetic Programming,"add(neut_pct, rdw)",0.0095,0.5732,0.0061,0.0169,0.4872,0.6495
-m4,M4: LLM,(hgb - mchc) / (hct + 0.01) * (plt + 0.1),0.0137,0.5047,0.005,0.0581,0.4153,0.5912
+m1,M1: Threshold,mch > 30.8,0.0134,0.5269,0.0048,0.0086,0.446,0.5719
+m2,M2: Random Search,((((((((((((hgb) - (sqrt(abs(hct)))) - (sqrt(abs(plt)))) * (sqrt(abs(mchc)))) - ((neut_pct**2))) * ((mono_pct**2))) * (sqrt(abs(mch)))) - (mcv)) * (sqrt(abs(lym_pct)))) / (abs(log(abs(wbc)+1))+1e-6)) * (rdw)) - ((rbc**2))) / (abs(sqrt(abs(eos_pct)))+1e-6),0.0104,,0.007,0.0182,0.5491,0.7013
+m3,M3: Genetic Programming,"mul(log(mchc), mul(log(mul(log(log(mul(log(log(log(mchc))), log(add(sqrt(hct), add(log(mch), hct)))))), log(mch))), add(add(mcv, add(mcv, mch)), hct)))",0.0085,0.5092,0.0055,0.0166,0.4133,0.5833
+m4,M4: LLM,(hgb - mchc) / (hct + 0.01) * (plt + 0.1),0.0137,0.5047,0.0051,0.0618,0.4134,0.5922
 lr_baseline,LR Baseline (all features),,0.0115,,,,,

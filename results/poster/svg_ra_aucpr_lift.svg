@@ -1,0 +1,147 @@
+<svg viewBox="0 0 760 490" xmlns="http://www.w3.org/2000/svg" font-family="Calibri, Arial, sans-serif">
+  <rect width="760" height="490" fill="#FAFAFA" rx="8"/>
+
+  <!-- ── Titles ─────────────────────────────────────────────────────────── -->
+  <text x="380" y="26" text-anchor="middle" font-size="15.5" font-weight="bold" fill="#0F172A">Rheumatoid Arthritis — AUC-PR Lift by Method</text>
+  <text x="380" y="46" text-anchor="middle" font-size="10.5" fill="#64748B">Lift = AUC-PR / prevalence (1.02%)  |  error bars = 95% bootstrap CI (n=1,000)  |  dashed = LR all-features baseline</text>
+
+  <!-- ── Chart background ───────────────────────────────────────────────── -->
+  <rect x="72" y="72" width="673" height="313" fill="white" rx="3"/>
+
+  <!-- ── Gridlines ─────────────────────────────────────────────────────── -->
+  <g stroke="#E2E8F0" stroke-width="0.8">
+    <line x1="72"  y1="385" x2="745" y2="385"/>
+    <line x1="72"  y1="324" x2="745" y2="324"/>
+    <line x1="72"  y1="262" x2="745" y2="262"/>
+    <line x1="72"  y1="201" x2="745" y2="201"/>
+    <line x1="72"  y1="140" x2="745" y2="140"/>
+    <line x1="72"  y1="78"  x2="745" y2="78"/>
+  </g>
+
+  <!-- ── Y-axis tick labels ─────────────────────────────────────────────── -->
+  <g text-anchor="end" font-size="11" fill="#64748B">
+    <text x="67" y="389">1.0×</text>
+    <text x="67" y="328">1.5×</text>
+    <text x="67" y="266">2.0×</text>
+    <text x="67" y="205">2.5×</text>
+    <text x="67" y="144">3.0×</text>
+    <text x="67" y="82"> 3.5×</text>
+  </g>
+
+  <!-- ── Y-axis label (rotated) ─────────────────────────────────────────── -->
+  <text transform="rotate(-90,18,228)" x="18" y="228" text-anchor="middle" font-size="10.5" fill="#475569">AUC-PR Lift  (AUC-PR / prevalence)</text>
+
+  <!-- ── X-axis line ────────────────────────────────────────────────────── -->
+  <line x1="72" y1="385" x2="745" y2="385" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- ── LR all-features baseline (dashed) at y=324.5 ─────────────────── -->
+  <line x1="72" y1="325" x2="745" y2="325" stroke="#64748B" stroke-width="1.6" stroke-dasharray="7,4"/>
+  <text x="76" y="319" font-size="9.5" fill="#64748B" font-style="italic">LR all-features (1.49×)</text>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       BARS
+       centers: M1=156  M2=324  M3=492  M4=660
+       bar_w=110 → lefts: M1=101  M2=269  M3=437  M4=605
+       bar_top:   M1=339  M2=346  M3=313  M4=329
+       bar height (to y=385): M1=46  M2=39  M3=72  M4=56
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- M1 Threshold  #2C3E50 -->
+  <rect x="101" y="339" width="110" height="46" fill="#2C3E50" rx="3"/>
+
+  <!-- M2 Random  #7F8C8D -->
+  <rect x="269" y="346" width="110" height="39" fill="#7F8C8D" rx="3"/>
+
+  <!-- M3 GP  #E8773D  (winner) -->
+  <rect x="437" y="313" width="110" height="72" fill="#E8773D" rx="3"/>
+
+  <!-- M4 LLM  #1A7A8A -->
+  <rect x="605" y="329" width="110" height="56" fill="#1A7A8A" rx="3"/>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       CI ERROR BARS
+       cap half-width = 10px
+
+       M1: yerr_hi=0 → no upward bar; ci_lo=0.722 < y_min → clip at y=385
+           Line: 339→385, cap at TOP (y=339) only.
+           [Bar hides the line; cap is at bar top edge]
+
+       M2: ci_lo clipped at y=385, ci_hi y=263
+           Line: 385→263, cap at TOP (y=263) only.
+
+       M3: ci_lo y=372, ci_hi y=144
+           Line: 372→144, caps at both ends.
+
+       M4: ci_lo y=383, ci_hi y=223
+           Line: 383→223, caps at both ends.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- M1: line from bar_top(339) down to chart bottom(385) — lower CI clipped -->
+  <line x1="156" y1="339" x2="156" y2="385" stroke="#1A2532" stroke-width="1.8"/>
+  <line x1="146" y1="339" x2="166" y2="339" stroke="#1A2532" stroke-width="1.8"/>
+
+  <!-- M2: line from chart bottom (ci_lo clipped) up to ci_hi(263) -->
+  <line x1="324" y1="385" x2="324" y2="263" stroke="#555F60" stroke-width="1.8"/>
+  <line x1="314" y1="263" x2="334" y2="263" stroke="#555F60" stroke-width="1.8"/>
+
+  <!-- M3: line from ci_lo(372) to ci_hi(144), caps at both ends -->
+  <line x1="492" y1="372" x2="492" y2="144" stroke="#A3521A" stroke-width="2.0"/>
+  <line x1="482" y1="372" x2="502" y2="372" stroke="#A3521A" stroke-width="2.0"/>
+  <line x1="482" y1="144" x2="502" y2="144" stroke="#A3521A" stroke-width="2.0"/>
+
+  <!-- M4: line from ci_lo(383) to ci_hi(223), caps at both ends -->
+  <line x1="660" y1="383" x2="660" y2="223" stroke="#0D5968" stroke-width="1.8"/>
+  <line x1="650" y1="383" x2="670" y2="383" stroke="#0D5968" stroke-width="1.8"/>
+  <line x1="650" y1="223" x2="670" y2="223" stroke="#0D5968" stroke-width="1.8"/>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       LIFT VALUE LABELS  (placed above top of error bar / bar, whichever higher)
+       label_y = min(bar_top, ci_hi_y) − 22:
+         M1: min(339,339)−22 = 317  (ci_hi<lift, so label above bar_top)
+         M2: min(346,263)−22 = 241
+         M3: min(313,144)−22 = 122
+         M4: min(329,223)−22 = 201
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <text x="156" y="317" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">1.38×</text>
+  <text x="324" y="241" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">1.32×</text>
+  <text x="492" y="122" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">1.59×</text>
+  <text x="660" y="201" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">1.45×</text>
+
+  <!-- 🏆 Winner badge above M3 -->
+  <rect x="462" y="93" width="60" height="22" rx="4" fill="#E8773D"/>
+  <text x="492" y="108" text-anchor="middle" font-size="11" font-weight="bold" fill="white">🏆 Best</text>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       X-AXIS LABELS
+       Line 1 (y=404): method code — coloured, bold
+       Line 2 (y=420): method name
+       Line 3 (y=438): n_feat feat.  ·  n_ops ops
+       Line 4 (y=455): formula (italic, small)
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- M1 -->
+  <text x="156" y="404" text-anchor="middle" font-size="13" font-weight="bold" fill="#2C3E50">M1</text>
+  <text x="156" y="420" text-anchor="middle" font-size="11" fill="#334155">Threshold</text>
+  <text x="156" y="438" text-anchor="middle" font-size="9.5" fill="#94A3B8">1 feat.  ·  1 op</text>
+  <text x="156" y="454" text-anchor="middle" font-size="9" fill="#94A3B8" font-style="italic">rbc &lt; 3.99</text>
+
+  <!-- M2 -->
+  <text x="324" y="404" text-anchor="middle" font-size="13" font-weight="bold" fill="#7F8C8D">M2</text>
+  <text x="324" y="420" text-anchor="middle" font-size="11" fill="#334155">Random</text>
+  <text x="324" y="438" text-anchor="middle" font-size="9.5" fill="#94A3B8">7 feat.  ·  18 ops</text>
+  <text x="324" y="454" text-anchor="middle" font-size="9" fill="#94A3B8" font-style="italic">sqrt(hgb·eos)/mono²·rbc²·plt²/mchc</text>
+
+  <!-- M3 -->
+  <text x="492" y="404" text-anchor="middle" font-size="13" font-weight="bold" fill="#E8773D">M3</text>
+  <text x="492" y="420" text-anchor="middle" font-size="11" fill="#334155">Genetic Prog.</text>
+  <text x="492" y="438" text-anchor="middle" font-size="9.5" fill="#94A3B8">4 feat.  ·  34 ops</text>
+  <text x="492" y="454" text-anchor="middle" font-size="9" fill="#94A3B8" font-style="italic">mono/neut · log(hct−mchc) composition</text>
+
+  <!-- M4 -->
+  <text x="660" y="404" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A7A8A">M4</text>
+  <text x="660" y="420" text-anchor="middle" font-size="11" fill="#334155">LLM</text>
+  <text x="660" y="438" text-anchor="middle" font-size="9.5" fill="#94A3B8">3 feat.  ·  2 ops</text>
+  <text x="660" y="454" text-anchor="middle" font-size="9" fill="#94A3B8" font-style="italic">(hct − hgb) / (plt + 0.01)</text>
+
+</svg>

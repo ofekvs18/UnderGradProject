@@ -1,0 +1,126 @@
+<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" font-family="Calibri, Arial, sans-serif">
+  <!-- Background -->
+  <rect width="900" height="420" fill="#F8F9FA" rx="8"/>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#2C3E50">Framework Architecture — Interchangeable Logic</text>
+
+  <!-- Arrow helper: right-facing -->
+  <defs>
+    <marker id="arrowR" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#1A7A8A"/>
+    </marker>
+    <marker id="arrowO" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#E8773D"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1: Input -->
+  <rect x="20" y="80" width="140" height="260" rx="8" fill="#1A7A8A"/>
+  <text x="90" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="white">CBC Input</text>
+  <text x="90" y="122" text-anchor="middle" font-size="11" fill="#D6EAF0">14 Features</text>
+  <!-- Feature pills -->
+  <g fill="#D6EAF0" font-size="10" text-anchor="middle">
+    <rect x="35" y="132" width="110" height="18" rx="4" fill="#126070"/>
+    <text x="90" y="145" fill="white">HCT · HGB · MCH</text>
+    <rect x="35" y="154" width="110" height="18" rx="4" fill="#126070"/>
+    <text x="90" y="167" fill="white">MCHC · MCV · PLT</text>
+    <rect x="35" y="176" width="110" height="18" rx="4" fill="#126070"/>
+    <text x="90" y="189" fill="white">RBC · RDW · WBC</text>
+    <rect x="35" y="198" width="110" height="18" rx="4" fill="#0D4F5C"/>
+    <text x="90" y="211" fill="#A8D5DF">Neut% · Lym%</text>
+    <rect x="35" y="220" width="110" height="18" rx="4" fill="#0D4F5C"/>
+    <text x="90" y="233" fill="#A8D5DF">Mono% · Eos%</text>
+    <rect x="35" y="242" width="110" height="18" rx="4" fill="#0D4F5C"/>
+    <text x="90" y="255" fill="#A8D5DF">Baso%</text>
+  </g>
+  <text x="90" y="295" text-anchor="middle" font-size="10" fill="#A8D5DF">MIMIC-IV v3.1</text>
+  <text x="90" y="308" text-anchor="middle" font-size="10" fill="#A8D5DF">90d lookback</text>
+  <text x="90" y="321" text-anchor="middle" font-size="10" fill="#A8D5DF">80/20 split</text>
+
+  <!-- Arrow 1 -->
+  <line x1="162" y1="210" x2="185" y2="210" stroke="#1A7A8A" stroke-width="2.5" marker-end="url(#arrowR)"/>
+
+  <!-- Step 2: Preprocessing -->
+  <rect x="188" y="80" width="130" height="260" rx="8" fill="#2C3E50"/>
+  <text x="253" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Pre-processing</text>
+  <g fill="white" font-size="10" text-anchor="middle">
+    <text x="253" y="130">90-day lookback</text>
+    <text x="253" y="148">First 24h index</text>
+    <text x="253" y="166">Last value agg.</text>
+    <text x="253" y="184">Imputation</text>
+    <text x="253" y="202">Normalization</text>
+    <text x="253" y="220">Train / Test split</text>
+    <text x="253" y="238" fill="#A0B0C0">(80 / 20)</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <line x1="320" y1="210" x2="343" y2="210" stroke="#E8773D" stroke-width="2.5" marker-end="url(#arrowO)"/>
+
+  <!-- Step 3: Interchangeable Methods (4 cards) -->
+  <rect x="346" y="60" width="370" height="300" rx="8" fill="#FFF3EC" stroke="#E8773D" stroke-width="2"/>
+  <text x="531" y="82" text-anchor="middle" font-size="12" font-weight="bold" fill="#E8773D">Interchangeable Logic — Plug-and-Play</text>
+
+  <!-- M1 -->
+  <rect x="358" y="92" width="166" height="74" rx="6" fill="#2C3E50"/>
+  <text x="441" y="112" text-anchor="middle" font-size="11" font-weight="bold" fill="white">M1 — Threshold Opt.</text>
+  <text x="441" y="128" text-anchor="middle" font-size="9.5" fill="#A0B8C0">Youden's Index</text>
+  <text x="441" y="144" text-anchor="middle" font-size="9.5" fill="#A0B8C0">Literature cutoffs</text>
+  <text x="441" y="160" text-anchor="middle" font-size="9" fill="#6A7A80">Single feature</text>
+
+  <!-- M2 -->
+  <rect x="538" y="92" width="166" height="74" rx="6" fill="#2C3E50"/>
+  <text x="621" y="112" text-anchor="middle" font-size="11" font-weight="bold" fill="white">M2 — Random Search</text>
+  <text x="621" y="128" text-anchor="middle" font-size="9.5" fill="#A0B8C0">10,000 formulas</text>
+  <text x="621" y="144" text-anchor="middle" font-size="9.5" fill="#A0B8C0">± × ÷ √ log</text>
+  <text x="621" y="160" text-anchor="middle" font-size="9" fill="#6A7A80">Exhaustive search</text>
+
+  <!-- M3 - highlighted -->
+  <rect x="358" y="176" width="166" height="74" rx="6" fill="#E8773D"/>
+  <text x="441" y="196" text-anchor="middle" font-size="11" font-weight="bold" fill="white">M3 — Genetic Prog.</text>
+  <text x="441" y="212" text-anchor="middle" font-size="9.5" fill="white">gplearn | pop=500</text>
+  <text x="441" y="228" text-anchor="middle" font-size="9.5" fill="white">gen=100 | parsimony=0.0001</text>
+  <text x="441" y="244" text-anchor="middle" font-size="9" fill="#FDEBD7">🏆 Best performer</text>
+
+  <!-- M4 -->
+  <rect x="538" y="176" width="166" height="74" rx="6" fill="#1A7A8A"/>
+  <text x="621" y="196" text-anchor="middle" font-size="11" font-weight="bold" fill="white">M4 — LLM</text>
+  <text x="621" y="212" text-anchor="middle" font-size="9.5" fill="#D6EAF0">Med-Gemma 4B</text>
+  <text x="621" y="228" text-anchor="middle" font-size="9.5" fill="#D6EAF0">Seeded prompts</text>
+  <text x="621" y="244" text-anchor="middle" font-size="9" fill="#A0D0D8">GPU cluster</text>
+
+  <!-- Baseline -->
+  <rect x="358" y="260" width="346" height="36" rx="6" fill="#7F8C8D"/>
+  <text x="531" y="283" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Baseline: Logistic Regression (all 14 features)</text>
+
+  <!-- Arrow 3 -->
+  <line x1="718" y1="210" x2="741" y2="210" stroke="#1A7A8A" stroke-width="2.5" marker-end="url(#arrowR)"/>
+
+  <!-- Step 4: Evaluation -->
+  <rect x="744" y="80" width="136" height="260" rx="8" fill="#1A7A8A"/>
+  <text x="812" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Evaluation</text>
+  <g text-anchor="middle" font-size="10">
+    <rect x="756" y="116" width="112" height="28" rx="4" fill="#E8773D"/>
+    <text x="812" y="131" font-weight="bold" fill="white">AUC-PR Lift</text>
+    <text x="812" y="144" fill="white" font-size="9">Primary metric</text>
+
+    <rect x="756" y="152" width="112" height="22" rx="4" fill="#126070"/>
+    <text x="812" y="167" fill="white">AUC-ROC</text>
+
+    <rect x="756" y="182" width="112" height="22" rx="4" fill="#126070"/>
+    <text x="812" y="197" fill="white">Bootstrap CI</text>
+    <text x="812" y="208" fill="#A8D5DF" font-size="9">n=1,000</text>
+
+    <rect x="756" y="218" width="112" height="22" rx="4" fill="#126070"/>
+    <text x="812" y="233" fill="white">vs. Baseline</text>
+
+    <text x="812" y="265" fill="#D6EAF0" font-size="9">External</text>
+    <text x="812" y="278" fill="#D6EAF0" font-size="9">NHANES</text>
+    <text x="812" y="291" fill="#D6EAF0" font-size="9">EHRSHOT</text>
+    <text x="812" y="304" fill="#A8D5DF" font-size="9">Stanford</text>
+    <text x="812" y="318" fill="#A8D5DF" font-size="9">OMOP CDM</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="450" y="400" text-anchor="middle" font-size="10" fill="#7F8C8D">Same data split · Same metrics · Fair comparison across all methods</text>
+</svg>

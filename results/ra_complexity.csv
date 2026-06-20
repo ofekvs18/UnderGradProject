@@ -1,0 +1,6 @@
+method,label,formula,n_features,n_ops,auc_pr,lift,auc_pr_ci_low,auc_pr_ci_high,lift_ci_low,lift_ci_high
+m1,M1: Threshold,rbc < 3.99,1,1,0.0141,1.376,0.0074,0.0126,0.722,1.23
+m2,M2: Random,((((((sqrt(abs(hgb))) * (sqrt(abs(eos_pct)))) / (abs((mono_pct**2))+1e-6)) * ((rbc**2))) * ((plt**2))) / (abs(mchc)+1e-6)) - (log(abs(baso_pct)+1)),7,18,0.0135,1.317,0.0093,0.0204,0.908,1.991
+m3,M3: GP,"add(mul(div(mono_pct, neut_pct), mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), add(mul(mul(mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), add(mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), log(sub(hct, mchc)))), mono_pct), log(sub(hct, mchc))))), mono_pct), add(sqrt(mono_pct), log(sub(hct, mchc)))), mono_pct), log(sub(hct, mchc))))), mono_pct)), log(sub(hct, mchc)))",4,34,0.0163,1.591,0.0113,0.0304,1.103,2.967
+m4,M4: LLM,(hct - hgb) / (plt + 0.01),3,2,0.0149,1.454,0.0104,0.0238,1.015,2.323
+lr_baseline,LR Baseline,logit(p) = -0.0183 - (0.0818 * hct) + (0.1700 * hgb) + (0.1115 * mch) - (0.0315 * mchc) - (0.0250 * mcv) + (0.0019 * plt) + (0.0805 * rbc) + (0.0686 * rdw) - (0.0087 * wbc) - (0.0037 * neut_pct) + (0.0034 * lym_pct) - (0.1010 * mono_pct) + (0.0540 * eos_pct) - (0.3678 * baso_pct),14,14,0.0153,1.493,,,,
