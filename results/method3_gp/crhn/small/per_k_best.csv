@@ -1,10 +1,12 @@
 K,Best_Formula,AUC_PR,AUC_ROC,Baseline_AUC_PR,Delta_vs_Baseline
-1,neg(plt),0.0181,0.5786,0.0181,0.0
-2,"mul(sqrt(mcv), mul(mcv, div(-0.869, plt)))",0.0193,0.5854,0.0137,0.0056
-3,"neg(mul(sqrt(add(plt, mchc)), sub(sqrt(sqrt(mul(rbc, plt))), add(rbc, mchc))))",0.0249,0.6046,0.0145,0.0104
-4,"neg(mul(div(sub(plt, mcv), plt), sub(div(-0.869, plt), add(rbc, mchc))))",0.0334,0.597,0.0153,0.0181
-5,"mul(div(sub(plt, mcv), add(add(plt, wbc), add(rbc, mchc))), sub(div(-0.869, plt), add(rbc, mchc)))",0.0336,0.5906,0.0173,0.0163
-6,"mul(div(sub(plt, mcv), add(add(plt, wbc), wbc)), sub(div(neg(hct), plt), add(rbc, mchc)))",0.025,0.5902,0.0178,0.0072
-8,"log(add(mul(mul(add(sqrt(0.527), sqrt(baso_pct)), neg(neg(hgb))), div(div(mul(neut_pct, neut_pct), div(mch, 0.523)), sqrt(neg(mcv)))), div(sqrt(mul(neg(wbc), add(hgb, mch))), neg(sub(add(rbc, mch), sub(plt, mcv))))))",0.0096,0.5065,0.018,-0.0084
-9,"mul(div(div(log(neg(baso_pct)), mul(neg(mch), sub(mchc, mcv))), sub(div(log(rdw), neg(eos_pct)), mul(sqrt(rbc), log(rdw)))), div(sqrt(sqrt(div(wbc, rbc))), add(log(sqrt(lym_pct)), mul(mul(rdw, mch), div(baso_pct, eos_pct)))))",0.0102,0.5054,0.0193,-0.0091
-11,"mul(mul(neg(log(mul(sub(baso_pct, rbc), neg(mch)))), add(mul(div(sub(mchc, mch), neg(neut_pct)), add(mul(mchc, hct), log(mcv))), sqrt(sub(sqrt(mch), mul(mcv, plt))))), sub(neg(mul(log(div(neut_pct, eos_pct)), div(div(rdw, neut_pct), sub(hct, baso_pct)))), neg(log(add(add(lym_pct, mch), div(eos_pct, hct))))))",0.0171,0.5472,0.0176,-0.0005
+1,neg(plt),0.0136,0.6484,0.0136,0.0
+2,"mul(sqrt(mcv), mul(mcv, mul(mcv, div(-0.869, sqrt(plt)))))",0.0187,0.6735,0.0127,0.006
+3,"add(hgb, add(hgb, sub(plt, mono_pct)))",0.0138,0.6508,0.0155,-0.0017
+4,"neg(mul(sqrt(sqrt(rdw)), sub(mul(rbc, plt), add(rbc, mchc))))",0.0172,0.659,0.0173,-0.0001
+5,"sub(sub(log(sub(mchc, rbc)), div(sub(hgb, mchc), sqrt(mono_pct))), sqrt(sub(neg(rbc), neg(plt))))",0.0141,0.6019,0.02,-0.0059
+6,"div(sqrt(add(add(hct, hct), sqrt(plt))), sub(sub(sub(wbc, hgb), sub(plt, neut_pct)), neg(neg(lym_pct))))",0.0108,0.6347,0.0175,-0.0067
+7,"div(sqrt(mul(mul(hct, neut_pct), mul(mch, neut_pct))), add(div(sub(-0.674, neut_pct), sub(rbc, -0.269)), sub(sqrt(eos_pct), div(mono_pct, rdw))))",0.0099,0.5904,0.0191,-0.0092
+8,"log(add(mul(mul(add(sqrt(0.527), sqrt(baso_pct)), neg(neg(hgb))), div(div(mul(neut_pct, neut_pct), div(mch, 0.523)), sqrt(neg(mcv)))), div(sqrt(mul(neg(wbc), add(hgb, mch))), neg(sub(add(rbc, mch), sub(plt, mcv))))))",0.0103,0.5715,0.0186,-0.0083
+9,"mul(div(div(log(neg(baso_pct)), mul(neg(mch), sub(mchc, mcv))), sub(div(log(rdw), neg(eos_pct)), mul(sqrt(rbc), log(rdw)))), div(sqrt(sqrt(div(wbc, rbc))), add(log(sqrt(lym_pct)), mul(mul(rdw, mch), div(baso_pct, eos_pct)))))",0.0129,0.5194,0.0191,-0.0062
+11,"add(mul(sub(neg(add(sqrt(plt), sqrt(rbc))), add(neg(div(wbc, plt)), log(neg(plt)))), log(log(add(mul(hgb, lym_pct), div(mchc, rbc))))), div(sub(sqrt(log(log(lym_pct))), mul(div(neg(mch), sub(hgb, neut_pct)), add(mul(mchc, neut_pct), log(mono_pct)))), sub(sqrt(sub(log(mcv), sub(mch, hgb))), neg(log(neg(rdw))))))",0.0085,0.5823,0.0193,-0.0108
+14,"sub(neg(div(neg(log(neg(plt))), sub(add(div(plt, mch), sqrt(-0.535)), neg(log(eos_pct))))), sub(mul(sub(add(sqrt(hct), sqrt(mono_pct)), add(add(mcv, lym_pct), neg(lym_pct))), mul(add(log(rbc), sqrt(mchc)), add(sub(wbc, baso_pct), add(hgb, lym_pct)))), sub(div(sub(sub(wbc, rbc), neg(neut_pct)), log(log(neut_pct))), add(add(add(mcv, lym_pct), sub(hct, rdw)), add(sub(rbc, mch), div(rdw, baso_pct))))))",0.0081,0.5504,0.0199,-0.0118

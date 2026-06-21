@@ -1,35 +1,35 @@
 Method 1: Threshold Optimization Results
     =========================================
 
-    CV-Selected Feature: MCHC
-      CV_AUC_PR_Mean: 0.0085  Std: 0.0013
-      CV_AUC_PR_CI95: [0.0059, 0.0110]
-      Frozen_Test_AUC_PR: 0.0076
+    CV-Selected Feature: MCH
+      CV_AUC_PR_Mean: 0.0085  Std: 0.0011
+      CV_AUC_PR_CI95: [0.0062, 0.0107]
+      Frozen_Test_AUC_PR: 0.0080
 
     Best single feature: RBC (selected by frozen AUC-PR)
 
     Literature threshold: 4.0 (below)
-      AUC-ROC: 0.5339
-      AUC-PR:  0.0087
-      Precision: 0.0062
-      Recall:    0.6296
-      F1: 0.0122
-      F2: 0.0297
+      AUC-ROC: 0.5083
+      AUC-PR:  0.0068
+      Precision: 0.0050
+      Recall:    0.5775
+      F1: 0.0100
+      F2: 0.0243
 
-    Data-driven threshold: 4.7900 (above)
-      AUC-ROC: 0.4661
-      AUC-PR:  0.0049
-      Precision: 0.0024
-      Recall:    0.0370
-      F1: 0.0045
-      F2: 0.0095
-      Precision@Recall(0.25): 0.0043
-      Precision@Recall(0.50): 0.0047
-      Precision@Recall(0.75): 0.0054
+    Data-driven threshold: 3.9100 (below)
+      AUC-ROC: 0.5083
+      AUC-PR:  0.0068
+      Precision: 0.0050
+      Recall:    0.5282
+      F1: 0.0100
+      F2: 0.0242
+      Precision@Recall(0.25): 0.0046
+      Precision@Recall(0.50): 0.0053
+      Precision@Recall(0.75): 0.0049
 
     Comparison to baseline (all-features logistic regression):
-      Baseline AUC-ROC: 0.687  |  Best feature AUC-ROC: 0.466  |  Diff: -0.221
-      Baseline AUC-PR:  0.011  |  Best feature AUC-PR:  0.005  |  Diff: -0.007
+      Baseline AUC-ROC: 0.687  |  Best feature AUC-ROC: 0.508  |  Diff: -0.179
+      Baseline AUC-PR:  0.011  |  Best feature AUC-PR:  0.007  |  Diff: -0.005
 
     Key insight:
       Single-feature thresholds underperform the all-features baseline on both metrics.

@@ -2,3 +2,39 @@ Timestamp,Disease,Method,Variant,formula,auc_roc,auc_pr,precision,recall,f1,f2,p
 2026-06-07 07:45:50,psr,m3,gp,"add(neut_pct, rdw)",0.5684,0.0863,0.0615,0.3077,0.1026,0.1709,0.075,0.0833,0.0744,small
 2026-06-07 07:45:50,psr,m3,gp,"add(mchc, hgb)",0.5553,0.0764,0.0725,0.3846,0.122,0.2066,0.0606,0.0805,0.0859,medium
 2026-06-07 07:45:50,psr,m3,gp,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5154,0.076,0.0633,0.3846,0.1087,0.1908,0.0426,0.0641,0.0709,large
+2026-06-21 12:02:48,psr,m3,gp,"add(neut_pct, rdw)",0.552,0.0833,0.0531,0.5,0.096,0.1863,0.0625,0.0741,0.0652,small
+2026-06-21 12:02:48,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:02:48,psr,m3,gp,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5421,0.0783,0.0636,0.9167,0.1189,0.2489,0.0417,0.0568,0.0604,large
+2026-06-21 12:02:48,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:02:48,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:02:48,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,large
+2026-06-21 12:02:48,psr,m3,gp,"sqrt(mul(sqrt(mul(log(log(log(mchc))), log(add(log(mchc), log(mch))))), log(log(add(sqrt(hct), log(mch))))))",0.5614,0.0936,0.0595,0.8333,0.1111,0.2315,0.0612,0.0761,0.0647,small
+2026-06-21 12:02:48,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:02:48,psr,m3,gp,"add(log(log(rdw)), div(div(sqrt(neut_pct), div(div(div(mchc, mono_pct), mono_pct), mono_pct)), div(div(mchc, mono_pct), mono_pct)))",0.5859,0.0846,0.0814,0.5833,0.1429,0.2612,0.0682,0.0864,0.0634,large
+2026-06-21 12:02:48,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:02:48,psr,m3,gp,"sub(mch, mul(mul(add(log(add(log(mch), neut_pct)), add(mchc, hgb)), log(mch)), log(0.141)))",0.6508,0.0845,0.0585,1.0,0.1106,0.2372,0.0597,0.1019,0.075,medium
+2026-06-21 12:02:48,psr,m3,gp,"sub(log(log(sqrt(mchc))), mul(mchc, neg(sub(log(rdw), mul(mul(add(add(add(log(log(rdw)), div(sqrt(neut_pct), add(log(log(hgb)), div(log(sqrt(mchc)), div(mchc, mono_pct))))), div(sqrt(neut_pct), add(log(log(sqrt(mchc))), div(sub(mch, baso_pct), div(mchc, mono_pct))))), add(sub(mch, baso_pct), add(mchc, hgb))), neg(sqrt(mchc))), sqrt(hct))))))",0.546,0.0759,0.0672,0.75,0.1233,0.2473,0.0294,0.0833,0.0677,large
+2026-06-21 12:19:37,psr,m3,gp,"add(neut_pct, rdw)",0.552,0.0833,0.0531,0.5,0.096,0.1863,0.0625,0.0741,0.0652,small
+2026-06-21 12:19:37,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:19:37,psr,m3,gp,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5421,0.0783,0.0636,0.9167,0.1189,0.2489,0.0417,0.0568,0.0604,large
+2026-06-21 12:19:37,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:19:37,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:19:37,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,large
+2026-06-21 12:19:37,psr,m3,gp,"sqrt(mul(sqrt(mul(log(log(log(mchc))), log(add(log(mchc), log(mch))))), log(log(add(sqrt(hct), log(mch))))))",0.5614,0.0936,0.0595,0.8333,0.1111,0.2315,0.0612,0.0761,0.0647,small
+2026-06-21 12:19:37,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:19:37,psr,m3,gp,"add(log(log(rdw)), div(div(sqrt(neut_pct), div(div(div(mchc, mono_pct), mono_pct), mono_pct)), div(div(mchc, mono_pct), mono_pct)))",0.5859,0.0846,0.0814,0.5833,0.1429,0.2612,0.0682,0.0864,0.0634,large
+2026-06-21 12:19:37,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:19:37,psr,m3,gp,"sub(mch, mul(mul(add(log(add(log(mch), neut_pct)), add(mchc, hgb)), log(mch)), log(0.141)))",0.6508,0.0845,0.0585,1.0,0.1106,0.2372,0.0597,0.1019,0.075,medium
+2026-06-21 12:19:37,psr,m3,gp,"sub(log(log(sqrt(mchc))), mul(mchc, neg(sub(log(rdw), mul(mul(add(add(add(log(log(rdw)), div(sqrt(neut_pct), add(log(log(hgb)), div(log(sqrt(mchc)), div(mchc, mono_pct))))), div(sqrt(neut_pct), add(log(log(sqrt(mchc))), div(sub(mch, baso_pct), div(mchc, mono_pct))))), add(sub(mch, baso_pct), add(mchc, hgb))), neg(sqrt(mchc))), sqrt(hct))))))",0.546,0.0759,0.0672,0.75,0.1233,0.2473,0.0294,0.0833,0.0677,large
+2026-06-21 12:43:19,psr,m3,gp,"add(neut_pct, rdw)",0.552,0.0833,0.0531,0.5,0.096,0.1863,0.0625,0.0741,0.0652,small
+2026-06-21 12:43:19,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:43:19,psr,m3,gp,"mul(sqrt(log(mcv)), mul(log(log(log(mchc))), log(add(log(mcv), add(log(mcv), hct)))))",0.5421,0.0783,0.0636,0.9167,0.1189,0.2489,0.0417,0.0568,0.0604,large
+2026-06-21 12:43:19,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:43:19,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:43:19,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,large
+2026-06-21 12:43:19,psr,m3,gp,"sqrt(mul(sqrt(mul(log(log(log(mchc))), log(add(log(mchc), log(mch))))), log(log(add(sqrt(hct), log(mch))))))",0.5614,0.0936,0.0595,0.8333,0.1111,0.2315,0.0612,0.0761,0.0647,small
+2026-06-21 12:43:19,psr,m3,gp,"add(mchc, hgb)",0.5286,0.077,0.0692,0.75,0.1268,0.2528,0.025,0.0722,0.0657,medium
+2026-06-21 12:43:19,psr,m3,gp,"add(log(log(rdw)), div(div(sqrt(neut_pct), div(div(div(mchc, mono_pct), mono_pct), mono_pct)), div(div(mchc, mono_pct), mono_pct)))",0.5859,0.0846,0.0814,0.5833,0.1429,0.2612,0.0682,0.0864,0.0634,large
+2026-06-21 12:43:19,psr,m3,gp,"sqrt(mul(log(log(log(mchc))), add(sqrt(hct), log(mch))))",0.5322,0.0825,0.0595,0.4167,0.1042,0.1894,0.0652,0.0543,0.0625,small
+2026-06-21 12:43:19,psr,m3,gp,"sub(mch, mul(mul(add(log(add(log(mch), neut_pct)), add(mchc, hgb)), log(mch)), log(0.141)))",0.6508,0.0845,0.0585,1.0,0.1106,0.2372,0.0597,0.1019,0.075,medium
+2026-06-21 12:43:19,psr,m3,gp,"sub(log(log(sqrt(mchc))), mul(mchc, neg(sub(log(rdw), mul(mul(add(add(add(log(log(rdw)), div(sqrt(neut_pct), add(log(log(hgb)), div(log(sqrt(mchc)), div(mchc, mono_pct))))), div(sqrt(neut_pct), add(log(log(sqrt(mchc))), div(sub(mch, baso_pct), div(mchc, mono_pct))))), add(sub(mch, baso_pct), add(mchc, hgb))), neg(sqrt(mchc))), sqrt(hct))))))",0.546,0.0759,0.0672,0.75,0.1233,0.2473,0.0294,0.0833,0.0677,large

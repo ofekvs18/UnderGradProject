@@ -1,0 +1,6 @@
+method,label,formula,auc_pr,auc_roc,variant,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
+m1,M1: Threshold,plt > 400.0,0.1327,0.5379,lit,0.1143,0.212,0.4781,0.6086
+m2,M2: Random Search,((((((((((((log(abs(hct)+1)) + ((wbc**2))) + (sqrt(abs(rbc)))) / (abs(log(abs(eos_pct)+1))+1e-6)) + (sqrt(abs(hgb)))) / (abs((mcv**2))+1e-6)) + (rdw)) / (abs(lym_pct)+1e-6)) - ((mch**2))) / (abs(log(abs(mono_pct)+1))+1e-6)) + (plt)) * (neut_pct)) + (baso_pct),0.2704,0.6644,random,0.1717,0.4542,0.5437,0.7917
+m3,M3: Genetic Programming,"mul(log(log(add(lym_pct, -0.247))), mul(div(neut_pct, mono_pct), mul(lym_pct, mul(mul(lym_pct, mul(div(neut_pct, mono_pct), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))), mul(div(neut_pct, mono_pct), add(hgb, mono_pct))))))",0.2277,0.6724,gp,0.1535,0.4161,0.5574,0.7885
+m4,M4: LLM,(mch - 28) * (mchc - 32) * (mcv - 80) * (plt - 150),0.163,0.5638,llm,0.1165,0.2898,0.4464,0.6947
+m5,M5: Seeded GP,"div(sub(sub(sub(div(mono_pct, rbc), sqrt(div(mono_pct, rbc))), sqrt(add(mch, add(mch, add(mch, mcv))))), mch), add(mch, mcv))",0.2892,0.6446,seeded_gp,0.1634,0.4612,0.5232,0.7651

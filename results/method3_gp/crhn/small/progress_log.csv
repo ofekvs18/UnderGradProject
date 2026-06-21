@@ -1,8 +1,7 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(plt, mono_pct)",0.0182,True,False
-1,"add(hgb, sub(plt, mono_pct))",0.0183,True,False
-2,"neg(mul(sqrt(add(plt, mchc)), sub(mul(sqrt(mcv), div(-0.869, plt)), add(rbc, mchc))))",0.0237,True,True
-3,"neg(mul(div(sub(plt, mcv), add(plt, wbc)), sub(div(-0.869, plt), add(rbc, mchc))))",0.0329,True,True
-5,"neg(mul(div(sub(plt, mcv), plt), sub(div(-0.869, plt), add(rbc, mchc))))",0.0334,True,True
-6,"mul(div(sub(plt, mcv), add(add(plt, wbc), add(rbc, mchc))), sub(div(-0.869, plt), add(rbc, mchc)))",0.0336,True,True
-10,"mul(div(sub(plt, mcv), add(add(plt, wbc), add(rbc, mchc))), sub(div(-0.869, plt), add(rbc, mchc)))",0.0336,False,True
+0,"neg(mul(sqrt(sqrt(rdw)), sub(mul(rbc, plt), add(rbc, mchc))))",0.0172,True,False
+2,"mul(sqrt(mcv), mul(sqrt(mcv), div(-0.869, sqrt(plt))))",0.0174,True,False
+4,"mul(sqrt(mcv), mul(sqrt(mcv), mul(sqrt(mcv), div(-0.869, sqrt(plt)))))",0.0182,True,False
+5,"mul(mcv, mul(sqrt(mcv), mul(sqrt(mcv), div(-0.869, sqrt(plt)))))",0.0185,True,True
+6,"mul(sqrt(mcv), mul(mcv, mul(mcv, div(-0.869, sqrt(plt)))))",0.0187,True,True
+10,"mul(sqrt(mcv), mul(mcv, mul(mcv, div(-0.869, sqrt(plt)))))",0.0187,False,True

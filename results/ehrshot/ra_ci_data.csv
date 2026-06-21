@@ -1,0 +1,6 @@
+method,label,formula,auc_pr,auc_roc,variant,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
+m1,M1: Threshold,plt > 250.0,0.2263,0.7159,dd,0.1601,0.3177,0.6075,0.8155
+m2,M2: Random Search,(((log(abs(neut_pct)+1)) - (rbc)) / (abs(sqrt(abs(baso_pct)))+1e-6)) + (sqrt(abs(plt))),0.2429,0.7373,random,0.1774,0.3739,0.6282,0.8277
+m3,M3: Genetic Programming,"mul(plt, div(plt, add(wbc, mul(mch, mono_pct))))",0.283,0.7295,gp,0.1938,0.4788,0.6084,0.8331
+m4,M4: LLM,(rdw + mchc) / (hct + 0.01) * (plt - rbc),0.2802,0.7381,llm,0.1962,0.4644,0.6348,0.8304
+m5,M5: Seeded GP,"div(mul(mul(plt, rdw), rdw), add(hgb, add(hgb, mul(mono_pct, rdw))))",0.3251,0.7143,seeded_gp,0.2118,0.5438,0.5862,0.8274

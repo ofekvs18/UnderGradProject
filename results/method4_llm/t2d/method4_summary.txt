@@ -1,6 +1,6 @@
 METHOD 4 PERFORMANCE SUMMARY: T2D
         ==================================================
-        Generated at: 2026-06-07 02:44:25
+        Generated at: 2026-06-21 12:13:06
 
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
@@ -12,8 +12,8 @@ METHOD 4 PERFORMANCE SUMMARY: T2D
         ---------------------------------------
         Total Evaluated   : 49
         Winner Formula    : (mchc - 27) / (mch + 0.1) * (rdw / 20)
-        Winner AUC-PR     : 0.1422 (Beat All-Feat LR: NO)
-        Winner AUC-ROC    : 0.5997
+        Winner AUC-PR     : 0.1376 (Beat All-Feat LR: NO)
+        Winner AUC-ROC    : 0.5869
 
         HEAD-TO-HEAD
         ---------------------------------------
@@ -23,9 +23,9 @@ METHOD 4 PERFORMANCE SUMMARY: T2D
 
 CV WINNER (selected by 5-fold CV on train_df)
 ---------------------------------------
-CV_AUC_PR_Mean    : 0.1421
-CV_AUC_PR_CI95    : [0.1254, 0.1589]
-Frozen_Test_AUC_PR: 0.1422 (Beat All-Feat LR: NO)
+CV_AUC_PR_Mean    : 0.1438
+CV_AUC_PR_CI95    : [0.1325, 0.1552]
+Frozen_Test_AUC_PR: 0.1376 (Beat All-Feat LR: NO)
 CV Winner Formula : (mchc - 27) / (mch + 0.1) * (rdw / 20)
 
         [Master Summary updated at results/method4_llm/method4_master_summary.csv]

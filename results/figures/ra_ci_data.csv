@@ -1,6 +1,7 @@
 method,label,formula,auc_pr,auc_roc,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
-m1,M1: Threshold,rbc < 3.99,0.0141,0.5861,0.0074,0.0126,0.4839,0.591
-m2,M2: Random Search,((((((sqrt(abs(hgb))) * (sqrt(abs(eos_pct)))) / (abs((mono_pct**2))+1e-6)) * ((rbc**2))) * ((plt**2))) / (abs(mchc)+1e-6)) - (log(abs(baso_pct)+1)),0.0135,,0.0093,0.0204,0.5298,0.6647
-m3,M3: Genetic Programming,"add(mul(div(mono_pct, neut_pct), mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), add(mul(mul(mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), add(mul(mul(div(mono_pct, neut_pct), add(sqrt(mono_pct), log(sub(hct, mchc)))), mono_pct), log(sub(hct, mchc))))), mono_pct), add(sqrt(mono_pct), log(sub(hct, mchc)))), mono_pct), log(sub(hct, mchc))))), mono_pct)), log(sub(hct, mchc)))",0.0163,0.6433,0.0113,0.0304,0.5751,0.701
-m4,M4: LLM,(hct - hgb) / (plt + 0.01),0.0149,0.6029,0.0104,0.0238,0.5286,0.6772
-lr_baseline,LR Baseline (all features),,0.0153,,,,,
+m1,M1: Threshold,plt > 229.0,0.0153,0.5864,0.0079,0.0139,0.5105,0.6271
+m2,M2: Random Search,((((((((((((((mchc**2)) - (log(abs(plt)+1))) / (abs(mch)+1e-6)) * (hct)) - (rbc)) / (abs(lym_pct)+1e-6)) / (abs(sqrt(abs(rdw)))+1e-6)) * (sqrt(abs(mcv)))) / (abs((mono_pct**2))+1e-6)) / (abs((wbc**2))+1e-6)) - (log(abs(baso_pct)+1))) - ((neut_pct**2))) + (hgb)) - (log(abs(eos_pct)+1)),0.0139,,0.0107,0.081,0.4706,0.6202
+m3,M3: Genetic Programming,"add(mul(mono_pct, log(neg(sub(mono_pct, sqrt(rbc))))), add(mul(add(mul(div(mono_pct, neut_pct), add(mul(mono_pct, mul(div(mono_pct, neut_pct), add(mul(mono_pct, mul(div(mono_pct, neut_pct), mono_pct)), log(mul(div(mono_pct, neut_pct), mono_pct))))), log(div(mono_pct, neut_pct)))), log(sub(hct, mchc))), mono_pct), log(add(add(sub(mono_pct, sqrt(rbc)), add(mul(log(sub(hct, mchc)), mono_pct), add(mul(mul(div(mono_pct, neut_pct), add(mul(mono_pct, mul(div(mono_pct, neut_pct), mono_pct)), log(mul(div(mono_pct, neut_pct), mono_pct)))), mono_pct), add(div(mono_pct, neut_pct), log(sub(hct, mchc)))))), sqrt(plt)))))",0.0128,0.6372,0.0096,0.0172,0.5788,0.6935
+m5,M5: Seeded GP,"add(mul(hct, mul(hct, mul(add(add(sqrt(add(eos_pct, add(eos_pct, neg(mul(div(mul(mono_pct, wbc), plt), mul(mono_pct, hct)))))), log(sub(hct, mchc))), log(sub(hct, mchc))), mul(mono_pct, hct)))), log(mchc))",0.0137,0.6638,0.0101,0.0182,0.6109,0.716
+m4,M4: LLM,(mcv - 80) * (rdw + 10) / (hgb + 0.01),0.0277,0.5254,0.008,0.015,0.4914,0.6282
+lr_baseline,LR Baseline (all features),,0.0126,,,,,

@@ -1,6 +1,6 @@
 METHOD 4 PERFORMANCE SUMMARY: RA
         ==================================================
-        Generated at: 2026-06-07 02:29:40
+        Generated at: 2026-06-21 12:36:24
 
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
@@ -12,8 +12,8 @@ METHOD 4 PERFORMANCE SUMMARY: RA
         ---------------------------------------
         Total Evaluated   : 35
         Winner Formula    : (hct - hgb) / (plt + 0.01)
-        Winner AUC-PR     : 0.0149 (Beat All-Feat LR: NO)
-        Winner AUC-ROC    : 0.6029
+        Winner AUC-PR     : 0.0130 (Beat All-Feat LR: NO)
+        Winner AUC-ROC    : 0.5608
 
         HEAD-TO-HEAD
         ---------------------------------------
@@ -23,9 +23,9 @@ METHOD 4 PERFORMANCE SUMMARY: RA
 
 CV WINNER (selected by 5-fold CV on train_df)
 ---------------------------------------
-CV_AUC_PR_Mean    : 0.0137
-CV_AUC_PR_CI95    : [0.0104, 0.0169]
-Frozen_Test_AUC_PR: 0.0140 (Beat All-Feat LR: NO)
+CV_AUC_PR_Mean    : 0.0142
+CV_AUC_PR_CI95    : [0.0089, 0.0195]
+Frozen_Test_AUC_PR: 0.0125 (Beat All-Feat LR: NO)
 CV Winner Formula : (hgb - mchc) / (mchc + 0.01) * (plt + 0.01) * rdw
 
         [Master Summary updated at results/method4_llm/method4_master_summary.csv]

@@ -1,10 +1,10 @@
 feature,threshold,direction,auc_roc,auc_pr,precision,recall,f1,f2,n_test,source
-hct,33.0,below,0.5434,0.006,0.0065,0.4383,0.0128,0.0308,29291,"Low hematocrit (percentage of red blood cells in the blood) is often observed in psoriasis patients, reflecting anemia."
-hgb,11.0,below,0.5176,0.0057,0.0059,0.4074,0.0115,0.0277,29292,"Anemia (low hemoglobin) is common in psoriasis, particularly in severe cases, due to chronic inflammation and potential iron deficiency."
-mch,27.0,below,0.4731,0.0051,0.0043,0.0864,0.0082,0.0179,29259,"Low mean corpuscular hemoglobin (MCH) can be seen in psoriasis, potentially indicating hypochromic anemia or iron deficiency."
-mchc,30.0,below,0.3922,0.0042,0.0035,0.0185,0.0059,0.01,29260,"Low mean corpuscular hemoglobin concentration (MCHC) can be seen in psoriasis, potentially indicating hypochromic anemia or iron deficiency."
-mcv,80.0,below,0.5251,0.0062,0.0069,0.0617,0.0124,0.0238,29259,"Low mean corpuscular volume (MCV) can be seen in psoriasis, potentially indicating microcytic anemia or iron deficiency."
-plt,400.0,above,0.5075,0.0071,0.0075,0.0679,0.0134,0.0259,29238,"Elevated platelet count (thrombocytosis) is a common finding in psoriasis, possibly related to inflammation and increased platelet production."
-rbc,4.0,below,0.5339,0.0087,0.0062,0.6296,0.0122,0.0297,29259,"Low red blood cell count (RBC) can be seen in psoriasis, particularly in severe cases, due to anemia."
-rdw,15.0,above,0.5733,0.0068,0.007,0.321,0.0138,0.0324,29252,"Elevated RDW can indicate increased red blood cell production variability, which may be seen in psoriasis due to inflammation."
-wbc,12.0,above,0.4882,0.0056,0.0058,0.2222,0.0113,0.0262,29266,Elevated white blood cell count (leukocytosis) can be seen in psoriasis due to inflammation and immune activation.
+hct,33.0,below,0.5016,0.0048,0.0051,0.3846,0.0101,0.0243,28935,"Low hematocrit (percentage of red blood cells in the blood) is often observed in psoriasis patients, reflecting anemia."
+hgb,11.0,below,0.4796,0.0047,0.005,0.3916,0.0099,0.0238,28937,"Anemia (low hemoglobin) is common in psoriasis, particularly in severe cases, due to chronic inflammation and potential iron deficiency."
+mch,27.0,below,0.4502,0.0044,0.0035,0.0775,0.0067,0.0148,28898,"Low mean corpuscular hemoglobin (MCH) can be seen in psoriasis, potentially indicating hypochromic anemia or iron deficiency."
+mchc,30.0,below,0.3745,0.004,0.0035,0.0211,0.006,0.0105,28899,"Low mean corpuscular hemoglobin concentration (MCHC) can be seen in psoriasis, potentially indicating hypochromic anemia or iron deficiency."
+mcv,80.0,below,0.5295,0.0052,0.0036,0.0352,0.0066,0.0128,28898,"Low mean corpuscular volume (MCV) can be seen in psoriasis, potentially indicating microcytic anemia or iron deficiency."
+plt,400.0,above,0.5056,0.0056,0.0076,0.0775,0.0138,0.0272,28891,"Elevated platelet count (thrombocytosis) is a common finding in psoriasis, possibly related to inflammation and increased platelet production."
+rbc,4.0,below,0.5083,0.0068,0.005,0.5775,0.01,0.0243,28898,"Low red blood cell count (RBC) can be seen in psoriasis, particularly in severe cases, due to anemia."
+rdw,15.0,above,0.5444,0.0054,0.0057,0.2887,0.0111,0.0262,28889,"Elevated RDW can indicate increased red blood cell production variability, which may be seen in psoriasis due to inflammation."
+wbc,12.0,above,0.4648,0.005,0.0048,0.2113,0.0093,0.0218,28904,Elevated white blood cell count (leukocytosis) can be seen in psoriasis due to inflammation and immune activation.

@@ -1,6 +1,6 @@
 METHOD 4 PERFORMANCE SUMMARY: PSR
         ==================================================
-        Generated at: 2026-06-07 02:30:47
+        Generated at: 2026-06-21 12:36:51
 
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
@@ -11,21 +11,21 @@ METHOD 4 PERFORMANCE SUMMARY: PSR
         LLM PERFORMANCE (Method 4)
         ---------------------------------------
         Total Evaluated   : 44
-        Winner Formula    : (hgb - mchc) / (hct + 0.01) * (plt + 0.1)
-        Winner AUC-PR     : 0.0137 (Beat All-Feat LR: YES)
-        Winner AUC-ROC    : 0.5047
+        Winner Formula    : (hct - mchc) / (mchc + 0.01) * (wbc + 0.01)
+        Winner AUC-PR     : 0.0081 (Beat All-Feat LR: NO)
+        Winner AUC-ROC    : 0.5044
 
         HEAD-TO-HEAD
         ---------------------------------------
-        Beat Best Single Feat? : YES
-        Beat All-Feature LR?   : YES
-        Strategy of Winner     : blind (Temp: 1.0)
+        Beat Best Single Feat? : NO
+        Beat All-Feature LR?   : NO
+        Strategy of Winner     : blind (Temp: 0.3)
 
 CV WINNER (selected by 5-fold CV on train_df)
 ---------------------------------------
-CV_AUC_PR_Mean    : 0.0088
-CV_AUC_PR_CI95    : [0.0041, 0.0135]
-Frozen_Test_AUC_PR: 0.0102 (Beat All-Feat LR: NO)
-CV Winner Formula : sqrt(rdw * (plt + 0.01)) / (hct + 0.01)
+CV_AUC_PR_Mean    : 0.0098
+CV_AUC_PR_CI95    : [0.0060, 0.0136]
+Frozen_Test_AUC_PR: 0.0068 (Beat All-Feat LR: NO)
+CV Winner Formula : (mch * mchc) / (mcv + 0.01) * (rdw / (100 + 0.01))
 
         [Master Summary updated at results/method4_llm/method4_master_summary.csv]

@@ -1,5 +1,7 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(mchc, rbc)",0.0144,True,False
-1,"mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), sub(plt, sqrt(hct))))",0.0145,True,False
-5,"mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), sub(plt, sqrt(hct))))",0.0145,False,False
-10,"mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), sub(plt, sqrt(hct))))",0.0145,False,False
+0,"sub(mchc, rbc)",0.0164,True,False
+2,"sub(div(div(div(sub(mchc, rdw), div(plt, wbc)), neg(sub(rdw, plt))), div(mul(log(mch), mul(lym_pct, wbc)), neg(div(wbc, neut_pct)))), add(mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), add(hgb, mono_pct))), sub(div(plt, log(mono_pct)), sub(neg(0.236), sqrt(eos_pct)))))",0.0168,True,True
+3,"sub(div(div(div(sub(mchc, rdw), div(plt, wbc)), neg(sub(rdw, plt))), div(mul(log(mch), mul(lym_pct, wbc)), neg(div(wbc, neut_pct)))), add(mul(log(add(lym_pct, -0.247)), mul(div(neut_pct, mono_pct), add(hgb, mono_pct))), sub(div(plt, log(mono_pct)), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))))",0.0178,True,True
+4,"mul(log(log(log(div(hgb, mono_pct)))), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))",0.0186,True,True
+5,"mul(log(log(log(div(hgb, mono_pct)))), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))",0.0186,False,True
+10,"mul(log(log(log(div(hgb, mono_pct)))), mul(div(neut_pct, mono_pct), add(hgb, mono_pct)))",0.0186,False,True

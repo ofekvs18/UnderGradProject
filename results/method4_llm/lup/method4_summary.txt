@@ -1,6 +1,6 @@
 METHOD 4 PERFORMANCE SUMMARY: LUP
         ==================================================
-        Generated at: 2026-06-07 02:40:31
+        Generated at: 2026-06-21 12:24:02
 
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
@@ -11,21 +11,21 @@ METHOD 4 PERFORMANCE SUMMARY: LUP
         LLM PERFORMANCE (Method 4)
         ---------------------------------------
         Total Evaluated   : 34
-        Winner Formula    : (mcv - mchc) / (mcv + mchc + 0.01) * rbc
-        Winner AUC-PR     : 0.0139 (Beat All-Feat LR: YES)
-        Winner AUC-ROC    : 0.6349
+        Winner Formula    : hct / hgb
+        Winner AUC-PR     : 0.0444 (Beat All-Feat LR: YES)
+        Winner AUC-ROC    : 0.5950
 
         HEAD-TO-HEAD
         ---------------------------------------
         Beat Best Single Feat? : YES
         Beat All-Feature LR?   : YES
-        Strategy of Winner     : seeded (Temp: 0.7)
+        Strategy of Winner     : blind (Temp: 0.7)
 
 CV WINNER (selected by 5-fold CV on train_df)
 ---------------------------------------
-CV_AUC_PR_Mean    : 0.0155
-CV_AUC_PR_CI95    : [-0.0282, 0.0592]
-Frozen_Test_AUC_PR: 0.0045 (Beat All-Feat LR: NO)
-CV Winner Formula : (hgb * mchc) / (mcv + 0.01) * (plt - 300)
+CV_AUC_PR_Mean    : 0.0094
+CV_AUC_PR_CI95    : [-0.0101, 0.0290]
+Frozen_Test_AUC_PR: 0.0043 (Beat All-Feat LR: NO)
+CV Winner Formula : plt * (rbc - 0.01)
 
         [Master Summary updated at results/method4_llm/method4_master_summary.csv]

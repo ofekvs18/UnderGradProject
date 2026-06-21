@@ -1,5 +1,6 @@
 method,label,formula,auc_pr,auc_roc,variant,AUC_PR_CI_Low,AUC_PR_CI_High,AUC_ROC_CI_Low,AUC_ROC_CI_High
-m1,M1: Threshold,rbc < 4.0,0.0816,0.5221,lit,0.0782,0.0869,0.5099,0.5356
-m2,M2: Random Search,((((((((eos_pct) - (log(abs(mcv)+1))) * ((hct**2))) / (abs((rbc**2))+1e-6)) / (abs((baso_pct**2))+1e-6)) * (mchc)) - (hgb)) * ((mch**2))) + ((wbc**2)),0.0773,0.5083,random,0.0721,0.0855,0.4837,0.5341
-m3,M3: Genetic Programming,"mul(neg(mul(sub(mono_pct, sqrt(hct)), mul(-0.834, div(rdw, hgb)))), mul(plt, div(plt, log(add(wbc, log(add(wbc, mul(mch, mono_pct))))))))",0.079,0.5083,gp,0.0727,0.089,0.4834,0.5333
-m4,M4: LLM,(hct - hgb) / (plt + 0.01),0.1016,0.5836,llm,0.0919,0.1157,0.5575,0.6086
+m1,M1: Threshold,plt > 229.0,0.0882,0.5637,dd,0.0834,0.0935,0.5414,0.5855
+m2,M2: Random Search,(((mchc) + (sqrt(abs(mcv)))) * (neut_pct)) - (sqrt(abs(lym_pct))),0.1212,0.6266,random,0.1085,0.1408,0.6031,0.6499
+m3,M3: Genetic Programming,"sub(log(div(mono_pct, mul(log(div(mono_pct, div(add(plt, mcv), log(add(mono_pct, log(add(mono_pct, log(log(neut_pct))))))))), neut_pct))), neut_pct)",0.1224,0.6249,gp,0.1088,0.1421,0.6013,0.6487
+m4,M4: LLM,(mcv - 80) * (rdw + 10) / (hgb + 0.01),0.1442,0.6901,llm,0.1301,0.1619,0.6662,0.7123
+m5,M5: Seeded GP,"sub(sub(log(div(div(div(mono_pct, sqrt(mchc)), log(div(neut_pct, rbc))), div(neut_pct, rbc))), log(div(neut_pct, rbc))), neut_pct)",0.1224,0.6249,seeded_gp,0.1089,0.1417,0.6014,0.649

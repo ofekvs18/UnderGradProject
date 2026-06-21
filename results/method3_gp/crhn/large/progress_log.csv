@@ -1,9 +1,16 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"neg(sqrt(neg(mul(sub(plt, -0.612), neg(mchc)))))",0.0191,True,True
-1,"div(mcv, neg(mul(sub(plt, -0.612), neg(mchc))))",0.0232,True,True
-2,"div(mcv, neg(mul(add(plt, mcv), neg(mchc))))",0.0233,True,True
-3,"div(mcv, neg(mul(sqrt(mul(mchc, plt)), neg(mchc))))",0.0248,True,True
-5,"div(mcv, neg(mul(sqrt(mul(mchc, plt)), neg(mchc))))",0.0248,False,True
-10,"div(mcv, neg(mul(sqrt(mul(mchc, plt)), neg(mchc))))",0.0248,False,True
-15,"div(mcv, neg(mul(sqrt(mul(mchc, plt)), neg(mchc))))",0.0248,False,True
-20,"div(mcv, neg(mul(sqrt(mul(mchc, plt)), neg(mchc))))",0.0248,False,True
+0,"neg(sqrt(neg(mul(sub(plt, -0.612), neg(mchc)))))",0.0155,True,False
+1,"neg(sqrt(neg(mul(log(mul(plt, mchc)), neg(mchc)))))",0.0175,True,False
+2,"div(mul(mchc, plt), add(plt, mcv))",0.0202,True,True
+5,"div(mul(mchc, plt), add(plt, mcv))",0.0202,False,True
+10,"div(mul(mchc, plt), add(plt, mcv))",0.0202,False,True
+11,"mul(div(add(plt, hgb), add(plt, add(plt, add(plt, mcv)))), div(mul(mchc, plt), add(plt, mcv)))",0.0205,True,True
+14,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(mul(plt, mchc), add(plt, mcv)))",0.0209,True,True
+15,"mul(div(add(plt, mcv), add(plt, add(wbc, mcv))), div(sub(mul(mchc, plt), mcv), add(plt, mcv)))",0.0214,True,True
+16,"mul(div(add(plt, mcv), add(plt, add(wbc, mcv))), mul(div(add(plt, hgb), add(plt, add(wbc, mcv))), div(sub(mul(mchc, add(plt, mcv)), mcv), add(plt, mcv))))",0.0218,True,True
+18,"mul(div(add(plt, hgb), add(plt, add(wbc, mcv))), div(sub(sub(mul(plt, mchc), mcv), mcv), add(plt, add(wbc, -0.079))))",0.0219,True,True
+19,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(sub(mul(mchc, plt), mcv), add(plt, add(wbc, add(plt, add(wbc, add(wbc, mcv)))))))",0.022,True,True
+20,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(sub(mul(mchc, plt), mcv), add(plt, add(wbc, add(plt, add(wbc, add(wbc, mcv)))))))",0.022,False,True
+25,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(sub(mul(mchc, plt), mcv), add(plt, add(wbc, add(plt, add(wbc, add(wbc, mcv)))))))",0.022,False,True
+30,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(sub(mul(mchc, plt), mcv), add(plt, add(wbc, add(plt, add(wbc, add(wbc, mcv)))))))",0.022,False,True
+35,"mul(div(add(plt, hgb), add(plt, add(plt, add(wbc, mcv)))), div(sub(mul(mchc, plt), mcv), add(plt, add(wbc, add(plt, add(wbc, add(wbc, mcv)))))))",0.022,False,True

@@ -1,7 +1,11 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"add(mono_pct, mcv)",0.1426,True,False
-1,"div(add(mono_pct, mcv), sqrt(mchc))",0.153,True,False
-3,"div(div(add(mono_pct, mcv), sqrt(mchc)), sqrt(mchc))",0.1567,True,True
-4,"div(sqrt(add(add(mono_pct, mcv), mono_pct)), sqrt(mchc))",0.1586,True,True
-5,"div(sqrt(add(add(mono_pct, mcv), mono_pct)), sqrt(mchc))",0.1586,False,True
-10,"div(sqrt(add(add(mono_pct, mcv), mono_pct)), sqrt(mchc))",0.1586,False,True
+0,"add(mono_pct, mcv)",0.1508,True,False
+1,"div(add(mono_pct, mcv), sqrt(mchc))",0.1542,True,True
+3,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), neg(sqrt(mono_pct))), sub(lym_pct, mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), sqrt(hct)))), mono_pct)), mcv), sqrt(mchc))",0.155,True,True
+4,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), sub(neg(div(mono_pct, rdw)), log(log(wbc)))), sub(lym_pct, mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), sqrt(hct)))), mono_pct)), mcv), sqrt(mchc))",0.1587,True,True
+5,"div(add(sqrt(add(mul(mul(add(eos_pct, add(eos_pct, neg(mono_pct))), sub(neg(div(mono_pct, rdw)), log(log(wbc)))), sub(lym_pct, mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), sqrt(hct)))), mono_pct)), mcv), sqrt(mchc))",0.163,True,True
+6,"div(add(sqrt(add(mul(add(eos_pct, neg(mono_pct)), sub(lym_pct, mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), add(eos_pct, neg(mono_pct))))), mono_pct)), mcv), sqrt(mchc))",0.164,True,True
+8,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), neg(div(mono_pct, rdw))), sub(lym_pct, mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), neg(mono_pct)))), mono_pct)), mcv), sqrt(mchc))",0.1641,True,True
+10,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), neg(div(mono_pct, rdw))), mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), add(eos_pct, neg(mono_pct)))), mono_pct)), mcv), sqrt(mchc))",0.1643,True,True
+15,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), neg(div(mono_pct, rdw))), mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), add(eos_pct, neg(mono_pct)))), mono_pct)), mcv), sqrt(mchc))",0.1643,False,True
+20,"div(add(sqrt(add(mul(mul(add(eos_pct, neg(mono_pct)), neg(div(mono_pct, rdw))), mul(mul(add(eos_pct, neg(mono_pct)), sqrt(mono_pct)), add(eos_pct, neg(mono_pct)))), mono_pct)), mcv), sqrt(mchc))",0.1643,False,True

@@ -1,6 +1,6 @@
 METHOD 4 PERFORMANCE SUMMARY: T1D
         ==================================================
-        Generated at: 2026-06-07 02:34:46
+        Generated at: 2026-06-21 12:13:22
 
         SANITY CHECK BASELINES (Reference: master_sanity_summary.csv)
         ---------------------------------------
@@ -11,21 +11,21 @@ METHOD 4 PERFORMANCE SUMMARY: T1D
         LLM PERFORMANCE (Method 4)
         ---------------------------------------
         Total Evaluated   : 50
-        Winner Formula    : (mch - 28) * (mchc - 32) * (mcv - 80) * (plt - 150)
-        Winner AUC-PR     : 0.0133 (Beat All-Feat LR: NO)
-        Winner AUC-ROC    : 0.5816
+        Winner Formula    : (mchc - mcv) / (mch + 0.01)
+        Winner AUC-PR     : 0.0147 (Beat All-Feat LR: NO)
+        Winner AUC-ROC    : 0.5761
 
         HEAD-TO-HEAD
         ---------------------------------------
         Beat Best Single Feat? : NO
         Beat All-Feature LR?   : NO
-        Strategy of Winner     : seeded (Temp: 0.7)
+        Strategy of Winner     : seeded (Temp: 0.3)
 
 CV WINNER (selected by 5-fold CV on train_df)
 ---------------------------------------
-CV_AUC_PR_Mean    : 0.0179
-CV_AUC_PR_CI95    : [0.0083, 0.0275]
-Frozen_Test_AUC_PR: 0.0133 (Beat All-Feat LR: NO)
+CV_AUC_PR_Mean    : 0.0187
+CV_AUC_PR_CI95    : [0.0025, 0.0348]
+Frozen_Test_AUC_PR: 0.0147 (Beat All-Feat LR: NO)
 CV Winner Formula : (mchc - mcv) / (mch + 0.01)
 
         [Master Summary updated at results/method4_llm/method4_master_summary.csv]

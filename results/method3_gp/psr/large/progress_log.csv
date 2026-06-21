@@ -1,6 +1,10 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"sub(mchc, log(plt))",0.0151,True,True
-5,"sub(mchc, log(plt))",0.0151,False,True
-10,"sub(mchc, log(plt))",0.0151,False,True
-15,"sub(mchc, log(plt))",0.0151,False,True
-20,"sub(mchc, log(plt))",0.0151,False,True
+0,sqrt(mchc),0.0088,True,False
+1,"sub(lym_pct, mul(mul(add(sub(mch, baso_pct), neg(mono_pct)), neg(sqrt(mchc))), sqrt(hct)))",0.0093,True,False
+5,"sub(lym_pct, mul(mul(add(sub(mch, baso_pct), neg(mono_pct)), neg(sqrt(mchc))), sqrt(hct)))",0.0093,False,False
+6,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, mono_pct), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.01,True,False
+9,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, div(sqrt(neut_pct), div(div(neut_pct, add(lym_pct, mono_pct)), mono_pct))), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.0114,True,False
+10,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, div(sqrt(neut_pct), div(div(neut_pct, add(lym_pct, mono_pct)), mono_pct))), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.0114,False,False
+15,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, div(sqrt(neut_pct), div(div(neut_pct, add(lym_pct, mono_pct)), mono_pct))), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.0114,False,False
+20,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, div(sqrt(neut_pct), div(div(neut_pct, add(lym_pct, mono_pct)), mono_pct))), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.0114,False,False
+25,"add(log(log(rdw)), div(sqrt(neut_pct), div(div(mchc, div(sqrt(neut_pct), div(div(neut_pct, add(lym_pct, mono_pct)), mono_pct))), div(div(neut_pct, div(mchc, mono_pct)), div(mchc, mono_pct)))))",0.0114,False,False

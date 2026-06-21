@@ -1,5 +1,5 @@
 Generation,Current_Best_Formula,Current_Best_AUC_PR,Is_New_Best,Beats_Baseline
-0,"div(neg(log(div(eos_pct, lym_pct))), neg(neg(div(wbc, neut_pct))))",0.0084,True,False
-1,"div(mul(div(sqrt(plt), add(hct, baso_pct)), rbc), hgb)",0.0085,True,False
-5,"div(mul(div(sqrt(plt), add(hct, baso_pct)), rbc), hgb)",0.0085,False,False
-10,"div(mul(div(sqrt(plt), add(hct, baso_pct)), rbc), hgb)",0.0085,False,False
+0,"sub(sqrt(add(div(rbc, baso_pct), sqrt(hgb))), div(plt, mul(mcv, hct)))",0.0108,True,True
+2,"div(sub(mch, hgb), sqrt(mcv))",0.0149,True,True
+5,"div(sub(mch, hgb), sqrt(mcv))",0.0149,False,True
+10,"div(sub(mch, hgb), sqrt(mcv))",0.0149,False,True
