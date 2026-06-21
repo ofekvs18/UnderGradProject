@@ -80,7 +80,10 @@ def data_path(disease, split_salt=""):
 
 def load_data_for(disease, split_salt=""):
     """Load the modeling CSV for a given disease slug. Returns (df, feature_names)."""
-    return load_data(data_path(disease, split_salt))
+    p = data_path(disease, split_salt)
+    if split_salt and not p.exists():
+        p = data_path(disease, "")
+    return load_data(p)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 META_COLS    = {"subject_id", "is_case", "split"}
