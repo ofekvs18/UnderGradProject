@@ -1,5 +1,5 @@
 # Project Status
-_Last updated: 2026-06-06 (synced to issues.md)_
+_Last updated: 2026-06-22_
 
 ---
 
@@ -59,6 +59,17 @@ _Last updated: 2026-06-06 (synced to issues.md)_
   - New Slide 8: all-disease AUC-PR Lift chart (6 diseases × M1–M4, MIMIC test set)
   - Slide 9 (External Validation): EHRSHOT lift table for all 6 diseases + NHANES AUC-PR note
   - Regenerate with: `../.venv/Scripts/python.exe src/matched_lr_baseline.py && ../.venv/Scripts/python.exe src/update_pptx.py`
+- **Presentation figures**: `src/presentation_figures.py` generates 13 PNGs in `docs/figures/` directly from CI CSV files (no hardcoded data):
+  - `figA_{disease}.png` — per-disease AUC-PR bar chart with **absolute 95% bootstrap CI brackets** (one per disease, 6 files)
+  - `figA_per_disease_aupr.png` — same data as figA files but as a 2×3 grid
+  - `figB_all_diseases_aupr.png` — all 6 diseases grouped bar chart
+  - `figC_complexity.png` — heatmap (N_Features=color, AUC-PR=text per cell)
+  - `figD_ehrshot_generalization.png` — MIMIC vs EHRSHOT AUC-ROC, 2×3 grid
+  - `figE_nhanes_generalization.png` — MIMIC vs NHANES AUC-ROC (RA + PSR only)
+  - `figF_mimic_lift.png` / `figG_ehrshot_lift.png` — AUC-PR lift (formula / prevalence)
+  - CI brackets are **absolute ranges** `[ci_low → ci_hi]`, not error bars relative to the point estimate — handles inverted CI cases (M4 Lupus/RA where few positives cause right-skewed bootstrap)
+  - Regenerate: `../.venv/Scripts/python.exe src/presentation_figures.py`
+  - Refresh CIs and regenerate: `../.venv/Scripts/python.exe src/presentation_figures.py --refresh-ci`
 
 ### Design decisions locked
 - T2D `huge` GP tier skipped — converged at AUC-PR 0.1934 by gen 40, no further improvement. Document in thesis.
