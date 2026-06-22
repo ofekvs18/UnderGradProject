@@ -50,6 +50,16 @@ def _best_per_group(df: pd.DataFrame, auc_col: str) -> pd.DataFrame:
 
 # ── Load & distill each method ────────────────────────────────────────────────
 
+def _add_complexity(df: pd.DataFrame, prefix: str) -> pd.DataFrame:
+    """Add AUC-PR-per-feature column for the given method prefix."""
+    n_col   = f"{prefix}_N_Features"
+    auc_col = f"{prefix}_Best_AUC_PR"
+    adj_col = f"{prefix}_AUC_PR_Per_Feature"
+    if n_col in df.columns and auc_col in df.columns:
+        df[adj_col] = (df[auc_col] / df[n_col].replace(0, float("nan"))).round(6)
+    return df
+
+
 def load_m1() -> pd.DataFrame | None:
     df = _load(RESULTS_DIR / "method1_threshold" / "master_m1_summary.csv")
     if df is None:
@@ -62,20 +72,24 @@ def load_m1() -> pd.DataFrame | None:
         else r["Best_DD_Formula"],
         axis=1,
     )
+    df["M1_N_Features"] = df["Num_Features_Best"]
     best = _best_per_group(df, "M1_Best_AUC_PR")
-    return best[["Disease", "Split_Salt", "M1_Best_Formula", "M1_Best_AUC_PR"]]
+    best = _add_complexity(best, "M1")
+    return best[["Disease", "Split_Salt", "M1_Best_Formula", "M1_Best_AUC_PR", "M1_N_Features", "M1_AUC_PR_Per_Feature"]]
 
 
 def load_m2() -> pd.DataFrame | None:
     df = _load(RESULTS_DIR / "method2_random" / "master_m2_summary.csv")
     if df is None:
         return None
+    df["M2_N_Features"] = df["Num_Features_Best"]
     best = _best_per_group(df, "Best_Random_AUC_PR")
     best = best.rename(columns={
         "Best_Random_Formula": "M2_Best_Formula",
         "Best_Random_AUC_PR":  "M2_Best_AUC_PR",
     })
-    return best[["Disease", "Split_Salt", "M2_Best_Formula", "M2_Best_AUC_PR"]]
+    best = _add_complexity(best, "M2")
+    return best[["Disease", "Split_Salt", "M2_Best_Formula", "M2_Best_AUC_PR", "M2_N_Features", "M2_AUC_PR_Per_Feature"]]
 
 
 def load_m3() -> pd.DataFrame | None:
@@ -85,12 +99,14 @@ def load_m3() -> pd.DataFrame | None:
     df = df[df["Seed_File"].fillna("none") == "none"]  # non-seeded only
     if df.empty:
         return None
+    df["M3_N_Features"] = df["Num_Features_Best"]
     best = _best_per_group(df, "Best_GP_AUC_PR")
     best = best.rename(columns={
         "Best_GP_Formula": "M3_Best_Formula",
         "Best_GP_AUC_PR":  "M3_Best_AUC_PR",
     })
-    return best[["Disease", "Split_Salt", "M3_Best_Formula", "M3_Best_AUC_PR"]]
+    best = _add_complexity(best, "M3")
+    return best[["Disease", "Split_Salt", "M3_Best_Formula", "M3_Best_AUC_PR", "M3_N_Features", "M3_AUC_PR_Per_Feature"]]
 
 
 def load_m5() -> pd.DataFrame | None:
@@ -100,24 +116,28 @@ def load_m5() -> pd.DataFrame | None:
     df = df[df["Seed_File"].fillna("none") != "none"]  # seeded only
     if df.empty:
         return None
+    df["M5_N_Features"] = df["Num_Features_Best"]
     best = _best_per_group(df, "Best_GP_AUC_PR")
     best = best.rename(columns={
         "Best_GP_Formula": "M5_Best_Formula",
         "Best_GP_AUC_PR":  "M5_Best_AUC_PR",
     })
-    return best[["Disease", "Split_Salt", "M5_Best_Formula", "M5_Best_AUC_PR"]]
+    best = _add_complexity(best, "M5")
+    return best[["Disease", "Split_Salt", "M5_Best_Formula", "M5_Best_AUC_PR", "M5_N_Features", "M5_AUC_PR_Per_Feature"]]
 
 
 def load_m4() -> pd.DataFrame | None:
     df = _load(RESULTS_DIR / "method4_llm" / "method4_master_summary.csv")
     if df is None:
         return None
+    df["M4_N_Features"] = df["Num_Features_Best"]
     best = _best_per_group(df, "Best_LLM_AUC_PR")
     best = best.rename(columns={
         "Best_LLM_Formula": "M4_Best_Formula",
         "Best_LLM_AUC_PR":  "M4_Best_AUC_PR",
     })
-    return best[["Disease", "Split_Salt", "M4_Best_Formula", "M4_Best_AUC_PR"]]
+    best = _add_complexity(best, "M4")
+    return best[["Disease", "Split_Salt", "M4_Best_Formula", "M4_Best_AUC_PR", "M4_N_Features", "M4_AUC_PR_Per_Feature"]]
 
 
 # ── Build comparison table ────────────────────────────────────────────────────
@@ -129,6 +149,13 @@ def build_comparison() -> pd.DataFrame:
         "Method3_GP":        ("M3_Best_Formula", "M3_Best_AUC_PR"),
         "Method4_LLM":       ("M4_Best_Formula", "M4_Best_AUC_PR"),
         "Method5_Seeded_GP": ("M5_Best_Formula", "M5_Best_AUC_PR"),
+    }
+    EXTRA_COLS = {
+        "Method1_Threshold": ("M1_N_Features", "M1_AUC_PR_Per_Feature"),
+        "Method2_Random":    ("M2_N_Features", "M2_AUC_PR_Per_Feature"),
+        "Method3_GP":        ("M3_N_Features", "M3_AUC_PR_Per_Feature"),
+        "Method4_LLM":       ("M4_N_Features", "M4_AUC_PR_Per_Feature"),
+        "Method5_Seeded_GP": ("M5_N_Features", "M5_AUC_PR_Per_Feature"),
     }
 
     loaders = [load_m1, load_m2, load_m3, load_m4, load_m5]
@@ -162,8 +189,9 @@ def build_comparison() -> pd.DataFrame:
 
     # Column order
     ordered = ["Disease", "Split_Salt", "Best_Method", "Best_Formula", "Best_AUC_PR"]
-    for _, (formula_col, auc_col) in METHOD_COLS.items():
-        ordered += [formula_col, auc_col]
+    for method, (formula_col, auc_col) in METHOD_COLS.items():
+        n_col, adj_col = EXTRA_COLS[method]
+        ordered += [formula_col, auc_col, n_col, adj_col]
 
     cols = [c for c in ordered if c in result.columns]
     return result[cols].sort_values(["Disease", "Split_Salt"]).reset_index(drop=True)

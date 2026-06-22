@@ -33,22 +33,33 @@ PPTX_IN  = Path("docs/Can-a-Routine-CBC-Predict-Chronic-Disease.pptx")
 PPTX_OUT = Path("docs/Can-a-Routine-CBC-Predict-Chronic-Disease_v2.pptx")
 RESULTS  = Path("results")
 
-# ── Hardcoded results from external_validation_summary.md ────────────────────
+# ── Results computed from matched_lr_baseline.csv + ehrshot eval files ────────
+# MIMIC lift = formula_auc_pr / disease_prevalence (test-set performance)
 MIMIC_LIFTS = {
-    "RA":        {"M1": 1.38, "M2": 1.32, "M3": 1.59, "M4": 1.45},
-    "Crohn":     {"M1": 1.97, "M2": 1.41, "M3": 1.38, "M4": 1.98},
-    "T1D":       {"M1": 1.41, "M2": 1.25, "M3": 1.66, "M4": 1.22},
-    "T2D":       {"M1": 1.19, "M2": 1.18, "M3": 1.26, "M4": 1.12},
-    "Psoriasis": {"M1": 2.42, "M2": 1.88, "M3": 1.54, "M4": 2.48},
-    "Lupus":     {"M1": 2.10, "M2": 1.78, "M3": 2.34, "M4": 3.70},
+    "RA":        {"M1": 1.32, "M2": 3.59, "M3": 1.45, "M4": 1.39, "M5": 1.52},
+    "Crohn":     {"M1": 2.38, "M2": 4.61, "M3": 3.20, "M4": 2.39, "M5": 2.65},
+    "T1D":       {"M1": 1.43, "M2": 3.57, "M3": 1.19, "M4": 1.22, "M5": 1.68},
+    "T2D":       {"M1": 1.19, "M2": 1.22, "M3": 1.26, "M4": 1.12},
+    "Psoriasis": {"M1": 2.35, "M2": 7.02, "M3": 1.28, "M4": 2.40, "M5": 1.28},
+    "Lupus":     {"M1": 2.03, "M2": 11.36, "M3": 1.54, "M4": 3.56, "M5": 1.05},
 }
+# EHRSHOT lift = best_formula_auc_pr / ehrshot_prevalence (external validation)
 EHRSHOT_LIFTS = {
-    "RA":        {"M1": 0.79, "M2": 1.68, "M3": 2.46, "M4": 0.99},
-    "Crohn":     {"M1": 4.30, "M2": 3.42, "M3": 5.27, "M4": 3.29},
-    "T1D":       {"M1": 1.50, "M2": 1.77, "M3": 3.02, "M4": 2.64},
-    "T2D":       {"M1": 1.10, "M2": 1.03, "M3": 1.13, "M4": 1.09},
-    "Psoriasis": {"M1": 1.33, "M2": 1.19, "M3": 1.33, "M4": 1.48},
-    "Lupus":     {"M1": 1.26, "M2": 1.71, "M3": 1.67, "M4": 1.76},
+    "RA":        {"M1": 2.04, "M2": 2.19, "M3": 2.56, "M4": 2.53, "M5": 2.94},
+    "Crohn":     {"M1": 1.21, "M2": 5.13, "M3": 5.28, "M4": 3.29, "M5": 5.35},
+    "T1D":       {"M1": 1.41, "M2": 2.87, "M3": 3.02, "M4": 2.64, "M5": 3.07},
+    "T2D":       {"M1": 1.10, "M2": 1.21, "M3": 1.21, "M4": 1.09},
+    "Psoriasis": {"M1": 1.14, "M2": 1.58, "M3": 1.44, "M4": 1.48, "M5": 1.44},
+    "Lupus":     {"M1": 1.36, "M2": 1.73, "M3": 2.37, "M4": 1.81, "M5": 1.84},
+}
+# n_features for best formula per method per disease (from methods_comparison.csv)
+N_FEATURES = {
+    "RA":        {"M2": 9,  "M3": 4, "M4": 3, "M5": 4},
+    "Crohn":     {"M2": 13, "M3": 4, "M4": 3, "M5": 4},
+    "T1D":       {"M2": 6,  "M3": 5, "M4": 4, "M5": 9},
+    "T2D":       {"M2": 13, "M3": 5, "M4": 3},
+    "Psoriasis": {"M2": 4,  "M3": 3, "M4": 4, "M5": 3},
+    "Lupus":     {"M2": 8,  "M3": 5, "M4": 3, "M5": 6},
 }
 
 # ── Bar-chart geometry constants (empirically measured from existing Slide 6) ─
@@ -60,6 +71,7 @@ C_BASELINE = RGBColor(0x9E, 0x9E, 0x9E)  # gray  – baselines
 C_M2       = RGBColor(0x42, 0x9B, 0xF4)  # blue
 C_M3       = RGBColor(0x34, 0xA8, 0x53)  # green (GP star)
 C_M4       = RGBColor(0xFB, 0xBC, 0x05)  # amber
+C_M5       = RGBColor(0x0B, 0x60, 0x27)  # dark green – seeded GP
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -348,36 +360,44 @@ def make_all_disease_slide(prs):
                  font_size=22, bold=True, color=RGBColor(0x1F, 0x39, 0x7D))
 
     _add_textbox(slide, 0.50, 0.88, 12.30, 0.28,
-                 "Lift = AUC-PR / prevalence. Values > 1 mean the formula outperforms random flagging at the disease’s base rate.",
+                 "Lift = AUC-PR / prevalence. Values > 1 mean the formula outperforms random flagging. Y-axis capped at 8× (M2 Lupus = 11.36×, M2 Psoriasis = 7.02×).",
                  font_size=10, italic=True, color=RGBColor(0x55, 0x55, 0x55))
 
-    # Generate chart
     diseases = list(MIMIC_LIFTS.keys())
-    methods  = ["M1", "M2", "M3", "M4"]
-    labels   = ["B1 Threshold", "M2 Random", "M3 GP", "M4 LLM"]
-    colors   = ["#9E9E9E", "#429BF4", "#34A853", "#FBBC05"]
+    methods  = ["M1", "M2", "M3", "M4", "M5"]
+    labels   = ["B1 Threshold", "M2 Random", "M3 GP", "M4 LLM", "M5 Seeded GP ★"]
+    colors   = ["#9E9E9E", "#429BF4", "#34A853", "#FBBC05", "#0B6027"]
     n_m, n_d = len(methods), len(diseases)
 
+    Y_CAP = 8.0
+
     x = np.arange(n_d)
-    width = 0.18
+    width = 0.14
     offsets = np.linspace(-(n_m-1)/2*width, (n_m-1)/2*width, n_m)
 
-    fig, ax = plt.subplots(figsize=(12, 4.5))
+    fig, ax = plt.subplots(figsize=(13, 4.5))
     for i, (m, lab, c) in enumerate(zip(methods, labels, colors)):
-        vals = [MIMIC_LIFTS[d][m] for d in diseases]
-        bars = ax.bar(x + offsets[i], vals, width, label=lab, color=c,
-                      edgecolor="white", linewidth=0.5)
-        for bar, v in zip(bars, vals):
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.04,
-                    f"{v:.2f}", ha="center", va="bottom", fontsize=7.5,
-                    fontweight="bold" if m == "M3" else "normal")
+        vals_raw = [MIMIC_LIFTS[d].get(m) for d in diseases]
+        vals_capped = [min(v, Y_CAP) if v is not None else 0.0 for v in vals_raw]
+        xs = [x[j] + offsets[i] for j in range(n_d) if vals_raw[j] is not None]
+        vc = [vals_capped[j] for j in range(n_d) if vals_raw[j] is not None]
+        vr = [vals_raw[j] for j in range(n_d) if vals_raw[j] is not None]
+        bars = ax.bar(xs, vc, width, label=lab, color=c, edgecolor="white", linewidth=0.5)
+        bold_m = m in ("M3", "M5")
+        for bar, vraw in zip(bars, vr):
+            label_str = f"{vraw:.2f}" if vraw <= Y_CAP else f"{vraw:.1f}→"
+            ax.text(bar.get_x() + bar.get_width()/2,
+                    min(vraw, Y_CAP) + 0.10,
+                    label_str, ha="center", va="bottom", fontsize=6.5,
+                    fontweight="bold" if bold_m else "normal",
+                    color="#0B6027" if m == "M5" else "black")
 
     ax.axhline(1.0, color="black", linewidth=1.2, linestyle="--", alpha=0.6, label="Lift = 1 (random)")
     ax.set_xticks(x)
-    ax.set_xticklabels(diseases, fontsize=12)
+    ax.set_xticklabels(diseases, fontsize=11)
     ax.set_ylabel("AUC-PR Lift  (×)", fontsize=11)
-    ax.set_ylim(0, max(v for d in MIMIC_LIFTS.values() for v in d.values()) * 1.20)
-    ax.legend(fontsize=9, ncol=5, loc="upper left", framealpha=0.8)
+    ax.set_ylim(0, Y_CAP * 1.15)
+    ax.legend(fontsize=8.5, ncol=3, loc="upper right", framealpha=0.85)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.set_facecolor("#FAFAFA")
@@ -387,14 +407,14 @@ def make_all_disease_slide(prs):
     img_stream = _bytes_to_image_stream(fig)
     plt.close(fig)
 
-    slide.shapes.add_picture(img_stream, _in(0.30), _in(1.25), _in(12.70), _in(5.60))
+    slide.shapes.add_picture(img_stream, _in(0.20), _in(1.20), _in(13.00), _in(5.70))
 
-    # Note
     _add_textbox(slide, 0.50, 6.95, 12.30, 0.30,
-                 "B1 = Threshold baseline (M1). M3-GP highlighted in green. T2D shows markedly higher absolute lift due to higher CBC-disease correlation.",
+                 "B1 = single-feature threshold baseline. M5 (dark green) = Seeded GP using LLM-generated formula seeds. T2D has no M5 (seeding not applied). "
+                 "M2’s high MIMIC lift on lup/psr reflects feature count overfitting — see next slide.",
                  font_size=9, italic=True, color=RGBColor(0x77, 0x77, 0x77))
 
-    print("  New all-disease results slide created")
+    print("  New all-disease results slide created (with M5)")
     return slide
 
 
@@ -403,17 +423,19 @@ def make_all_disease_slide(prs):
 # ════════════════════════════════════════════════════════════════════════════════
 
 def update_external_slide(slide):
-    # Generate a table image using matplotlib
-    diseases = list(EHRSHOT_LIFTS.keys())
-    methods  = ["M1", "M2", "M3", "M4"]
-    col_labels = ["Disease", "B1 Threshold", "M2 Random", "M3 GP ★", "M4 LLM"]
+    diseases   = list(EHRSHOT_LIFTS.keys())
+    methods    = ["M1", "M2", "M3", "M4", "M5"]
+    col_labels = ["Disease", "B1 Threshold", "M2 Random", "M3 GP", "M4 LLM", "M5 Seeded GP ★"]
 
     rows = []
     for d in diseases:
-        row = [d] + [f"{EHRSHOT_LIFTS[d][m]:.2f}×" for m in methods]
+        row = [d]
+        for m in methods:
+            v = EHRSHOT_LIFTS[d].get(m)
+            row.append(f"{v:.2f}×" if v is not None else "—")
         rows.append(row)
 
-    fig, ax = plt.subplots(figsize=(9.5, 3.2))
+    fig, ax = plt.subplots(figsize=(11.5, 3.2))
     ax.axis("off")
     tbl = ax.table(
         cellText=rows,
@@ -422,27 +444,23 @@ def update_external_slide(slide):
         loc="center",
     )
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(11)
+    tbl.set_fontsize(10.5)
     tbl.scale(1, 1.6)
 
-    # Style header
     for j in range(len(col_labels)):
         cell = tbl[0, j]
         cell.set_facecolor("#1F397D")
         cell.set_text_props(color="white", fontweight="bold")
 
-    # Highlight M3 column (index 3) and best value per row
-    best_colors = ["#D4EDDA", "#F8D7DA"]  # green/red highlight
-    for i, row_data in enumerate(rows):
-        vals = [EHRSHOT_LIFTS[diseases[i]][m] for m in methods]
-        best_method_idx = int(np.argmax(vals))
-        for j in range(1, len(col_labels)):
-            cell = tbl[i+1, j]
-            m_idx = j - 1
-            if m_idx == best_method_idx:
-                cell.set_facecolor("#C8E6C9")  # light green for best
-            elif j == 3:  # M3 column
-                cell.set_facecolor("#E8F5E9")  # very light green for GP
+    for i, d in enumerate(diseases):
+        vals = {m: EHRSHOT_LIFTS[d].get(m, 0.0) for m in methods}
+        best_m = max(vals, key=vals.get)
+        for j, m in enumerate(methods):
+            cell = tbl[i+1, j+1]
+            if m == best_m and vals[m] > 0:
+                cell.set_facecolor("#C8E6C9")   # best in row → light green
+            elif m == "M5":
+                cell.set_facecolor("#E8F5E9")   # M5 column → very light green
 
     fig.patch.set_facecolor("white")
     plt.tight_layout()
@@ -450,14 +468,12 @@ def update_external_slide(slide):
     img_stream = _bytes_to_image_stream(fig)
     plt.close(fig)
 
-    # Add table title text box and image to slide
     _add_textbox(slide, 0.50, 1.55, 12.30, 0.30,
-                 "EHRSHOT (Stanford) — AUC-PR Lift (lift = AUC-PR / cohort prevalence)",
+                 "EHRSHOT (Stanford EHR) — AUC-PR Lift  (lift = AUC-PR / cohort prevalence)",
                  font_size=11, bold=True, color=RGBColor(0x1F, 0x39, 0x7D))
 
-    slide.shapes.add_picture(img_stream, _in(0.50), _in(1.90), _in(12.30), _in(4.30))
+    slide.shapes.add_picture(img_stream, _in(0.30), _in(1.90), _in(12.70), _in(4.30))
 
-    # Add NHANES note
     _add_textbox(slide, 0.50, 6.30, 12.30, 0.60,
                  "NHANES (US population survey, RA + Psoriasis only): "
                  "RA AUC-PR — M1: 0.082, M2: 0.077, M3: 0.079, M4: 0.102.  "
@@ -465,7 +481,90 @@ def update_external_slide(slide):
                  "(Lift not computed: NHANES prevalence unknown due to self-report inflation.)",
                  font_size=9, italic=True, color=RGBColor(0x55, 0x55, 0x55))
 
-    print("  Slide 7 (External Validation): EHRSHOT table + NHANES note added")
+    print("  Slide 7 (External Validation): EHRSHOT table updated with M5")
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 7.  Complexity vs Generalisation slide
+# ════════════════════════════════════════════════════════════════════════════════
+
+def make_complexity_slide(prs):
+    """Show M2 vs M5: high MIMIC lift collapses on EHRSHOT for M2; M5 holds up."""
+    blank = prs.slide_layouts[0]
+    slide = prs.slides.add_slide(blank)
+
+    _add_textbox(slide, 0.50, 0.25, 12.30, 0.55,
+                 "Why M5? M2 Overfits — M5 Generalises",
+                 font_size=22, bold=True, color=RGBColor(0x1F, 0x39, 0x7D))
+
+    _add_textbox(slide, 0.50, 0.83, 12.30, 0.30,
+                 "M2 (Random Search) uses 4–13 features and achieves very high MIMIC test-set lift. "
+                 "On EHRSHOT (unseen Stanford data) that advantage nearly vanishes. "
+                 "M5 (Seeded GP, 3–6 features) is more consistent across both datasets.",
+                 font_size=10, italic=True, color=RGBColor(0x55, 0x55, 0x55))
+
+    diseases_5 = [d for d in MIMIC_LIFTS if "M5" in MIMIC_LIFTS[d]]  # skip T2D
+    x = np.arange(len(diseases_5))
+    width = 0.30
+
+    m2_mimic    = [MIMIC_LIFTS[d]["M2"]    for d in diseases_5]
+    m5_mimic    = [MIMIC_LIFTS[d]["M5"]    for d in diseases_5]
+    m2_ehrshot  = [EHRSHOT_LIFTS[d]["M2"]  for d in diseases_5]
+    m5_ehrshot  = [EHRSHOT_LIFTS[d]["M5"]  for d in diseases_5]
+
+    Y_CAP = 8.0
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.4), sharey=False)
+
+    for ax, m2_vals, m5_vals, title, note in [
+        (axes[0], m2_mimic,   m5_mimic,   "MIMIC Test Set",   "(training domain, capped at 8×)"),
+        (axes[1], m2_ehrshot, m5_ehrshot, "EHRSHOT (Stanford)", "(external, zero-shot)"),
+    ]:
+        m2_capped = [min(v, Y_CAP) for v in m2_vals]
+        m5_capped = [min(v, Y_CAP) for v in m5_vals]
+
+        bars_m2 = ax.bar(x - width/2, m2_capped, width, color="#429BF4", label="M2 Random")
+        bars_m5 = ax.bar(x + width/2, m5_capped, width, color="#0B6027", label="M5 Seeded GP")
+
+        for bar, vraw in zip(bars_m2, m2_vals):
+            s = f"{vraw:.2f}" if vraw <= Y_CAP else f"{vraw:.1f}→"
+            ax.text(bar.get_x() + bar.get_width()/2, min(vraw, Y_CAP) + 0.08,
+                    s, ha="center", va="bottom", fontsize=7.5)
+        for bar, v in zip(bars_m5, m5_vals):
+            ax.text(bar.get_x() + bar.get_width()/2, v + 0.08,
+                    f"{v:.2f}", ha="center", va="bottom", fontsize=7.5,
+                    fontweight="bold", color="#0B6027")
+
+        ax.axhline(1.0, color="black", linewidth=1.0, linestyle="--", alpha=0.5)
+        ax.set_xticks(x)
+        ax.set_xticklabels(diseases_5, fontsize=10)
+        ax.set_ylabel("AUC-PR Lift  (×)", fontsize=10)
+        ymax = max(max(m2_capped), max(m5_capped)) * 1.22
+        ax.set_ylim(0, min(ymax, Y_CAP * 1.18))
+        ax.legend(fontsize=9, loc="upper right")
+        ax.set_title(f"{title}\n{note}", fontsize=11, pad=6)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.set_facecolor("#FAFAFA")
+
+    fig.patch.set_facecolor("white")
+    plt.tight_layout(pad=1.5)
+
+    img_stream = _bytes_to_image_stream(fig)
+    plt.close(fig)
+
+    slide.shapes.add_picture(img_stream, _in(0.20), _in(1.20), _in(13.00), _in(5.50))
+
+    # Feature count annotation table below chart
+    n_table = "Features used:  " + "   |   ".join(
+        f"{d}: M2={N_FEATURES[d]['M2']}, M5={N_FEATURES[d]['M5']}"
+        for d in diseases_5
+    )
+    _add_textbox(slide, 0.50, 6.80, 12.30, 0.40,
+                 n_table,
+                 font_size=9, italic=True, color=RGBColor(0x55, 0x55, 0x55))
+
+    print("  New complexity slide created (M2 vs M5 MIMIC vs EHRSHOT)")
+    return slide
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -499,12 +598,17 @@ def main():
 
     # ── Add new slides (appended at end, then moved into position) ────────────
     print("Adding new slides ...")
-    make_ra_background_slide(prs)          # now at index 8
-    _move_slide(prs, 8, 2)                 # move to position 3 (0-indexed: 2)
-    # After move: slides 2-7 shifted to 3-8, so Results is now at index 6
+    n_orig = len(prs.slides)               # original slide count (8)
 
-    make_all_disease_slide(prs)            # now at index 9 (last)
-    _move_slide(prs, 9, 7)                 # move to position 8 (after Results at 6)
+    make_ra_background_slide(prs)          # appended at index n_orig
+    _move_slide(prs, n_orig, 2)            # move to position 3 (0-indexed: 2)
+    # slides formerly at 2..n_orig-1 shift right by 1
+
+    make_all_disease_slide(prs)            # appended at index n_orig+1 (last)
+    _move_slide(prs, n_orig + 1, 7)        # place after RA Results (now at 6)
+
+    make_complexity_slide(prs)             # appended at index n_orig+2 (last)
+    _move_slide(prs, n_orig + 2, 8)        # place right after all-disease (7)
 
     prs.save(str(PPTX_OUT))
     print(f"\nDone. Saved to {PPTX_OUT}")

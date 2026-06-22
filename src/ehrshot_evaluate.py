@@ -263,7 +263,7 @@ def main():
             if out_path.exists():
                 method_df = pd.concat([pd.read_csv(out_path), method_df], ignore_index=True)
             method_df.to_csv(out_path, index=False)
-            print(f"  Saved {len(method_results)} results → {out_path}\n")
+            print(f"  Saved {len(method_results)} results -> {out_path}\n")
         else:
             print()
 
@@ -279,7 +279,7 @@ def main():
     combined_df.to_csv(combined_path, index=False)
 
     print("=" * 70)
-    print(f"Combined results ({len(all_results)} rows) → {combined_path}")
+    print(f"Combined results ({len(all_results)} rows) -> {combined_path}")
 
     best = combined_df.sort_values("auc_pr", ascending=False).iloc[0]
     print(f"Best on EHRSHOT: [{best['Method']}/{best['Variant']}]  "
