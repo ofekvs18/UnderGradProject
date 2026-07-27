@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 555" width="900" height="555" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="36" text-anchor="middle" font-size="17" font-weight="bold" fill="#1a237e" letter-spacing="0.5">RA &#183; M4 LLM Formula &#183; Biologically Grounded CBC Index</text>
+
+  <!-- Formula box -->
+  <rect x="95" y="55" width="710" height="175" rx="14" fill="#e8eef8" stroke="#1565c0" stroke-width="2.5"/>
+
+  <!-- Numerator -->
+  <text y="115" text-anchor="middle" font-size="28" font-family="'Courier New', Courier, monospace">
+    <tspan x="450" fill="#1a237e">( </tspan><tspan fill="#2e7d32" font-weight="bold">MCV</tspan><tspan fill="#1a237e"> &#8722; 80 ) &#215; ( </tspan><tspan fill="#c65c00" font-weight="bold">RDW</tspan><tspan fill="#1a237e"> + 10 )</tspan>
+  </text>
+
+  <!-- Fraction line -->
+  <line x1="155" y1="138" x2="745" y2="138" stroke="#1565c0" stroke-width="2"/>
+
+  <!-- Denominator -->
+  <text y="178" text-anchor="middle" font-size="28" font-family="'Courier New', Courier, monospace">
+    <tspan x="450" fill="#1565c0" font-weight="bold">HGB</tspan><tspan fill="#1a237e"> + 0.01</tspan>
+  </text>
+
+  <!-- Arrow: formula → MCV box -->
+  <path d="M 305,232 C 280,268 210,272 168,293" stroke="#888" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+  <!-- Arrow: formula → RDW box -->
+  <path d="M 450,232 C 450,258 450,274 450,293" stroke="#888" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+  <!-- Arrow: formula → HGB box -->
+  <path d="M 500,232 C 548,268 648,276 718,293" stroke="#888" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+  <!-- MCV Box -->
+  <rect x="50" y="295" width="240" height="240" rx="12" fill="#f8fdf8" stroke="#2e7d32" stroke-width="2"/>
+  <text x="170" y="330" text-anchor="middle" font-size="21" font-weight="bold" fill="#2e7d32">MCV</text>
+  <text x="170" y="352" text-anchor="middle" font-size="12.5" font-style="italic" fill="#666">Mean Corpuscular Volume</text>
+  <line x1="72" y1="362" x2="268" y2="362" stroke="#ddd" stroke-width="1.2"/>
+  <text x="170" y="392" text-anchor="middle" font-size="13.5" fill="#333">Red cell size</text>
+  <text x="170" y="414" text-anchor="middle" font-size="13.5" fill="#333">&#8595; in anemia of</text>
+  <text x="170" y="436" text-anchor="middle" font-size="13.5" fill="#333">inflammation</text>
+
+  <!-- RDW Box -->
+  <rect x="330" y="295" width="240" height="240" rx="12" fill="#fdf8f2" stroke="#c65c00" stroke-width="2"/>
+  <text x="450" y="330" text-anchor="middle" font-size="21" font-weight="bold" fill="#c65c00">RDW</text>
+  <text x="450" y="352" text-anchor="middle" font-size="12.5" font-style="italic" fill="#666">Red Cell Distribution Width</text>
+  <line x1="352" y1="362" x2="548" y2="362" stroke="#ddd" stroke-width="1.2"/>
+  <text x="450" y="392" text-anchor="middle" font-size="13.5" fill="#333">Size variability</text>
+  <text x="450" y="414" text-anchor="middle" font-size="13.5" fill="#333">&#8593; when chronic</text>
+  <text x="450" y="436" text-anchor="middle" font-size="13.5" fill="#333">inflammation</text>
+  <text x="450" y="458" text-anchor="middle" font-size="13.5" fill="#333">disrupts erythropoiesis</text>
+
+  <!-- HGB Box -->
+  <rect x="610" y="295" width="240" height="240" rx="12" fill="#f2f6fd" stroke="#1565c0" stroke-width="2"/>
+  <text x="730" y="330" text-anchor="middle" font-size="21" font-weight="bold" fill="#1565c0">HGB</text>
+  <text x="730" y="352" text-anchor="middle" font-size="12.5" font-style="italic" fill="#666">Hemoglobin</text>
+  <line x1="632" y1="362" x2="828" y2="362" stroke="#ddd" stroke-width="1.2"/>
+  <text x="730" y="392" text-anchor="middle" font-size="13.5" fill="#333">Oxygen carrier</text>
+  <text x="730" y="414" text-anchor="middle" font-size="13.5" fill="#333">Normalizes for</text>
+  <text x="730" y="436" text-anchor="middle" font-size="13.5" fill="#333">overall anemia</text>
+  <text x="730" y="458" text-anchor="middle" font-size="13.5" fill="#333">severity</text>
+</svg>

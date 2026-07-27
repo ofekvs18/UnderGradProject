@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 240" width="560" height="240" font-family="'Segoe UI', Arial, sans-serif">
+
+  <!-- Title -->
+  <text x="280" y="32" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a237e">
+    BMI Formula
+  </text>
+
+  <!-- Formula box -->
+  <rect x="80" y="48" width="400" height="150" rx="14" fill="#e8eef8" stroke="#1565c0" stroke-width="2.5"/>
+
+  <!-- Numerator: weight -->
+  <text text-anchor="middle" font-size="28" font-family="'Courier New', Courier, monospace">
+    <tspan x="280" y="108" fill="#2e7d32" font-weight="bold">weight</tspan>
+  </text>
+
+  <!-- Fraction line -->
+  <line x1="130" y1="125" x2="430" y2="125" stroke="#1565c0" stroke-width="2"/>
+
+  <!-- Denominator: height² -->
+  <text text-anchor="middle" font-size="28" font-family="'Courier New', Courier, monospace">
+    <tspan x="280" y="168" fill="#1565c0" font-weight="bold">height</tspan>
+    <tspan fill="#1565c0" font-size="17" dy="-9">2</tspan>
+  </text>
+
+  <!-- Units legend -->
+  <text x="280" y="218" text-anchor="middle" font-size="13" fill="#666">
+    <tspan fill="#2e7d32">weight</tspan>
+    <tspan fill="#555"> in kg  &#183;  </tspan>
+    <tspan fill="#1565c0">height</tspan>
+    <tspan fill="#555"> in m  &#183;  result in kg/m&#178;</tspan>
+  </text>
+
+</svg>
